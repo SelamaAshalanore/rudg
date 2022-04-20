@@ -1,0 +1,24 @@
+stages:
+  - unittest
+
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+rust-latest:
+  stage: unittest
+  image: rust:latest
+  script:
+    - cargo test -- --nocapture
+  # only:
+  #   changes:
+  #     - hp_goldfinger_server/**/*
+
+rust-nightly:
+  stage: unittest
+  image: rustlang/rust:nightly
+  script:
+    - cargo test --verbose
+  allow_failure: true
+  # only:
+  #   changes:
+  #     - hp_goldfinger_server/**/*
