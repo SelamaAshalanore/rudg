@@ -12,8 +12,9 @@ mod tests {
         assert_eq!(
             code_to_dot_digraph(code), 
 r#"digraph ast {
-    "main"
-}"#
+    N0[label="main"];
+}
+"#
         )
     }
 }

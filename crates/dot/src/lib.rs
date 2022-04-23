@@ -1271,6 +1271,14 @@ impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraphWithEscStrs {
     }
 }
 
+pub fn graph_to_string(g: LabelledGraph) -> io::Result<String> {
+    let mut writer = Vec::new();
+    render(&g, &mut writer).unwrap();
+    let mut s = String::new();
+    Read::read_to_string(&mut &*writer, &mut s)?;
+    Ok(s)
+}
+
 #[cfg(test)]
 mod tests {
     use super::{LabelledGraph, Trivial, edge, LabelledGraphWithEscStrs, edge_with_arrows, Node, id_name};
