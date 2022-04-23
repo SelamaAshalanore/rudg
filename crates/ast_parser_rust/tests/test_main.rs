@@ -17,4 +17,24 @@ r#"digraph ast {
 "#
         )
     }
+
+    
+    #[test]
+    fn parse_class_with_fn() {
+        let code: &str = r#"
+            pub struct Mock;
+            impl Mock {
+                pub fn mock_fn() {}
+            }
+        "#;
+        assert_eq!(
+            code_to_dot_digraph(code), 
+r#"digraph ast {
+    N0[label="Mock"];
+    N1[label="main"];
+    N0 -> N1[label="E"];
+}
+"# // TODO
+        )
+    }
 }
