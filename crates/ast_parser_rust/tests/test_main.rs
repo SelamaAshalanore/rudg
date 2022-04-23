@@ -9,7 +9,11 @@ mod tests {
             println!("Hello, world!");
         }        
         "#;
-        let result: String = String::from("main");
-        assert_eq!(code_to_dot_digraph(code), result)
+        assert_eq!(
+            code_to_dot_digraph(code), 
+r#"digraph ast {
+    "main"
+}"#
+        )
     }
 }
