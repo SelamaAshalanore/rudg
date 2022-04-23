@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use staticanalyzer::parse_code;
+    use staticanalyzer::code_to_dot_digraph;
 
     #[test]
     fn parse_simple_r_code() {
@@ -9,7 +9,7 @@ mod tests {
             println!("Hello, world!");
         }        
         "#;
-        let result: Vec<String> = vec![String::from("main")];
-        assert_eq!(parse_code(code), result)
+        let result: String = String::from("main");
+        assert_eq!(code_to_dot_digraph(code), result)
     }
 }

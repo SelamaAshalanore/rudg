@@ -1,6 +1,6 @@
 use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName}};
 
-pub fn parse_code(code: &str) -> Vec<String> {
+pub fn code_to_dot_digraph(code: &str) -> String {
     let parse: Parse<SourceFile> = SourceFile::parse(code);
     let file: SourceFile = parse.tree();
 
@@ -13,5 +13,5 @@ pub fn parse_code(code: &str) -> Vec<String> {
     }
     let func_name: String = func.unwrap().name().unwrap().text().to_string();
 
-    return vec![func_name]
+    return func_name;
 }
