@@ -1047,238 +1047,238 @@ pub fn render_opts<'a,
     writeln(w, &["}"])
 }
 
+/// each node is an index in a vector in the graph.
+pub type Node = usize;
+pub struct Edge {
+    from: usize,
+    to: usize,
+    label: &'static str,
+    style: Style,
+    start_arrow: Arrow,
+    end_arrow: Arrow,
+    color: Option<&'static str>,
+}
+
+pub fn edge(from: usize, to: usize, label: &'static str, style: Style, color: Option<&'static str>) -> Edge {
+    Edge {
+        from: from,
+        to: to,
+        label: label,
+        style: style,
+        start_arrow: Arrow::default(),
+        end_arrow: Arrow::default(),
+        color: color,
+
+    }
+}
+
+pub fn edge_with_arrows(from: usize, to: usize, label: &'static str, style:Style,
+    start_arrow: Arrow, end_arrow: Arrow, color: Option<&'static str>) -> Edge {
+    Edge {
+        from: from,
+        to: to,
+        label: label,
+        style: style,
+        start_arrow: start_arrow,
+        end_arrow: end_arrow,
+        color: color,
+    }
+}
+
+
+pub struct LabelledGraph {
+    /// The name for this graph. Used for labelling generated `digraph`.
+    name: &'static str,
+
+    /// Each node is an index into `node_labels`; these labels are
+    /// used as the label text for each node. (The node *names*,
+    /// which are unique identifiers, are derived from their index
+    /// in this array.)
+    ///
+    /// If a node maps to None here, then just use its name as its
+    /// text.
+    node_labels: Vec<Option<&'static str>>,
+
+    node_styles: Vec<Style>,
+
+    /// Each edge relates a from-index to a to-index along with a
+    /// label; `edges` collects them.
+    edges: Vec<Edge>,
+}
+
+// A simple wrapper around LabelledGraph that forces the labels to
+// be emitted as EscStr.
+pub struct LabelledGraphWithEscStrs {
+    graph: LabelledGraph,
+}
+
+pub enum NodeLabels<L> {
+    AllNodesLabelled(Vec<L>),
+    UnlabelledNodes(usize),
+    SomeNodesLabelled(Vec<Option<L>>),
+}
+
+pub type Trivial = NodeLabels<&'static str>;
+
+impl NodeLabels<&'static str> {
+    pub fn into_opt_strs(self) -> Vec<Option<&'static str>> {
+        match self {
+            NodeLabels::UnlabelledNodes(len) => vec![None; len],
+            NodeLabels::AllNodesLabelled(lbls) => lbls.into_iter().map(|l| Some(l)).collect(),
+            NodeLabels::SomeNodesLabelled(lbls) => lbls.into_iter().collect(),
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        match self {
+            &NodeLabels::UnlabelledNodes(len) => len,
+            &NodeLabels::AllNodesLabelled(ref lbls) => lbls.len(),
+            &NodeLabels::SomeNodesLabelled(ref lbls) => lbls.len(),
+        }
+    }
+}
+
+impl LabelledGraph {
+    pub fn new(name: &'static str,
+            node_labels: Trivial,
+            edges: Vec<Edge>,
+            node_styles: Option<Vec<Style>>)
+            -> LabelledGraph {
+        let count = node_labels.len();
+        LabelledGraph {
+            name: name,
+            node_labels: node_labels.into_opt_strs(),
+            edges: edges,
+            node_styles: match node_styles {
+                Some(nodes) => nodes,
+                None => vec![Style::None; count],
+            },
+        }
+    }
+}
+
+impl LabelledGraphWithEscStrs {
+    pub fn new(name: &'static str,
+            node_labels: Trivial,
+            edges: Vec<Edge>)
+            -> LabelledGraphWithEscStrs {
+        LabelledGraphWithEscStrs { graph: LabelledGraph::new(name, node_labels, edges, None) }
+    }
+}
+
+fn id_name<'a>(n: &Node) -> Id<'a> {
+    Id::new(format!("N{}", *n)).unwrap()
+}
+
+impl<'a> Labeller<'a, Node, &'a Edge> for LabelledGraph {
+    fn graph_id(&'a self) -> Id<'a> {
+        Id::new(&self.name[..]).unwrap()
+    }
+    fn node_id(&'a self, n: &Node) -> Id<'a> {
+        id_name(n)
+    }
+    fn node_label(&'a self, n: &Node) -> LabelText<'a> {
+        match self.node_labels[*n] {
+            Some(ref l) => LabelStr((*l).into()),
+            None => LabelStr(id_name(n).name()),
+        }
+    }
+    fn edge_label(&'a self, e: &&'a Edge) -> LabelText<'a> {
+        LabelStr(e.label.into())
+    }
+    fn node_style(&'a self, n: &Node) -> Style {
+        self.node_styles[*n]
+    }
+    fn edge_style(&'a self, e: &&'a Edge) -> Style {
+        e.style
+    }
+    fn edge_color(&'a self, e: &&'a Edge) -> Option<LabelText<'a>>
+    {
+        match e.color {
+            Some(l) => {
+                Some(LabelStr((*l).into()))
+            },
+            None => None,
+        }
+    }
+    fn edge_end_arrow(&'a self, e: &&'a Edge) -> Arrow {
+        e.end_arrow.clone()
+    }
+
+    fn edge_start_arrow(&'a self, e: &&'a Edge) -> Arrow {
+        e.start_arrow.clone()
+    }
+}
+
+impl<'a> Labeller<'a, Node, &'a Edge> for LabelledGraphWithEscStrs {
+    fn graph_id(&'a self) -> Id<'a> {
+        self.graph.graph_id()
+    }
+    fn node_id(&'a self, n: &Node) -> Id<'a> {
+        self.graph.node_id(n)
+    }
+    fn node_label(&'a self, n: &Node) -> LabelText<'a> {
+        match self.graph.node_label(n) {
+            LabelStr(s) | EscStr(s) | HtmlStr(s) => EscStr(s),
+        }
+    }
+    fn node_color(&'a self, n: &Node) -> Option<LabelText<'a>> {
+        match self.graph.node_color(n) {
+            Some(LabelStr(s)) | Some(EscStr(s)) | Some(HtmlStr(s)) => Some(EscStr(s)),
+            None => None,
+        }
+    }
+    fn edge_label(&'a self, e: &&'a Edge) -> LabelText<'a> {
+        match self.graph.edge_label(e) {
+            LabelStr(s) | EscStr(s) | HtmlStr(s) => EscStr(s),
+        }
+    }
+    fn edge_color(&'a self, e: &&'a Edge) -> Option<LabelText<'a>> {
+        match self.graph.edge_color(e) {
+            Some(LabelStr(s)) | Some(EscStr(s)) | Some(HtmlStr(s)) => Some(EscStr(s)),
+            None => None,
+        }
+    }
+}
+
+impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraph {
+    fn nodes(&'a self) -> Nodes<'a, Node> {
+        (0..self.node_labels.len()).collect()
+    }
+    fn edges(&'a self) -> Edges<'a, &'a Edge> {
+        self.edges.iter().collect()
+    }
+    fn source(&'a self, edge: &&'a Edge) -> Node {
+        edge.from
+    }
+    fn target(&'a self, edge: &&'a Edge) -> Node {
+        edge.to
+    }
+}
+
+impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraphWithEscStrs {
+    fn nodes(&'a self) -> Nodes<'a, Node> {
+        self.graph.nodes()
+    }
+    fn edges(&'a self) -> Edges<'a, &'a Edge> {
+        self.graph.edges()
+    }
+    fn source(&'a self, edge: &&'a Edge) -> Node {
+        edge.from
+    }
+    fn target(&'a self, edge: &&'a Edge) -> Node {
+        edge.to
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use self::NodeLabels::*;
+    use super::{LabelledGraph, Trivial, edge, LabelledGraphWithEscStrs, edge_with_arrows, Node, id_name};
+    use super::NodeLabels::*;
     use super::{Id, Labeller, Nodes, Edges, GraphWalk, render, Style, Kind};
-    use super::LabelText::{self, LabelStr, EscStr, HtmlStr};
     use super::{Arrow, ArrowShape, Side};
     use std::io;
     use std::io::prelude::*;
-
-    /// each node is an index in a vector in the graph.
-    type Node = usize;
-    struct Edge {
-        from: usize,
-        to: usize,
-        label: &'static str,
-        style: Style,
-        start_arrow: Arrow,
-        end_arrow: Arrow,
-        color: Option<&'static str>,
-    }
-
-    fn edge(from: usize, to: usize, label: &'static str, style: Style, color: Option<&'static str>) -> Edge {
-        Edge {
-            from: from,
-            to: to,
-            label: label,
-            style: style,
-            start_arrow: Arrow::default(),
-            end_arrow: Arrow::default(),
-            color: color,
-
-        }
-    }
-
-    fn edge_with_arrows(from: usize, to: usize, label: &'static str, style:Style,
-        start_arrow: Arrow, end_arrow: Arrow, color: Option<&'static str>) -> Edge {
-        Edge {
-            from: from,
-            to: to,
-            label: label,
-            style: style,
-            start_arrow: start_arrow,
-            end_arrow: end_arrow,
-            color: color,
-        }
-    }
-
-
-    struct LabelledGraph {
-        /// The name for this graph. Used for labelling generated `digraph`.
-        name: &'static str,
-
-        /// Each node is an index into `node_labels`; these labels are
-        /// used as the label text for each node. (The node *names*,
-        /// which are unique identifiers, are derived from their index
-        /// in this array.)
-        ///
-        /// If a node maps to None here, then just use its name as its
-        /// text.
-        node_labels: Vec<Option<&'static str>>,
-
-        node_styles: Vec<Style>,
-
-        /// Each edge relates a from-index to a to-index along with a
-        /// label; `edges` collects them.
-        edges: Vec<Edge>,
-    }
-
-    // A simple wrapper around LabelledGraph that forces the labels to
-    // be emitted as EscStr.
-    struct LabelledGraphWithEscStrs {
-        graph: LabelledGraph,
-    }
-
-    enum NodeLabels<L> {
-        AllNodesLabelled(Vec<L>),
-        UnlabelledNodes(usize),
-        SomeNodesLabelled(Vec<Option<L>>),
-    }
-
-    type Trivial = NodeLabels<&'static str>;
-
-    impl NodeLabels<&'static str> {
-        fn into_opt_strs(self) -> Vec<Option<&'static str>> {
-            match self {
-                UnlabelledNodes(len) => vec![None; len],
-                AllNodesLabelled(lbls) => lbls.into_iter().map(|l| Some(l)).collect(),
-                SomeNodesLabelled(lbls) => lbls.into_iter().collect(),
-            }
-        }
-
-        fn len(&self) -> usize {
-            match self {
-                &UnlabelledNodes(len) => len,
-                &AllNodesLabelled(ref lbls) => lbls.len(),
-                &SomeNodesLabelled(ref lbls) => lbls.len(),
-            }
-        }
-    }
-
-    impl LabelledGraph {
-        fn new(name: &'static str,
-               node_labels: Trivial,
-               edges: Vec<Edge>,
-               node_styles: Option<Vec<Style>>)
-               -> LabelledGraph {
-            let count = node_labels.len();
-            LabelledGraph {
-                name: name,
-                node_labels: node_labels.into_opt_strs(),
-                edges: edges,
-                node_styles: match node_styles {
-                    Some(nodes) => nodes,
-                    None => vec![Style::None; count],
-                },
-            }
-        }
-    }
-
-    impl LabelledGraphWithEscStrs {
-        fn new(name: &'static str,
-               node_labels: Trivial,
-               edges: Vec<Edge>)
-               -> LabelledGraphWithEscStrs {
-            LabelledGraphWithEscStrs { graph: LabelledGraph::new(name, node_labels, edges, None) }
-        }
-    }
-
-    fn id_name<'a>(n: &Node) -> Id<'a> {
-        Id::new(format!("N{}", *n)).unwrap()
-    }
-
-    impl<'a> Labeller<'a, Node, &'a Edge> for LabelledGraph {
-        fn graph_id(&'a self) -> Id<'a> {
-            Id::new(&self.name[..]).unwrap()
-        }
-        fn node_id(&'a self, n: &Node) -> Id<'a> {
-            id_name(n)
-        }
-        fn node_label(&'a self, n: &Node) -> LabelText<'a> {
-            match self.node_labels[*n] {
-                Some(ref l) => LabelStr((*l).into()),
-                None => LabelStr(id_name(n).name()),
-            }
-        }
-        fn edge_label(&'a self, e: &&'a Edge) -> LabelText<'a> {
-            LabelStr(e.label.into())
-        }
-        fn node_style(&'a self, n: &Node) -> Style {
-            self.node_styles[*n]
-        }
-        fn edge_style(&'a self, e: &&'a Edge) -> Style {
-            e.style
-        }
-        fn edge_color(&'a self, e: &&'a Edge) -> Option<LabelText<'a>>
-        {
-            match e.color {
-                Some(l) => {
-                    Some(LabelStr((*l).into()))
-                },
-                None => None,
-            }
-        }
-        fn edge_end_arrow(&'a self, e: &&'a Edge) -> Arrow {
-            e.end_arrow.clone()
-        }
-
-        fn edge_start_arrow(&'a self, e: &&'a Edge) -> Arrow {
-            e.start_arrow.clone()
-        }
-    }
-
-    impl<'a> Labeller<'a, Node, &'a Edge> for LabelledGraphWithEscStrs {
-        fn graph_id(&'a self) -> Id<'a> {
-            self.graph.graph_id()
-        }
-        fn node_id(&'a self, n: &Node) -> Id<'a> {
-            self.graph.node_id(n)
-        }
-        fn node_label(&'a self, n: &Node) -> LabelText<'a> {
-            match self.graph.node_label(n) {
-                LabelStr(s) | EscStr(s) | HtmlStr(s) => EscStr(s),
-            }
-        }
-        fn node_color(&'a self, n: &Node) -> Option<LabelText<'a>> {
-            match self.graph.node_color(n) {
-                Some(LabelStr(s)) | Some(EscStr(s)) | Some(HtmlStr(s)) => Some(EscStr(s)),
-                None => None,
-            }
-        }
-        fn edge_label(&'a self, e: &&'a Edge) -> LabelText<'a> {
-            match self.graph.edge_label(e) {
-                LabelStr(s) | EscStr(s) | HtmlStr(s) => EscStr(s),
-            }
-        }
-        fn edge_color(&'a self, e: &&'a Edge) -> Option<LabelText<'a>> {
-            match self.graph.edge_color(e) {
-                Some(LabelStr(s)) | Some(EscStr(s)) | Some(HtmlStr(s)) => Some(EscStr(s)),
-                None => None,
-            }
-        }
-    }
-
-    impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraph {
-        fn nodes(&'a self) -> Nodes<'a, Node> {
-            (0..self.node_labels.len()).collect()
-        }
-        fn edges(&'a self) -> Edges<'a, &'a Edge> {
-            self.edges.iter().collect()
-        }
-        fn source(&'a self, edge: &&'a Edge) -> Node {
-            edge.from
-        }
-        fn target(&'a self, edge: &&'a Edge) -> Node {
-            edge.to
-        }
-    }
-
-    impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraphWithEscStrs {
-        fn nodes(&'a self) -> Nodes<'a, Node> {
-            self.graph.nodes()
-        }
-        fn edges(&'a self) -> Edges<'a, &'a Edge> {
-            self.graph.edges()
-        }
-        fn source(&'a self, edge: &&'a Edge) -> Node {
-            edge.from
-        }
-        fn target(&'a self, edge: &&'a Edge) -> Node {
-            edge.to
-        }
-    }
 
     fn test_input(g: LabelledGraph) -> io::Result<String> {
         let mut writer = Vec::new();
