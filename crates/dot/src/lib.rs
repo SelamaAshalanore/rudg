@@ -262,13 +262,6 @@
 //!
 //! * [DOT language](http://www.graphviz.org/doc/info/lang.html)
 
-#![crate_name = "dot"]
-#![crate_type = "rlib"]
-#![crate_type = "dylib"]
-#![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
-       html_favicon_url = "https://doc.rust-lang.org/favicon.ico",
-       html_root_url = "https://doc.rust-lang.org/nightly/")]
-
 use self::LabelText::*;
 
 use std::borrow::Cow;
@@ -934,7 +927,7 @@ pub fn render_opts<'a,
      -> io::Result<()> {
     fn writeln<W: Write>(w: &mut W, arg: &[&str]) -> io::Result<()> {
         for &s in arg {
-            try!(w.write_all(s.as_bytes()));
+            w.write_all(s.as_bytes())?;
         }
         write!(w, "\n")
     }
@@ -943,11 +936,11 @@ pub fn render_opts<'a,
         w.write_all(b"    ")
     }
 
-    try!(writeln(w, &[g.kind().keyword(), " ", g.graph_id().as_slice(), " {"]));
+    writeln(w, &[g.kind().keyword(), " ", g.graph_id().as_slice(), " {"])?;
     for n in g.nodes().iter() {
         let colorstring;
 
-        try!(indent(w));
+        indent(w)?;
         let id = g.node_id(n);
 
         let escaped = &g.node_label(n).to_dot_string();
@@ -986,7 +979,7 @@ pub fn render_opts<'a,
         }
 
         text.push(";");
-        try!(writeln(w, &text));
+        writeln(w, &text)?;
     }
 
     for e in g.edges().iter() {
@@ -997,7 +990,7 @@ pub fn render_opts<'a,
         let start_arrow_s = start_arrow.to_dot_string();
         let end_arrow_s = end_arrow.to_dot_string();
 
-        try!(indent(w));
+        indent(w)?;
         let source = g.source(e);
         let target = g.target(e);
         let source_id = g.node_id(&source);
@@ -1048,7 +1041,7 @@ pub fn render_opts<'a,
         }
 
         text.push(";");
-        try!(writeln(w, &text));
+        writeln(w, &text)?;
     }
 
     writeln(w, &["}"])
@@ -1291,7 +1284,7 @@ mod tests {
         let mut writer = Vec::new();
         render(&g, &mut writer).unwrap();
         let mut s = String::new();
-        try!(Read::read_to_string(&mut &*writer, &mut s));
+        Read::read_to_string(&mut &*writer, &mut s)?;
         Ok(s)
     }
 
@@ -1589,7 +1582,7 @@ r#"digraph test_some_labelled {
         let mut writer = Vec::new();
         render(&g, &mut writer).unwrap();
         let mut s = String::new();
-        try!(Read::read_to_string(&mut &*writer, &mut s));
+        Read::read_to_string(&mut &*writer, &mut s)?;
         Ok(s)
     }
 
