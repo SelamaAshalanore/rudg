@@ -32,7 +32,7 @@ r#"digraph ast {
 r#"digraph ast {
     N0[label="Mock"];
     N1[label="mock_fn"];
-    N0 -> N1[label="impl"];
+    N1 -> N0[label="impl"];
 }
 "# // TODO
         )
