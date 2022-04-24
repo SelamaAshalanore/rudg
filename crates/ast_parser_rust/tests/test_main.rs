@@ -31,8 +31,8 @@ r#"digraph ast {
             code_to_dot_digraph(code), 
 r#"digraph ast {
     N0[label="Mock"];
-    N1[label="main"];
-    N0 -> N1[label="E"];
+    N1[label="mock_fn"];
+    N0 -> N1[label="impl"];
 }
 "# // TODO
         )
