@@ -268,6 +268,7 @@ pub mod arrow;
 pub mod node;
 pub mod edge;
 pub mod graph;
+pub mod id;
 
 pub use label_text::LabelText::{self, LabelStr, EscStr, HtmlStr};
 pub use style::Style;
@@ -275,6 +276,7 @@ pub use arrow::{Arrow, ArrowShape, Side};
 pub use node::{Node, NodeLabels, Trivial};
 pub use edge::{edge, edge_with_arrows, Edge};
 pub use graph::{GraphWalk, LabelledGraph, LabelledGraphWithEscStrs, Nodes, Edges};
+pub use id::{Id};
 
 use std::borrow::Cow;
 use std::io::prelude::*;
@@ -316,60 +318,6 @@ use std::io;
 // labels.
 //
 // So in the end I decided to use the third approach described above.
-
-/// `Id` is a Graphviz `ID`.
-pub struct Id<'a> {
-    name: Cow<'a, str>,
-}
-
-impl<'a> Id<'a> {
-    /// Creates an `Id` named `name`.
-    ///
-    /// The caller must ensure that the input conforms to an
-    /// identifier format: it must be a non-empty string made up of
-    /// alphanumeric or underscore characters, not beginning with a
-    /// digit (i.e. the regular expression `[a-zA-Z_][a-zA-Z_0-9]*`).
-    ///
-    /// (Note: this format is a strict subset of the `ID` format
-    /// defined by the DOT language.  This function may change in the
-    /// future to accept a broader subset, or the entirety, of DOT's
-    /// `ID` format.)
-    ///
-    /// Passing an invalid string (containing spaces, brackets,
-    /// quotes, ...) will return an empty `Err` value.
-    pub fn new<Name: Into<Cow<'a, str>>>(name: Name) -> Result<Id<'a>, ()> {
-        let name = name.into();
-        {
-            let mut chars = name.chars();
-            match chars.next() {
-                Some(c) if is_letter_or_underscore(c) => {}
-                _ => return Err(()),
-            }
-            if !chars.all(is_constituent) {
-                return Err(())
-            }
-        }
-        return Ok(Id{ name: name });
-
-        fn is_letter_or_underscore(c: char) -> bool {
-            in_range('a', c, 'z') || in_range('A', c, 'Z') || c == '_'
-        }
-        fn is_constituent(c: char) -> bool {
-            is_letter_or_underscore(c) || in_range('0', c, '9')
-        }
-        fn in_range(low: char, c: char, high: char) -> bool {
-            low as usize <= c as usize && c as usize <= high as usize
-        }
-    }
-
-    pub fn as_slice(&'a self) -> &'a str {
-        &*self.name
-    }
-
-    pub fn name(self) -> Cow<'a, str> {
-        self.name
-    }
-}
 
 /// Each instance of a type that implements `Label<C>` maps to a
 /// unique identifier with respect to `C`, which is used to identify
