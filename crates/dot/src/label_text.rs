@@ -1,3 +1,42 @@
+
+// There is a tension in the design of the labelling API.
+//
+// For example, I considered making a `Labeller<T>` trait that
+// provides labels for `T`, and then making the graph type `G`
+// implement `Labeller<Node>` and `Labeller<Edge>`. However, this is
+// not possible without functional dependencies. (One could work
+// around that, but I did not explore that avenue heavily.)
+//
+// Another approach that I actually used for a while was to make a
+// `Label<Context>` trait that is implemented by the client-specific
+// Node and Edge types (as well as an implementation on Graph itself
+// for the overall name for the graph). The main disadvantage of this
+// second approach (compared to having the `G` type parameter
+// implement a Labelling service) that I have encountered is that it
+// makes it impossible to use types outside of the current crate
+// directly as Nodes/Edges; you need to wrap them in newtype'd
+// structs. See e.g. the `No` and `Ed` structs in the examples. (In
+// practice clients using a graph in some other crate would need to
+// provide some sort of adapter shim over the graph anyway to
+// interface with this library).
+//
+// Another approach would be to make a single `Labeller<N,E>` trait
+// that provides three methods (graph_label, node_label, edge_label),
+// and then make `G` implement `Labeller<N,E>`. At first this did not
+// appeal to me, since I had thought I would need separate methods on
+// each data variant for dot-internal identifiers versus user-visible
+// labels. However, the identifier/label distinction only arises for
+// nodes; graphs themselves only have identifiers, and edges only have
+// labels.
+//
+// So in the end I decided to use the third approach described above.
+
+/// Each instance of a type that implements `Label<C>` maps to a
+/// unique identifier with respect to `C`, which is used to identify
+/// it in the generated .dot file. They can also provide more
+/// elaborate (and non-unique) label text that is used in the graphviz
+/// rendered output.
+
 /// The text for a graphviz label on a node or edge.
 use std::borrow::Cow;
 use self::LabelText::*;

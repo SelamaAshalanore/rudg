@@ -1,3 +1,6 @@
+/// The style for a node or edge.
+/// See http://www.graphviz.org/doc/info/attrs.html#k:style for descriptions.
+/// Note that some of these are not valid for edges.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Style {
     None,
