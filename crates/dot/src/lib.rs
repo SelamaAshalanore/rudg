@@ -266,11 +266,13 @@ pub mod label_text;
 pub mod style;
 pub mod arrow;
 pub mod node;
+pub mod edge;
 
 pub use label_text::LabelText::{self, LabelStr, EscStr, HtmlStr};
 pub use style::Style;
 pub use arrow::{Arrow, ArrowShape, Side};
 pub use node::{Node, NodeLabels, Trivial};
+pub use edge::{edge, edge_with_arrows, Edge};
 
 use std::borrow::Cow;
 use std::io::prelude::*;
@@ -673,42 +675,6 @@ pub fn render_opts<'a,
     writeln(w, &["}"])
 }
 
-
-pub struct Edge {
-    from: usize,
-    to: usize,
-    label: &'static str,
-    style: Style,
-    start_arrow: Arrow,
-    end_arrow: Arrow,
-    color: Option<&'static str>,
-}
-
-pub fn edge(from: usize, to: usize, label: &'static str, style: Style, color: Option<&'static str>) -> Edge {
-    Edge {
-        from: from,
-        to: to,
-        label: label,
-        style: style,
-        start_arrow: Arrow::default(),
-        end_arrow: Arrow::default(),
-        color: color,
-
-    }
-}
-
-pub fn edge_with_arrows(from: usize, to: usize, label: &'static str, style:Style,
-    start_arrow: Arrow, end_arrow: Arrow, color: Option<&'static str>) -> Edge {
-    Edge {
-        from: from,
-        to: to,
-        label: label,
-        style: style,
-        start_arrow: start_arrow,
-        end_arrow: end_arrow,
-        color: color,
-    }
-}
 
 
 pub struct LabelledGraph {
