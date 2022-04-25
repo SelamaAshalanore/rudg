@@ -1,4 +1,7 @@
 use std::borrow::Cow;
+use crate::{
+    node::{Node}
+};
 
 /// `Id` is a Graphviz `ID`.
 pub struct Id<'a> {
@@ -52,4 +55,8 @@ impl<'a> Id<'a> {
     pub fn name(self) -> Cow<'a, str> {
         self.name
     }
+}
+
+pub fn id_name<'a>(n: &Node) -> Id<'a> {
+    Id::new(format!("N{}", *n)).unwrap()
 }

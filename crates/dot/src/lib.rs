@@ -276,7 +276,7 @@ pub use arrow::{Arrow, ArrowShape, Side};
 pub use node::{Node, NodeLabels, Trivial};
 pub use edge::{edge, edge_with_arrows, Edge};
 pub use graph::{GraphWalk, LabelledGraph, LabelledGraphWithEscStrs, Nodes, Edges, Kind};
-pub use id::{Id};
+pub use id::{Id, id_name};
 
 use std::io::prelude::*;
 use std::io;
@@ -573,9 +573,7 @@ pub fn render_opts<'a,
 
 
 
-fn id_name<'a>(n: &Node) -> Id<'a> {
-    Id::new(format!("N{}", *n)).unwrap()
-}
+
 
 impl<'a> Labeller<'a, Node, &'a Edge> for LabelledGraph {
     fn graph_id(&'a self) -> Id<'a> {
