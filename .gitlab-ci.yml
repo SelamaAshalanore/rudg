@@ -9,9 +9,6 @@ rust-latest:
   image: rust:latest
   script:
     - cargo test -- --nocapture
-  # only:
-  #   changes:
-  #     - hp_goldfinger_server/**/*
 
 rust-nightly:
   stage: unittest
@@ -19,6 +16,3 @@ rust-nightly:
   script:
     - cargo test --verbose
   allow_failure: true
-  # only:
-  #   changes:
-  #     - hp_goldfinger_server/**/*
