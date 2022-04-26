@@ -78,18 +78,6 @@ pub fn escape_html(s: &str) -> String {
 }
 
 impl<'a> LabelText<'a> {
-    pub fn label<S:Into<Cow<'a, str>>>(s: S) -> LabelText<'a> {
-        LabelStr(s.into())
-    }
-
-    pub fn escaped<S:Into<Cow<'a, str>>>(s: S) -> LabelText<'a> {
-        EscStr(s.into())
-    }
-
-    pub fn html<S: Into<Cow<'a, str>>>(s: S) -> LabelText<'a> {
-        HtmlStr(s.into())
-    }
-
     fn escape_char<F>(c: char, mut f: F)
         where F: FnMut(char)
     {
@@ -122,35 +110,5 @@ impl<'a> LabelText<'a> {
             &EscStr(ref s) => format!("\"{}\"", LabelText::escape_str(&s[..])),
             &HtmlStr(ref s) => format!("<{}>", s),
         }
-    }
-
-    /// Decomposes content into string suitable for making EscStr that
-    /// yields same content as self.  The result obeys the law
-    /// render(`lt`) == render(`EscStr(lt.pre_escaped_content())`) for
-    /// all `lt: LabelText`.
-    fn pre_escaped_content(self) -> Cow<'a, str> {
-        match self {
-            EscStr(s) => s,
-            LabelStr(s) => if s.contains('\\') {
-                LabelText::escape_default(&*s).into()
-            } else {
-                s
-            },
-            HtmlStr(s) => s,
-        }
-    }
-
-    /// Puts `prefix` on a line above this label, with a blank line separator.
-    pub fn prefix_line(self, prefix: LabelText) -> LabelText<'static> {
-        prefix.suffix_line(self)
-    }
-
-    /// Puts `suffix` on a line below this label, with a blank line separator.
-    pub fn suffix_line(self, suffix: LabelText) -> LabelText<'static> {
-        let mut prefix = self.pre_escaped_content().into_owned();
-        let suffix = suffix.pre_escaped_content();
-        prefix.push_str(r"\n\n");
-        prefix.push_str(&suffix[..]);
-        EscStr(prefix.into())
     }
 }
