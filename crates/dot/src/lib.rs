@@ -59,14 +59,6 @@
 //!     dot::render(&edges, output).unwrap()
 //! }
 //!
-//! impl<'a> dot::Labeller<'a, Nd, Ed> for Edges {
-//!     fn graph_id(&'a self) -> dot::Id<'a> { dot::Id::new("example1").unwrap() }
-//!
-//!     fn node_id(&'a self, n: &Nd) -> dot::Id<'a> {
-//!         dot::Id::new(format!("N{}", *n)).unwrap()
-//!     }
-//! }
-//!
 //! impl<'a> dot::GraphWalk<'a, Nd, Ed> for Edges {
 //!     fn nodes(&self) -> dot::Nodes<'a,Nd> {
 //!         // (assumes that |N| \approxeq |E|)
@@ -88,6 +80,12 @@
 //!     fn source(&self, e: &Ed) -> Nd { e.0 }
 //!
 //!     fn target(&self, e: &Ed) -> Nd { e.1 }
+//! 
+//!     fn graph_id(&'a self) -> dot::Id<'a> { dot::Id::new("example1").unwrap() }
+//!
+//!     fn node_id(&'a self, n: &Nd) -> dot::Id<'a> {
+//!         dot::Id::new(format!("N{}", *n)).unwrap()
+//!     }
 //! }
 //!
 //! # pub fn main() { render_to(&mut Vec::new()) }
@@ -161,7 +159,11 @@
 //!     dot::render(&graph, output).unwrap()
 //! }
 //!
-//! impl<'a> dot::Labeller<'a, Nd, Ed<'a>> for Graph {
+//! impl<'a> dot::GraphWalk<'a, Nd, Ed<'a>> for Graph {
+//!     fn nodes(&self) -> dot::Nodes<'a,Nd> { (0..self.nodes.len()).collect() }
+//!     fn edges(&'a self) -> dot::Edges<'a,Ed<'a>> { self.edges.iter().collect() }
+//!     fn source(&self, e: &Ed) -> Nd { e.0 }
+//!     fn target(&self, e: &Ed) -> Nd { e.1 }
 //!     fn graph_id(&'a self) -> dot::Id<'a> { dot::Id::new("example2").unwrap() }
 //!     fn node_id(&'a self, n: &Nd) -> dot::Id<'a> {
 //!         dot::Id::new(format!("N{}", n)).unwrap()
@@ -172,13 +174,6 @@
 //!     fn edge_label<'b>(&'b self, _: &Ed) -> dot::LabelText<'b> {
 //!         dot::LabelText::LabelStr("&sube;".into())
 //!     }
-//! }
-//!
-//! impl<'a> dot::GraphWalk<'a, Nd, Ed<'a>> for Graph {
-//!     fn nodes(&self) -> dot::Nodes<'a,Nd> { (0..self.nodes.len()).collect() }
-//!     fn edges(&'a self) -> dot::Edges<'a,Ed<'a>> { self.edges.iter().collect() }
-//!     fn source(&self, e: &Ed) -> Nd { e.0 }
-//!     fn target(&self, e: &Ed) -> Nd { e.1 }
 //! }
 //!
 //! # pub fn main() { render_to(&mut Vec::new()) }
@@ -216,20 +211,6 @@
 //!     dot::render(&graph, output).unwrap()
 //! }
 //!
-//! impl<'a> dot::Labeller<'a, Nd<'a>, Ed<'a>> for Graph {
-//!     fn graph_id(&'a self) -> dot::Id<'a> { dot::Id::new("example3").unwrap() }
-//!     fn node_id(&'a self, n: &Nd<'a>) -> dot::Id<'a> {
-//!         dot::Id::new(format!("N{}", n.0)).unwrap()
-//!     }
-//!     fn node_label<'b>(&'b self, n: &Nd<'b>) -> dot::LabelText<'b> {
-//!         let &(i, _) = n;
-//!         dot::LabelText::LabelStr(self.nodes[i].into())
-//!     }
-//!     fn edge_label<'b>(&'b self, _: &Ed<'b>) -> dot::LabelText<'b> {
-//!         dot::LabelText::LabelStr("&sube;".into())
-//!     }
-//! }
-//!
 //! impl<'a> dot::GraphWalk<'a, Nd<'a>, Ed<'a>> for Graph {
 //!     fn nodes(&'a self) -> dot::Nodes<'a,Nd<'a>> {
 //!         self.nodes.iter().map(|s| &s[..]).enumerate().collect()
@@ -242,6 +223,17 @@
 //!     }
 //!     fn source(&self, e: &Ed<'a>) -> Nd<'a> { e.0 }
 //!     fn target(&self, e: &Ed<'a>) -> Nd<'a> { e.1 }
+//!     fn graph_id(&'a self) -> dot::Id<'a> { dot::Id::new("example3").unwrap() }
+//!     fn node_id(&'a self, n: &Nd<'a>) -> dot::Id<'a> {
+//!         dot::Id::new(format!("N{}", n.0)).unwrap()
+//!     }
+//!     fn node_label<'b>(&'b self, n: &Nd<'b>) -> dot::LabelText<'b> {
+//!         let &(i, _) = n;
+//!         dot::LabelText::LabelStr(self.nodes[i].into())
+//!     }
+//!     fn edge_label<'b>(&'b self, _: &Ed<'b>) -> dot::LabelText<'b> {
+//!         dot::LabelText::LabelStr("&sube;".into())
+//!     }
 //! }
 //!
 //! # pub fn main() { render_to(&mut Vec::new()) }
@@ -269,7 +261,6 @@ pub mod node;
 pub mod edge;
 pub mod graph;
 pub mod id;
-pub mod labeller;
 pub mod render;
 
 pub use label_text::LabelText::{self, LabelStr, EscStr, HtmlStr};
@@ -279,14 +270,13 @@ pub use node::{Node};
 pub use edge::{edge, edge_with_arrows, Edge};
 pub use graph::{GraphWalk, LabelledGraph, LabelledGraphWithEscStrs, Nodes, Edges, Kind};
 pub use id::{Id, id_name};
-pub use labeller::{Labeller};
 pub use render::{render, render_opts, graph_to_string};
 
 
 #[cfg(test)]
 mod tests {
     use super::{LabelledGraph, edge, LabelledGraphWithEscStrs, edge_with_arrows, Node, id_name};
-    use super::{Id, Labeller, Nodes, Edges, GraphWalk, render, Style, Kind};
+    use super::{Id, Nodes, Edges, GraphWalk, render, Style, Kind};
     use super::{Arrow, ArrowShape, Side};
     use std::io;
     use std::io::prelude::*;
@@ -549,18 +539,6 @@ r#"digraph test_some_labelled {
         }
     }
 
-    impl<'a> Labeller<'a, Node, &'a SimpleEdge> for DefaultStyleGraph {
-        fn graph_id(&'a self) -> Id<'a> {
-            Id::new(&self.name[..]).unwrap()
-        }
-        fn node_id(&'a self, n: &Node) -> Id<'a> {
-            id_name(n)
-        }
-        fn kind(&self) -> Kind {
-            self.kind
-        }
-    }
-
     impl<'a> GraphWalk<'a, Node, &'a SimpleEdge> for DefaultStyleGraph {
         fn nodes(&'a self) -> Nodes<'a, Node> {
             (0..self.nodes).collect()
@@ -573,6 +551,16 @@ r#"digraph test_some_labelled {
         }
         fn target(&'a self, edge: &&'a SimpleEdge) -> Node {
             edge.1
+        }
+
+        fn graph_id(&'a self) -> Id<'a> {
+            Id::new(&self.name[..]).unwrap()
+        }
+        fn node_id(&'a self, n: &Node) -> Id<'a> {
+            id_name(n)
+        }
+        fn kind(&self) -> Kind {
+            self.kind
         }
     }
 

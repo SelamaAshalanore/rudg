@@ -2,7 +2,6 @@ use std::io::prelude::*;
 use std::io;
 
 use crate::{
-    labeller::{Labeller},
     graph::{GraphWalk, LabelledGraph},
     style::{Style}
 };
@@ -28,7 +27,7 @@ pub fn default_options() -> Vec<RenderOption> {
 pub fn render<'a,
               N: Clone + 'a,
               E: Clone + 'a,
-              G: Labeller<'a, N, E> + GraphWalk<'a, N, E>,
+              G: GraphWalk<'a, N, E>,
               W: Write>
     (g: &'a G,
      w: &mut W)
@@ -41,7 +40,7 @@ pub fn render<'a,
 pub fn render_opts<'a,
                    N: Clone + 'a,
                    E: Clone + 'a,
-                   G: Labeller<'a, N, E> + GraphWalk<'a, N, E>,
+                   G: GraphWalk<'a, N, E>,
                    W: Write>
     (g: &'a G,
      w: &mut W,
