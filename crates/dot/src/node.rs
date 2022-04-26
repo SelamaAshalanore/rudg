@@ -7,8 +7,6 @@ pub enum NodeLabels<L> {
     SomeNodesLabelled(Vec<Option<L>>),
 }
 
-pub type Trivial = NodeLabels<&'static str>;
-
 impl NodeLabels<&'static str> {
     pub fn into_opt_strs(self) -> Vec<Option<&'static str>> {
         match self {

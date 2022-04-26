@@ -1,5 +1,5 @@
 use crate::{
-    node::{Node, Trivial},
+    node::{Node, NodeLabels},
     edge::{Edge},
     style::{Style}
 };
@@ -67,7 +67,7 @@ pub struct LabelledGraphWithEscStrs {
 
 impl LabelledGraph {
     pub fn new(name: &'static str,
-            node_labels: Trivial,
+            node_labels: NodeLabels<&'static str>,
             edges: Vec<Edge>,
             node_styles: Option<Vec<Style>>)
             -> LabelledGraph {
@@ -86,7 +86,7 @@ impl LabelledGraph {
 
 impl LabelledGraphWithEscStrs {
     pub fn new(name: &'static str,
-            node_labels: Trivial,
+            node_labels: NodeLabels<&'static str>,
             edges: Vec<Edge>)
             -> LabelledGraphWithEscStrs {
         LabelledGraphWithEscStrs { graph: LabelledGraph::new(name, node_labels, edges, None) }

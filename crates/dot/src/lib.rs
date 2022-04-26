@@ -275,7 +275,7 @@ pub mod render;
 pub use label_text::LabelText::{self, LabelStr, EscStr, HtmlStr};
 pub use style::Style;
 pub use arrow::{Arrow, ArrowShape, Side};
-pub use node::{Node, NodeLabels, Trivial};
+pub use node::{Node, NodeLabels};
 pub use edge::{edge, edge_with_arrows, Edge};
 pub use graph::{GraphWalk, LabelledGraph, LabelledGraphWithEscStrs, Nodes, Edges, Kind};
 pub use id::{Id, id_name};
@@ -285,7 +285,7 @@ pub use render::{render, render_opts, graph_to_string};
 
 #[cfg(test)]
 mod tests {
-    use super::{LabelledGraph, Trivial, edge, LabelledGraphWithEscStrs, edge_with_arrows, Node, id_name};
+    use super::{LabelledGraph, edge, LabelledGraphWithEscStrs, edge_with_arrows, Node, id_name, NodeLabels};
     use super::NodeLabels::*;
     use super::{Id, Labeller, Nodes, Edges, GraphWalk, render, Style, Kind};
     use super::{Arrow, ArrowShape, Side};
@@ -306,7 +306,7 @@ mod tests {
 
     #[test]
     fn empty_graph() {
-        let labels: Trivial = UnlabelledNodes(0);
+        let labels: NodeLabels<&'static str> = UnlabelledNodes(0);
         let r = test_input(LabelledGraph::new("empty_graph", labels, vec![], None));
         assert_eq!(r.unwrap(),
 r#"digraph empty_graph {
@@ -316,7 +316,7 @@ r#"digraph empty_graph {
 
     #[test]
     fn single_node() {
-        let labels: Trivial = UnlabelledNodes(1);
+        let labels: NodeLabels<&'static str> = UnlabelledNodes(1);
         let r = test_input(LabelledGraph::new("single_node", labels, vec![], None));
         assert_eq!(r.unwrap(),
 r#"digraph single_node {
@@ -327,7 +327,7 @@ r#"digraph single_node {
 
     #[test]
     fn single_node_with_style() {
-        let labels: Trivial = UnlabelledNodes(1);
+        let labels: NodeLabels<&'static str> = UnlabelledNodes(1);
         let styles = Some(vec![Style::Dashed]);
         let r = test_input(LabelledGraph::new("single_node", labels, vec![], styles));
         assert_eq!(r.unwrap(),
@@ -339,7 +339,7 @@ r#"digraph single_node {
 
     #[test]
     fn single_edge() {
-        let labels: Trivial = UnlabelledNodes(2);
+        let labels: NodeLabels<&'static str> = UnlabelledNodes(2);
         let result = test_input(LabelledGraph::new("single_edge",
                                                    labels,
                                                    vec![edge(0, 1, "E", Style::None, None)],
@@ -355,7 +355,7 @@ r#"digraph single_edge {
 
     #[test]
     fn single_edge_with_style() {
-        let labels: Trivial = UnlabelledNodes(2);
+        let labels: NodeLabels<&'static str> = UnlabelledNodes(2);
         let result = test_input(LabelledGraph::new("single_edge",
                                                    labels,
                                                    vec![edge(0, 1, "E", Style::Bold, Some("red"))],
@@ -371,7 +371,7 @@ r#"digraph single_edge {
 
     #[test]
     fn test_some_labelled() {
-        let labels: Trivial = SomeNodesLabelled(vec![Some("A"), None]);
+        let labels: NodeLabels<&'static str> = SomeNodesLabelled(vec![Some("A"), None]);
         let styles = Some(vec![Style::None, Style::Dotted]);
         let result = test_input(LabelledGraph::new("test_some_labelled",
                                                    labels,
@@ -388,7 +388,7 @@ r#"digraph test_some_labelled {
 
     #[test]
     fn single_cyclic_node() {
-        let labels: Trivial = UnlabelledNodes(1);
+        let labels: NodeLabels<&'static str> = UnlabelledNodes(1);
         let r = test_input(LabelledGraph::new("single_cyclic_node",
                                               labels,
                                               vec![edge(0, 0, "E", Style::None, None)],
@@ -477,7 +477,7 @@ r#"digraph syntax_tree {
 
     #[test]
     fn test_some_arrow() {
-        let labels: Trivial = SomeNodesLabelled(vec![Some("A"), None]);
+        let labels: NodeLabels<&'static str> = SomeNodesLabelled(vec![Some("A"), None]);
         let styles = Some(vec![Style::None, Style::Dotted]);
         let start  = Arrow::default();
         let end    = Arrow::from_arrow(ArrowShape::crow());
@@ -496,7 +496,7 @@ r#"digraph test_some_labelled {
 
     #[test]
     fn test_some_arrows() {
-        let labels: Trivial = SomeNodesLabelled(vec![Some("A"), None]);
+        let labels: NodeLabels<&'static str> = SomeNodesLabelled(vec![Some("A"), None]);
         let styles = Some(vec![Style::None, Style::Dotted]);
         let start  = Arrow::from_arrow(ArrowShape::tee());
         let end    = Arrow::from_arrow(ArrowShape::Crow(Side::Left));
@@ -515,7 +515,7 @@ r#"digraph test_some_labelled {
 
     #[test]
     fn invisible() {
-        let labels: Trivial = UnlabelledNodes(1);
+        let labels: NodeLabels<&'static str> = UnlabelledNodes(1);
         let r = test_input(LabelledGraph::new("single_cyclic_node",
                                               labels,
                                               vec![edge(0, 0, "E", Style::Invisible, None)],
