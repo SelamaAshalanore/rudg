@@ -67,16 +67,6 @@ pub enum LabelText<'a> {
     HtmlStr(Cow<'a, str>),
 }
 
-/// Escape tags in such a way that it is suitable for inclusion in a
-/// Graphviz HTML label.
-pub fn escape_html(s: &str) -> String {
-    s
-        .replace("&", "&amp;")
-        .replace("\"", "&quot;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-}
-
 impl<'a> LabelText<'a> {
     fn escape_char<F>(c: char, mut f: F)
         where F: FnMut(char)
@@ -102,13 +92,23 @@ impl<'a> LabelText<'a> {
         s.chars().flat_map(|c| c.escape_default()).collect()
     }
 
+    /// Escape tags in such a way that it is suitable for inclusion in a
+    /// Graphviz HTML label.
+    fn escape_html(s: &str) -> String {
+        s
+            .replace("&", "&amp;")
+            .replace("\"", "&quot;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+    }
+
     /// Renders text as string suitable for a label in a .dot file.
     /// This includes quotes or suitable delimeters.
     pub fn to_dot_string(&self) -> String {
         match self {
             &LabelStr(ref s) => format!("\"{}\"", LabelText::escape_default(s)),
             &EscStr(ref s) => format!("\"{}\"", LabelText::escape_str(&s[..])),
-            &HtmlStr(ref s) => format!("<{}>", s),
+            &HtmlStr(ref s) => format!("<{}>", LabelText::escape_html(s)),
         }
     }
 }
