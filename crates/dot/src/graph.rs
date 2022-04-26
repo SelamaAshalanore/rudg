@@ -1,5 +1,5 @@
 use crate::{
-    node::{Node, NodeLabels},
+    node::{Node},
     edge::{Edge},
     style::{Style}
 };
@@ -67,14 +67,14 @@ pub struct LabelledGraphWithEscStrs {
 
 impl LabelledGraph {
     pub fn new(name: &'static str,
-            node_labels: NodeLabels<&'static str>,
+            node_labels: Vec<Option<&'static str>>,
             edges: Vec<Edge>,
             node_styles: Option<Vec<Style>>)
             -> LabelledGraph {
         let count = node_labels.len();
         LabelledGraph {
             name: name,
-            node_labels: node_labels.into_opt_strs(),
+            node_labels: node_labels.into_iter().collect(),
             edges: edges,
             node_styles: match node_styles {
                 Some(nodes) => nodes,
@@ -86,7 +86,7 @@ impl LabelledGraph {
 
 impl LabelledGraphWithEscStrs {
     pub fn new(name: &'static str,
-            node_labels: NodeLabels<&'static str>,
+            node_labels: Vec<Option<&'static str>>,
             edges: Vec<Edge>)
             -> LabelledGraphWithEscStrs {
         LabelledGraphWithEscStrs { graph: LabelledGraph::new(name, node_labels, edges, None) }

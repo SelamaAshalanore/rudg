@@ -275,7 +275,7 @@ pub mod render;
 pub use label_text::LabelText::{self, LabelStr, EscStr, HtmlStr};
 pub use style::Style;
 pub use arrow::{Arrow, ArrowShape, Side};
-pub use node::{Node, NodeLabels};
+pub use node::{Node};
 pub use edge::{edge, edge_with_arrows, Edge};
 pub use graph::{GraphWalk, LabelledGraph, LabelledGraphWithEscStrs, Nodes, Edges, Kind};
 pub use id::{Id, id_name};
@@ -285,8 +285,7 @@ pub use render::{render, render_opts, graph_to_string};
 
 #[cfg(test)]
 mod tests {
-    use super::{LabelledGraph, edge, LabelledGraphWithEscStrs, edge_with_arrows, Node, id_name, NodeLabels};
-    use super::NodeLabels::*;
+    use super::{LabelledGraph, edge, LabelledGraphWithEscStrs, edge_with_arrows, Node, id_name};
     use super::{Id, Labeller, Nodes, Edges, GraphWalk, render, Style, Kind};
     use super::{Arrow, ArrowShape, Side};
     use std::io;
@@ -306,8 +305,7 @@ mod tests {
 
     #[test]
     fn empty_graph() {
-        let labels: NodeLabels<&'static str> = UnlabelledNodes(0);
-        let r = test_input(LabelledGraph::new("empty_graph", labels, vec![], None));
+        let r = test_input(LabelledGraph::new("empty_graph", vec![], vec![], None));
         assert_eq!(r.unwrap(),
 r#"digraph empty_graph {
 }
@@ -316,8 +314,7 @@ r#"digraph empty_graph {
 
     #[test]
     fn single_node() {
-        let labels: NodeLabels<&'static str> = UnlabelledNodes(1);
-        let r = test_input(LabelledGraph::new("single_node", labels, vec![], None));
+        let r = test_input(LabelledGraph::new("single_node", vec![None], vec![], None));
         assert_eq!(r.unwrap(),
 r#"digraph single_node {
     N0[label="N0"];
@@ -327,9 +324,8 @@ r#"digraph single_node {
 
     #[test]
     fn single_node_with_style() {
-        let labels: NodeLabels<&'static str> = UnlabelledNodes(1);
         let styles = Some(vec![Style::Dashed]);
-        let r = test_input(LabelledGraph::new("single_node", labels, vec![], styles));
+        let r = test_input(LabelledGraph::new("single_node", vec![None], vec![], styles));
         assert_eq!(r.unwrap(),
 r#"digraph single_node {
     N0[label="N0"][style="dashed"];
@@ -339,9 +335,8 @@ r#"digraph single_node {
 
     #[test]
     fn single_edge() {
-        let labels: NodeLabels<&'static str> = UnlabelledNodes(2);
         let result = test_input(LabelledGraph::new("single_edge",
-                                                   labels,
+                                                   vec![None, None],
                                                    vec![edge(0, 1, "E", Style::None, None)],
                                                    None));
         assert_eq!(result.unwrap(),
@@ -355,9 +350,8 @@ r#"digraph single_edge {
 
     #[test]
     fn single_edge_with_style() {
-        let labels: NodeLabels<&'static str> = UnlabelledNodes(2);
         let result = test_input(LabelledGraph::new("single_edge",
-                                                   labels,
+                                                   vec![None, None],
                                                    vec![edge(0, 1, "E", Style::Bold, Some("red"))],
                                                    None));
         assert_eq!(result.unwrap(),
@@ -371,10 +365,9 @@ r#"digraph single_edge {
 
     #[test]
     fn test_some_labelled() {
-        let labels: NodeLabels<&'static str> = SomeNodesLabelled(vec![Some("A"), None]);
         let styles = Some(vec![Style::None, Style::Dotted]);
         let result = test_input(LabelledGraph::new("test_some_labelled",
-                                                   labels,
+                                                   vec![Some("A"), None],
                                                    vec![edge(0, 1, "A-1", Style::None, None)],
                                                    styles));
         assert_eq!(result.unwrap(),
@@ -388,9 +381,8 @@ r#"digraph test_some_labelled {
 
     #[test]
     fn single_cyclic_node() {
-        let labels: NodeLabels<&'static str> = UnlabelledNodes(1);
         let r = test_input(LabelledGraph::new("single_cyclic_node",
-                                              labels,
+                                              vec![None],
                                               vec![edge(0, 0, "E", Style::None, None)],
                                               None));
         assert_eq!(r.unwrap(),
@@ -403,9 +395,8 @@ r#"digraph single_cyclic_node {
 
     #[test]
     fn hasse_diagram() {
-        let labels = AllNodesLabelled(vec!("{x,y}", "{x}", "{y}", "{}"));
         let r = test_input(LabelledGraph::new("hasse_diagram",
-                                              labels,
+                                              vec![Some("{x,y}"), Some("{x}"), Some("{y}"), Some("{}")],
                                               vec![edge(0, 1, "", Style::None, Some("green")),
                                                    edge(0, 2, "", Style::None, Some("blue")),
                                                    edge(1, 3, "", Style::None, Some("red")),
@@ -427,22 +418,20 @@ r#"digraph hasse_diagram {
 
     #[test]
     fn left_aligned_text() {
-        let labels = AllNodesLabelled(vec!(
+        let mut writer = Vec::new();
+
+        let g = LabelledGraphWithEscStrs::new("syntax_tree",
+                                              vec!(Some(
             "if test {\
            \\l    branch1\
            \\l} else {\
            \\l    branch2\
            \\l}\
            \\lafterward\
-           \\l",
-            "branch1",
-            "branch2",
-            "afterward"));
-
-        let mut writer = Vec::new();
-
-        let g = LabelledGraphWithEscStrs::new("syntax_tree",
-                                              labels,
+           \\l"),
+            Some("branch1"),
+            Some("branch2"),
+            Some("afterward")),
                                               vec![edge(0, 1, "then", Style::None, None),
                                                    edge(0, 2, "else", Style::None, None),
                                                    edge(1, 3, ";", Style::None, None),
@@ -477,12 +466,11 @@ r#"digraph syntax_tree {
 
     #[test]
     fn test_some_arrow() {
-        let labels: NodeLabels<&'static str> = SomeNodesLabelled(vec![Some("A"), None]);
         let styles = Some(vec![Style::None, Style::Dotted]);
         let start  = Arrow::default();
         let end    = Arrow::from_arrow(ArrowShape::crow());
         let result = test_input(LabelledGraph::new("test_some_labelled",
-                                                   labels,
+                                                   vec![Some("A"), None],
                                                    vec![edge_with_arrows(0, 1, "A-1", Style::None, start, end, None)],
                                                    styles));
         assert_eq!(result.unwrap(),
@@ -496,12 +484,11 @@ r#"digraph test_some_labelled {
 
     #[test]
     fn test_some_arrows() {
-        let labels: NodeLabels<&'static str> = SomeNodesLabelled(vec![Some("A"), None]);
         let styles = Some(vec![Style::None, Style::Dotted]);
         let start  = Arrow::from_arrow(ArrowShape::tee());
         let end    = Arrow::from_arrow(ArrowShape::Crow(Side::Left));
         let result = test_input(LabelledGraph::new("test_some_labelled",
-                                                   labels,
+                                                   vec![Some("A"), None],
                                                    vec![edge_with_arrows(0, 1, "A-1", Style::None, start, end, None)],
                                                    styles));
         assert_eq!(result.unwrap(),
@@ -515,9 +502,8 @@ r#"digraph test_some_labelled {
 
     #[test]
     fn invisible() {
-        let labels: NodeLabels<&'static str> = UnlabelledNodes(1);
         let r = test_input(LabelledGraph::new("single_cyclic_node",
-                                              labels,
+                                              vec![None],
                                               vec![edge(0, 0, "E", Style::Invisible, None)],
                                               Some(vec![Style::Invisible])));
         assert_eq!(r.unwrap(),

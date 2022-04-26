@@ -1,5 +1,5 @@
-use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName}, AstNode};
-use dot::{LabelledGraph, NodeLabels, graph_to_string, edge, Edge, Style};
+use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName}};
+// use dot::{LabelledGraph, NodeLabels, graph_to_string, edge, Edge, Style};
 
 
 // This should not exists! Fix dot first so this will be no longer necessary
@@ -46,18 +46,19 @@ pub fn code_to_dot_digraph(code: &str) -> String {
     all_names.append(func_names.as_mut());
 
 
-    let mut edge_vec: Vec<Edge> = vec![];
-    for impl_desc in impl_names {
-        let struct_name = impl_desc.0;
-        let func_name = impl_desc.1;
-        let struct_index = all_names.iter().position(|&name| name == struct_name).unwrap();
-        let func_index = all_names.iter().position(|&name| name == func_name).unwrap();
-        edge_vec.push(edge(func_index, struct_index, "impl", Style::None, None));
-    }
+    // let mut edge_vec: Vec<Edge> = vec![];
+    // for impl_desc in impl_names {
+    //     let struct_name = impl_desc.0;
+    //     let func_name = impl_desc.1;
+    //     let struct_index = all_names.iter().position(|&name| name == struct_name).unwrap();
+    //     let func_index = all_names.iter().position(|&name| name == func_name).unwrap();
+    //     edge_vec.push(edge(func_index, struct_index, "impl", Style::None, None));
+    // }
     
 
-    let labels = NodeLabels::AllNodesLabelled(all_names);
-    let digraph = LabelledGraph::new("ast", labels, edge_vec, None);
+    // let labels = NodeLabels::AllNodesLabelled(all_names);
+    // let digraph = LabelledGraph::new("ast", labels, edge_vec, None);
 
-    return graph_to_string(digraph).unwrap();
+    // return graph_to_string(digraph).unwrap();
+    return String::from("");
 }
