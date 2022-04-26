@@ -254,7 +254,7 @@
 //!
 //! * [DOT language](http://www.graphviz.org/doc/info/lang.html)
 
-pub mod label_text;
+mod label_text;
 pub mod style;
 pub mod arrow;
 pub mod node;
@@ -263,7 +263,6 @@ pub mod graph;
 pub mod id;
 pub mod render;
 
-pub use label_text::LabelText::{self, LabelStr, EscStr, HtmlStr};
 pub use style::Style;
 pub use arrow::{Arrow, ArrowShape, Side};
 pub use node::{Node};
