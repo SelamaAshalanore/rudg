@@ -3,7 +3,6 @@ use crate::{
     edge::{Edge, edge},
     style::{Style},
     id::{Id, id_name},
-    arrow::Arrow,
 };
 use std::borrow::Cow;
 
@@ -59,14 +58,6 @@ pub trait GraphWalk<'a, N: Clone, E: Clone> {
         self.node_id(n).name().to_string()
     }
 
-    /// Maps `e` to a label that will be used in the rendered output.
-    /// The label need not be unique, and may be the empty string; the
-    /// default is in fact the empty string.
-    fn edge_label(&'a self, e: &E) -> String {
-        let _ignored = e;
-        "".into()
-    }
-
     /// Maps `n` to a style that will be used in the rendered output.
     fn node_style(&'a self, _n: &N) -> Style {
         Style::None
@@ -77,31 +68,6 @@ pub trait GraphWalk<'a, N: Clone, E: Clone> {
     ///
     /// [1]: https://graphviz.gitlab.io/_pages/doc/info/colors.html
     fn node_color(&'a self, _node: &N) -> Option<String> {
-        None
-    }
-
-    /// Maps `e` to arrow style that will be used on the end of an edge.
-    /// Defaults to default arrow style.
-    fn edge_end_arrow(&'a self, _e: &E) -> Arrow {
-        Arrow::default()
-    }
-
-    /// Maps `e` to arrow style that will be used on the end of an edge.
-    /// Defaults to default arrow style.
-    fn edge_start_arrow(&'a self, _e: &E) -> Arrow {
-        Arrow::default()
-    }
-
-    /// Maps `e` to a style that will be used in the rendered output.
-    fn edge_style(&'a self, _e: &E) -> Style {
-        Style::None
-    }
-
-    /// Maps `e` to one of the [graphviz `color` names][1]. If `None`
-    /// is returned, no `color` attribute is specified.
-    ///
-    /// [1]: https://graphviz.gitlab.io/_pages/doc/info/colors.html
-    fn edge_color(&'a self, _e: &E) -> Option<String> {
         None
     }
 
@@ -179,30 +145,8 @@ impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraph {
             None => id_name(n).name().to_string(),
         }
     }
-    fn edge_label(&'a self, e: &&'a Edge) -> String {
-        e.label.into()
-    }
     fn node_style(&'a self, n: &Node) -> Style {
         self.node_styles[*n]
-    }
-    fn edge_style(&'a self, e: &&'a Edge) -> Style {
-        e.style
-    }
-    fn edge_color(&'a self, e: &&'a Edge) -> Option<String>
-    {
-        match e.color {
-            Some(l) => {
-                Some((*l).into())
-            },
-            None => None,
-        }
-    }
-    fn edge_end_arrow(&'a self, e: &&'a Edge) -> Arrow {
-        e.end_arrow.clone()
-    }
-
-    fn edge_start_arrow(&'a self, e: &&'a Edge) -> Arrow {
-        e.start_arrow.clone()
     }
 }
 
