@@ -254,7 +254,6 @@
 // !
 // ! * [DOT language](http://www.graphviz.org/doc/info/lang.html)
 
-mod label_text;
 pub mod style;
 pub mod arrow;
 pub mod node;

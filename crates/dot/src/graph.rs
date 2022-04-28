@@ -3,7 +3,6 @@ use crate::{
     edge::{Edge},
     style::{Style},
     id::{Id, id_name},
-    label_text::{LabelText, LabelText::*},
     arrow::Arrow,
 };
 use std::borrow::Cow;
