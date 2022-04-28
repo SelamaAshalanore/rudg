@@ -232,3 +232,54 @@ impl Kind {
         }
     }
 }
+
+pub type SimpleEdge = (Node, Node);
+
+pub struct DefaultStyleGraph {
+    /// The name for this graph. Used for labelling generated graph
+    name: &'static str,
+    nodes: usize,
+    edges: Vec<SimpleEdge>,
+    kind: Kind,
+}
+
+impl DefaultStyleGraph {
+    pub fn new(name: &'static str,
+            nodes: usize,
+            edges: Vec<SimpleEdge>,
+            kind: Kind)
+            -> DefaultStyleGraph {
+        assert!(!name.is_empty());
+        DefaultStyleGraph {
+            name: name,
+            nodes: nodes,
+            edges: edges,
+            kind: kind,
+        }
+    }
+}
+
+impl<'a> GraphWalk<'a, Node, &'a SimpleEdge> for DefaultStyleGraph {
+    fn nodes(&'a self) -> Nodes<'a, Node> {
+        (0..self.nodes).collect()
+    }
+    fn edges(&'a self) -> Edges<'a, &'a SimpleEdge> {
+        self.edges.iter().collect()
+    }
+    fn source(&'a self, edge: &&'a SimpleEdge) -> Node {
+        edge.0
+    }
+    fn target(&'a self, edge: &&'a SimpleEdge) -> Node {
+        edge.1
+    }
+
+    fn graph_id(&'a self) -> Id<'a> {
+        Id::new(&self.name[..]).unwrap()
+    }
+    fn node_id(&'a self, n: &Node) -> Id<'a> {
+        id_name(n)
+    }
+    fn kind(&self) -> Kind {
+        self.kind
+    }
+}

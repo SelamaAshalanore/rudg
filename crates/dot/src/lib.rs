@@ -266,15 +266,15 @@ pub use style::Style;
 pub use arrow::{Arrow, ArrowShape, Side};
 pub use node::{Node};
 pub use edge::{edge, edge_with_arrows, Edge};
-pub use graph::{GraphWalk, LabelledGraph, Nodes, Edges, Kind};
+pub use graph::{GraphWalk, LabelledGraph, Nodes, Edges, Kind, DefaultStyleGraph};
 pub use id::{Id, id_name};
 pub use render::{render, render_opts, graph_to_string};
 
 
 #[cfg(test)]
 mod tests {
-    use super::{LabelledGraph, edge, edge_with_arrows, Node, id_name};
-    use super::{Id, Nodes, Edges, GraphWalk, render, Style, Kind};
+    use super::{LabelledGraph, edge, edge_with_arrows};
+    use super::{Id, render, Style, Kind, DefaultStyleGraph};
     use super::{Arrow, ArrowShape, Side};
     use std::io;
     use std::io::prelude::*;
@@ -515,57 +515,6 @@ r#"digraph test_some_labelled {
         match id2 {
             Ok(_) => panic!("graphviz id suddenly allows spaces, brackets and stuff"),
             Err(..) => {}
-        }
-    }
-
-    type SimpleEdge = (Node, Node);
-
-    struct DefaultStyleGraph {
-        /// The name for this graph. Used for labelling generated graph
-        name: &'static str,
-        nodes: usize,
-        edges: Vec<SimpleEdge>,
-        kind: Kind,
-    }
-
-    impl DefaultStyleGraph {
-        fn new(name: &'static str,
-               nodes: usize,
-               edges: Vec<SimpleEdge>,
-               kind: Kind)
-               -> DefaultStyleGraph {
-            assert!(!name.is_empty());
-            DefaultStyleGraph {
-                name: name,
-                nodes: nodes,
-                edges: edges,
-                kind: kind,
-            }
-        }
-    }
-
-    impl<'a> GraphWalk<'a, Node, &'a SimpleEdge> for DefaultStyleGraph {
-        fn nodes(&'a self) -> Nodes<'a, Node> {
-            (0..self.nodes).collect()
-        }
-        fn edges(&'a self) -> Edges<'a, &'a SimpleEdge> {
-            self.edges.iter().collect()
-        }
-        fn source(&'a self, edge: &&'a SimpleEdge) -> Node {
-            edge.0
-        }
-        fn target(&'a self, edge: &&'a SimpleEdge) -> Node {
-            edge.1
-        }
-
-        fn graph_id(&'a self) -> Id<'a> {
-            Id::new(&self.name[..]).unwrap()
-        }
-        fn node_id(&'a self, n: &Node) -> Id<'a> {
-            id_name(n)
-        }
-        fn kind(&self) -> Kind {
-            self.kind
         }
     }
 
