@@ -106,7 +106,7 @@ impl<'a> LabelText<'a> {
     /// This includes quotes or suitable delimeters.
     pub fn to_dot_string(&self) -> String {
         match self {
-            &LabelStr(ref s) => format!("\"{}\"", LabelText::escape_default(s)),
+            &LabelStr(ref s) => format!("\"{}\"", s),
             &EscStr(ref s) => format!("\"{}\"", LabelText::escape_str(&s[..])),
             &HtmlStr(ref s) => format!("<{}>", LabelText::escape_html(s)),
         }

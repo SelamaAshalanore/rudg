@@ -409,22 +409,23 @@ r#"digraph hasse_diagram {
     fn left_aligned_text() {
         let mut writer = Vec::new();
 
-        let g = LabelledGraphWithEscStrs::new("syntax_tree",
+        let g = LabelledGraph::new("syntax_tree",
                                               vec!(Some(
-            "if test {\
-           \\l    branch1\
-           \\l} else {\
-           \\l    branch2\
-           \\l}\
-           \\lafterward\
-           \\l"),
+r#"if test {
+\l    branch1
+\l} else {
+\l    branch2
+\l}
+\lafterward
+\l"#),
             Some("branch1"),
             Some("branch2"),
             Some("afterward")),
                                               vec![edge(0, 1, "then", Style::None, None),
                                                    edge(0, 2, "else", Style::None, None),
                                                    edge(1, 3, ";", Style::None, None),
-                                                   edge(2, 3, ";", Style::None, None)]);
+                                                   edge(2, 3, ";", Style::None, None)],
+                                                None);
 
         render(&g, &mut writer).unwrap();
         let mut r = String::new();
@@ -432,7 +433,13 @@ r#"digraph hasse_diagram {
 
         assert_eq!(r,
 r#"digraph syntax_tree {
-    N0[label="if test {\l    branch1\l} else {\l    branch2\l}\lafterward\l"];
+    N0[label="if test {
+\l    branch1
+\l} else {
+\l    branch2
+\l}
+\lafterward
+\l"];
     N1[label="branch1"];
     N2[label="branch2"];
     N3[label="afterward"];
