@@ -59,19 +59,19 @@ pub fn render_opts<'a,
 
     writeln(w, &[g.kind().keyword(), " ", g.graph_id().as_slice(), " {"])?;
     for n in g.nodes().iter() {
-        let colorstring;
+        let colorstring: String;
 
         indent(w)?;
         let id = g.node_id(n);
 
-        let escaped = &g.node_label(n).to_dot_string();
-        let shape;
+        let escaped: String = quote_string(g.node_label(n));
+        let shape: String;
 
         let mut text = vec![id.as_slice()];
 
         if !options.contains(&RenderOption::NoNodeLabels) {
             text.push("[label=");
-            text.push(escaped);
+            text.push(escaped.as_str());
             text.push("]");
         }
 
@@ -85,7 +85,7 @@ pub fn render_opts<'a,
         let color = g.node_color(n);
         if !options.contains(&RenderOption::NoNodeColors) {
             if let Some(c) = color {
-                colorstring = c.to_dot_string();
+                colorstring = quote_string(c);
                 text.push("[color=");
                 text.push(&colorstring);
                 text.push("]");
@@ -93,7 +93,7 @@ pub fn render_opts<'a,
         }
 
         if let Some(s) = g.node_shape(n) {
-            shape = s.to_dot_string();
+            shape = s;
             text.push("[shape=");
             text.push(&shape);
             text.push("]");
@@ -104,8 +104,8 @@ pub fn render_opts<'a,
     }
 
     for e in g.edges().iter() {
-        let colorstring;
-        let escaped_label = &g.edge_label(e).to_dot_string();
+        let colorstring: String;
+        let escaped_label: &String = &quote_string(g.edge_label(e));
         let start_arrow = g.edge_start_arrow(e);
         let end_arrow = g.edge_end_arrow(e);
         let start_arrow_s = start_arrow.to_dot_string();
@@ -123,7 +123,7 @@ pub fn render_opts<'a,
 
         if !options.contains(&RenderOption::NoEdgeLabels) {
             text.push("[label=");
-            text.push(escaped_label);
+            text.push(escaped_label.as_str());
             text.push("]");
         }
 
@@ -137,7 +137,7 @@ pub fn render_opts<'a,
         let color = g.edge_color(e);
         if !options.contains(&RenderOption::NoEdgeColors) {
             if let Some(c) = color {
-                colorstring = c.to_dot_string();
+                colorstring = quote_string(c);
                 text.push("[color=");
                 text.push(&colorstring);
                 text.push("]");
@@ -174,4 +174,8 @@ pub fn graph_to_string(g: LabelledGraph) -> io::Result<String> {
     let mut s = String::new();
     Read::read_to_string(&mut &*writer, &mut s)?;
     Ok(s)
+}
+
+fn quote_string(s: String) -> String {
+    format!("\"{}\"", s)
 }

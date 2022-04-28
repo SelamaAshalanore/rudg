@@ -49,23 +49,23 @@ pub trait GraphWalk<'a, N: Clone, E: Clone> {
     /// is returned, no `shape` attribute is specified.
     ///
     /// [1]: http://www.graphviz.org/content/node-shapes
-    fn node_shape(&'a self, _node: &N) -> Option<LabelText<'a>> {
+    fn node_shape(&'a self, _node: &N) -> Option<String> {
         None
     }
 
     /// Maps `n` to a label that will be used in the rendered output.
     /// The label need not be unique, and may be the empty string; the
     /// default is just the output from `node_id`.
-    fn node_label(&'a self, n: &N) -> LabelText<'a> {
-        LabelStr(self.node_id(n).name())
+    fn node_label(&'a self, n: &N) -> String {
+        self.node_id(n).name().to_string()
     }
 
     /// Maps `e` to a label that will be used in the rendered output.
     /// The label need not be unique, and may be the empty string; the
     /// default is in fact the empty string.
-    fn edge_label(&'a self, e: &E) -> LabelText<'a> {
+    fn edge_label(&'a self, e: &E) -> String {
         let _ignored = e;
-        LabelStr("".into())
+        "".into()
     }
 
     /// Maps `n` to a style that will be used in the rendered output.
@@ -77,7 +77,7 @@ pub trait GraphWalk<'a, N: Clone, E: Clone> {
     /// is returned, no `color` attribute is specified.
     ///
     /// [1]: https://graphviz.gitlab.io/_pages/doc/info/colors.html
-    fn node_color(&'a self, _node: &N) -> Option<LabelText<'a>> {
+    fn node_color(&'a self, _node: &N) -> Option<String> {
         None
     }
 
@@ -102,7 +102,7 @@ pub trait GraphWalk<'a, N: Clone, E: Clone> {
     /// is returned, no `color` attribute is specified.
     ///
     /// [1]: https://graphviz.gitlab.io/_pages/doc/info/colors.html
-    fn edge_color(&'a self, _e: &E) -> Option<LabelText<'a>> {
+    fn edge_color(&'a self, _e: &E) -> Option<String> {
         None
     }
 
@@ -174,14 +174,14 @@ impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraph {
     fn node_id(&'a self, n: &Node) -> Id<'a> {
         id_name(n)
     }
-    fn node_label(&'a self, n: &Node) -> LabelText<'a> {
+    fn node_label(&'a self, n: &Node) -> String {
         match self.node_labels[*n] {
-            Some(ref l) => LabelStr((*l).into()),
-            None => LabelStr(id_name(n).name()),
+            Some(ref l) => (*l).into(),
+            None => id_name(n).name().to_string(),
         }
     }
-    fn edge_label(&'a self, e: &&'a Edge) -> LabelText<'a> {
-        LabelStr(e.label.into())
+    fn edge_label(&'a self, e: &&'a Edge) -> String {
+        e.label.into()
     }
     fn node_style(&'a self, n: &Node) -> Style {
         self.node_styles[*n]
@@ -189,11 +189,11 @@ impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraph {
     fn edge_style(&'a self, e: &&'a Edge) -> Style {
         e.style
     }
-    fn edge_color(&'a self, e: &&'a Edge) -> Option<LabelText<'a>>
+    fn edge_color(&'a self, e: &&'a Edge) -> Option<String>
     {
         match e.color {
             Some(l) => {
-                Some(LabelStr((*l).into()))
+                Some((*l).into())
             },
             None => None,
         }
