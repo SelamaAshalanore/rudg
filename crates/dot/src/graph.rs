@@ -7,7 +7,6 @@ use crate::{
 use std::borrow::Cow;
 
 pub type Nodes<'a,N> = Cow<'a,[N]>;
-pub type Edges<'a,E> = Cow<'a,[E]>;
 
 // (The type parameters in GraphWalk should be associated items,
 // when/if Rust supports such.)

@@ -267,7 +267,7 @@ pub use style::Style;
 pub use arrow::{Arrow, ArrowShape, Side};
 pub use node::{Node};
 pub use edge::{edge, edge_with_arrows, Edge};
-pub use graph::{GraphWalk, LabelledGraph, Nodes, Edges, Kind, DefaultStyleGraph};
+pub use graph::{GraphWalk, LabelledGraph, Nodes, Kind, DefaultStyleGraph};
 pub use id::{Id, id_name};
 pub use render::{render, render_opts, graph_to_string};
 
