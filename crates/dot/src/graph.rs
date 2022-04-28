@@ -30,10 +30,6 @@ pub trait GraphWalk<'a, N: Clone, E: Clone> {
     fn nodes(&'a self) -> Nodes<'a, N>;
     /// Returns all of the edges in this graph.
     fn edges(&'a self) -> Vec<&Edge>;
-    /// The source node for `edge`.
-    fn source(&'a self, edge: &E) -> N;
-    /// The target node for `edge`.
-    fn target(&'a self, edge: &E) -> N;
 
     /// Must return a DOT compatible identifier naming the graph.
     fn graph_id(&'a self) -> Id<'a>;
@@ -126,12 +122,6 @@ impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraph {
     fn edges(&'a self) -> Vec<&Edge> {
         self.edges.iter().collect()
     }
-    fn source(&'a self, edge: &&'a Edge) -> Node {
-        edge.from
-    }
-    fn target(&'a self, edge: &&'a Edge) -> Node {
-        edge.to
-    }
 
     fn graph_id(&'a self) -> Id<'a> {
         Id::new(&self.name[..]).unwrap()
@@ -214,12 +204,6 @@ impl<'a> GraphWalk<'a, Node, &'a SimpleEdge> for DefaultStyleGraph {
     }
     fn edges(&'a self) -> Vec<&Edge> {
         self.edges.iter().collect()
-    }
-    fn source(&'a self, edge: &&'a SimpleEdge) -> Node {
-        edge.0
-    }
-    fn target(&'a self, edge: &&'a SimpleEdge) -> Node {
-        edge.1
     }
 
     fn graph_id(&'a self) -> Id<'a> {
