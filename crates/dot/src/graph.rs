@@ -135,14 +135,6 @@ pub struct LabelledGraph {
     edges: Vec<Edge>,
 }
 
-// A simple wrapper around LabelledGraph that forces the labels to
-// be emitted as EscStr.
-pub struct LabelledGraphWithEscStrs {
-    pub graph: LabelledGraph,
-}
-
-
-
 impl LabelledGraph {
     pub fn new(name: &'static str,
             node_labels: Vec<Option<&'static str>>,
@@ -161,16 +153,6 @@ impl LabelledGraph {
         }
     }
 }
-
-impl LabelledGraphWithEscStrs {
-    pub fn new(name: &'static str,
-            node_labels: Vec<Option<&'static str>>,
-            edges: Vec<Edge>)
-            -> LabelledGraphWithEscStrs {
-        LabelledGraphWithEscStrs { graph: LabelledGraph::new(name, node_labels, edges, None) }
-    }
-}
-
 
 impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraph {
     fn nodes(&'a self) -> Nodes<'a, Node> {
@@ -224,51 +206,6 @@ impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraph {
         e.start_arrow.clone()
     }
 }
-
-impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraphWithEscStrs {
-    fn nodes(&'a self) -> Nodes<'a, Node> {
-        self.graph.nodes()
-    }
-    fn edges(&'a self) -> Edges<'a, &'a Edge> {
-        self.graph.edges()
-    }
-    fn source(&'a self, edge: &&'a Edge) -> Node {
-        edge.from
-    }
-    fn target(&'a self, edge: &&'a Edge) -> Node {
-        edge.to
-    }
-
-    fn graph_id(&'a self) -> Id<'a> {
-        self.graph.graph_id()
-    }
-    fn node_id(&'a self, n: &Node) -> Id<'a> {
-        self.graph.node_id(n)
-    }
-    fn node_label(&'a self, n: &Node) -> LabelText<'a> {
-        match self.graph.node_label(n) {
-            LabelStr(s) | EscStr(s) | HtmlStr(s) => EscStr(s),
-        }
-    }
-    fn node_color(&'a self, n: &Node) -> Option<LabelText<'a>> {
-        match self.graph.node_color(n) {
-            Some(LabelStr(s)) | Some(EscStr(s)) | Some(HtmlStr(s)) => Some(EscStr(s)),
-            None => None,
-        }
-    }
-    fn edge_label(&'a self, e: &&'a Edge) -> LabelText<'a> {
-        match self.graph.edge_label(e) {
-            LabelStr(s) | EscStr(s) | HtmlStr(s) => EscStr(s),
-        }
-    }
-    fn edge_color(&'a self, e: &&'a Edge) -> Option<LabelText<'a>> {
-        match self.graph.edge_color(e) {
-            Some(LabelStr(s)) | Some(EscStr(s)) | Some(HtmlStr(s)) => Some(EscStr(s)),
-            None => None,
-        }
-    }
-}
-
 
 /// Graph kind determines if `digraph` or `graph` is used as keyword
 /// for the graph.

@@ -267,14 +267,14 @@ pub use style::Style;
 pub use arrow::{Arrow, ArrowShape, Side};
 pub use node::{Node};
 pub use edge::{edge, edge_with_arrows, Edge};
-pub use graph::{GraphWalk, LabelledGraph, LabelledGraphWithEscStrs, Nodes, Edges, Kind};
+pub use graph::{GraphWalk, LabelledGraph, Nodes, Edges, Kind};
 pub use id::{Id, id_name};
 pub use render::{render, render_opts, graph_to_string};
 
 
 #[cfg(test)]
 mod tests {
-    use super::{LabelledGraph, edge, LabelledGraphWithEscStrs, edge_with_arrows, Node, id_name};
+    use super::{LabelledGraph, edge, edge_with_arrows, Node, id_name};
     use super::{Id, Nodes, Edges, GraphWalk, render, Style, Kind};
     use super::{Arrow, ArrowShape, Side};
     use std::io;
