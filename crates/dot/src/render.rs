@@ -3,7 +3,8 @@ use std::io;
 
 use crate::{
     graph::{GraphWalk, LabelledGraph},
-    style::{Style}
+    style::{Style},
+    utils::{quote_string}, edge::EdgeTrait
 };
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -103,65 +104,12 @@ pub fn render_opts<'a,
         writeln(w, &text)?;
     }
 
+    let edge_symbol = g.kind().edgeop();
     for e in g.edges().iter() {
-        let colorstring: String;
-        let escaped_label: &String = &quote_string(g.edge_label(e));
-        let start_arrow = g.edge_start_arrow(e);
-        let end_arrow = g.edge_end_arrow(e);
-        let start_arrow_s = start_arrow.to_dot_string();
-        let end_arrow_s = end_arrow.to_dot_string();
-
         indent(w)?;
-        let source = g.source(e);
-        let target = g.target(e);
-        let source_id = g.node_id(&source);
-        let target_id = g.node_id(&target);
-
-        let mut text = vec![source_id.as_slice(), " ",
-                            g.kind().edgeop(), " ",
-                            target_id.as_slice()];
-
-        if !options.contains(&RenderOption::NoEdgeLabels) {
-            text.push("[label=");
-            text.push(escaped_label.as_str());
-            text.push("]");
-        }
-
-        let style = g.edge_style(e);
-        if !options.contains(&RenderOption::NoEdgeStyles) && style != Style::None {
-            text.push("[style=\"");
-            text.push(style.as_slice());
-            text.push("\"]");
-        }
-
-        let color = g.edge_color(e);
-        if !options.contains(&RenderOption::NoEdgeColors) {
-            if let Some(c) = color {
-                colorstring = quote_string(c);
-                text.push("[color=");
-                text.push(&colorstring);
-                text.push("]");
-            }
-        }
-
-        if !options.contains(&RenderOption::NoArrows) &&
-            (!start_arrow.is_default() || !end_arrow.is_default()) {
-            text.push("[");
-            if !end_arrow.is_default() {
-                text.push("arrowhead=\"");
-                text.push(&end_arrow_s);
-                text.push("\"");
-            }
-            if !start_arrow.is_default() {
-                text.push(" dir=\"both\" arrowtail=\"");
-                text.push(&start_arrow_s);
-                text.push("\"");
-            }
-
-            text.push("]");
-        }
-
-        text.push(";");
+        let mut text: Vec<&str> = vec![];
+        let edge_dot_string: String = e.to_dot_string(edge_symbol, options);
+        text.push(&edge_dot_string.as_str());
         writeln(w, &text)?;
     }
 
@@ -174,8 +122,4 @@ pub fn graph_to_string(g: LabelledGraph) -> io::Result<String> {
     let mut s = String::new();
     Read::read_to_string(&mut &*writer, &mut s)?;
     Ok(s)
-}
-
-fn quote_string(s: String) -> String {
-    format!("\"{}\"", s)
 }

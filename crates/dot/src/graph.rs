@@ -1,6 +1,6 @@
 use crate::{
     node::{Node},
-    edge::{Edge},
+    edge::{Edge, edge},
     style::{Style},
     id::{Id, id_name},
     arrow::Arrow,
@@ -30,7 +30,7 @@ pub trait GraphWalk<'a, N: Clone, E: Clone> {
     /// Returns all the nodes in this graph.
     fn nodes(&'a self) -> Nodes<'a, N>;
     /// Returns all of the edges in this graph.
-    fn edges(&'a self) -> Edges<'a, E>;
+    fn edges(&'a self) -> Vec<&Edge>;
     /// The source node for `edge`.
     fn source(&'a self, edge: &E) -> N;
     /// The target node for `edge`.
@@ -157,7 +157,7 @@ impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraph {
     fn nodes(&'a self) -> Nodes<'a, Node> {
         (0..self.node_labels.len()).collect()
     }
-    fn edges(&'a self) -> Edges<'a, &'a Edge> {
+    fn edges(&'a self) -> Vec<&Edge> {
         self.edges.iter().collect()
     }
     fn source(&'a self, edge: &&'a Edge) -> Node {
@@ -239,7 +239,7 @@ pub struct DefaultStyleGraph {
     /// The name for this graph. Used for labelling generated graph
     name: &'static str,
     nodes: usize,
-    edges: Vec<SimpleEdge>,
+    edges: Vec<Edge>,
     kind: Kind,
 }
 
@@ -250,10 +250,15 @@ impl DefaultStyleGraph {
             kind: Kind)
             -> DefaultStyleGraph {
         assert!(!name.is_empty());
+        let mut results: Vec<Edge> = vec![];
+        for (start, end) in edges.iter() {
+            let edge = edge(*start, *end, "", Style::None, None);
+            results.push(edge);
+        }
         DefaultStyleGraph {
             name: name,
             nodes: nodes,
-            edges: edges,
+            edges: results,
             kind: kind,
         }
     }
@@ -263,7 +268,7 @@ impl<'a> GraphWalk<'a, Node, &'a SimpleEdge> for DefaultStyleGraph {
     fn nodes(&'a self) -> Nodes<'a, Node> {
         (0..self.nodes).collect()
     }
-    fn edges(&'a self) -> Edges<'a, &'a SimpleEdge> {
+    fn edges(&'a self) -> Vec<&Edge> {
         self.edges.iter().collect()
     }
     fn source(&'a self, edge: &&'a SimpleEdge) -> Node {

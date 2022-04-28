@@ -261,6 +261,7 @@ pub mod edge;
 pub mod graph;
 pub mod id;
 pub mod render;
+mod utils;
 
 pub use style::Style;
 pub use arrow::{Arrow, ArrowShape, Side};
