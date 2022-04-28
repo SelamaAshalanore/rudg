@@ -27,8 +27,7 @@ pub fn default_options() -> Vec<RenderOption> {
 /// (Simple wrapper around `render_opts` that passes a default set of options.)
 pub fn render<'a,
               N: Clone + 'a,
-              E: Clone + 'a,
-              G: GraphWalk<'a, N, E>,
+              G: GraphWalk<'a, N>,
               W: Write>
     (g: &'a G,
      w: &mut W)
@@ -40,8 +39,7 @@ pub fn render<'a,
 /// (Main entry point for the library.)
 pub fn render_opts<'a,
                    N: Clone + 'a,
-                   E: Clone + 'a,
-                   G: GraphWalk<'a, N, E>,
+                   G: GraphWalk<'a, N>,
                    W: Write>
     (g: &'a G,
      w: &mut W,

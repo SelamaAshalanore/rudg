@@ -24,7 +24,7 @@ pub type Nodes<'a,N> = Cow<'a,[N]>;
 /// `Cow<[T]>` to leave implementers the freedom to create
 /// entirely new vectors or to pass back slices into internally owned
 /// vectors.
-pub trait GraphWalk<'a, N: Clone, E: Clone> {
+pub trait GraphWalk<'a, N: Clone> {
     /// Returns all the nodes in this graph.
     fn nodes(&'a self) -> Nodes<'a, N>;
     /// Returns all of the edges in this graph.
@@ -114,7 +114,7 @@ impl LabelledGraph {
     }
 }
 
-impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraph {
+impl<'a> GraphWalk<'a, Node> for LabelledGraph {
     fn nodes(&'a self) -> Nodes<'a, Node> {
         (0..self.node_labels.len()).collect()
     }
@@ -197,7 +197,7 @@ impl DefaultStyleGraph {
     }
 }
 
-impl<'a> GraphWalk<'a, Node, &'a SimpleEdge> for DefaultStyleGraph {
+impl<'a> GraphWalk<'a, Node> for DefaultStyleGraph {
     fn nodes(&'a self) -> Nodes<'a, Node> {
         (0..self.nodes).collect()
     }
