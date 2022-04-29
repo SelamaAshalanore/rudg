@@ -22,7 +22,7 @@ impl Clone for Node {
 }
 
 impl Node {
-    pub fn new(index: usize) -> Self {
+    pub fn new(index: usize, label: &str, style: Style, color:  Option<&'static str>) -> Self {
         Node { name: id_name(&index).name().into(), label: "", style: Style::None, color: None, index: index }
     }
 

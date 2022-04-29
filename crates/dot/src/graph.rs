@@ -98,6 +98,19 @@ impl LabelledGraph {
             node_styles: Option<Vec<Style>>)
             -> LabelledGraph {
         let count = node_labels.len();
+        let mut nodes: Vec<Node> = vec![];
+        for i in 0..count {
+            let node_label = match node_labels[i] {
+                Some(ref l) => (*l).into(),
+                None => id_name(&i).name().to_string(),
+            };
+            let node_style = match node_styles {
+                Some(ref styles) => styles[i],
+                None => Style::None,
+            };
+            let node: Node = Node::new(i, &node_label, node_style, None);
+            nodes.push(node);
+        };
         LabelledGraph {
             name: name,
             node_labels: node_labels.into_iter().collect(),
@@ -106,7 +119,7 @@ impl LabelledGraph {
                 Some(nodes) => nodes,
                 None => vec![Style::None; count],
             },
-            nodes: (0..count).map(|index| Node::new(index)).collect()
+            nodes: nodes
         }
     }
 }
@@ -186,7 +199,7 @@ impl DefaultStyleGraph {
             name: name,
             edges: results,
             kind: kind,
-            node_vec: (0..nodes).map(|index| Node::new(index)).collect()
+            node_vec: (0..nodes).map(|index| Node::new(index, "", Style::None, None)).collect()
         }
     }
 }
