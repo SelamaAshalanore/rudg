@@ -72,24 +72,24 @@ pub fn render_opts<'a,
             text.push("]");
         }
 
-        let style = g.node_style(&n.index);
+        let style = n.style;
         if !options.contains(&RenderOption::NoNodeStyles) && style != Style::None {
             text.push("[style=\"");
             text.push(style.as_slice());
             text.push("\"]");
         }
 
-        let color = g.node_color(&n.index);
+        let color = n.color;
         if !options.contains(&RenderOption::NoNodeColors) {
             if let Some(c) = color {
-                colorstring = quote_string(c);
+                colorstring = quote_string(c.to_string());
                 text.push("[color=");
                 text.push(&colorstring);
                 text.push("]");
             }
         }
 
-        if let Some(s) = g.node_shape(&n.index) {
+        if let Some(s) = n.shape.clone() {
             shape = s;
             text.push("[shape=");
             text.push(&shape);
