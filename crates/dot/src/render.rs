@@ -61,9 +61,9 @@ pub fn render_opts<'a,
         let colorstring: String;
 
         indent(w)?;
-        let id = g.node_id(n);
+        let id = g.node_id(&n.index);
 
-        let escaped: String = quote_string(g.node_label(n));
+        let escaped: String = quote_string(g.node_label(&n.index));
         let shape: String;
 
         let mut text = vec![id.as_slice()];
@@ -74,14 +74,14 @@ pub fn render_opts<'a,
             text.push("]");
         }
 
-        let style = g.node_style(n);
+        let style = g.node_style(&n.index);
         if !options.contains(&RenderOption::NoNodeStyles) && style != Style::None {
             text.push("[style=\"");
             text.push(style.as_slice());
             text.push("\"]");
         }
 
-        let color = g.node_color(n);
+        let color = g.node_color(&n.index);
         if !options.contains(&RenderOption::NoNodeColors) {
             if let Some(c) = color {
                 colorstring = quote_string(c);
@@ -91,7 +91,7 @@ pub fn render_opts<'a,
             }
         }
 
-        if let Some(s) = g.node_shape(n) {
+        if let Some(s) = g.node_shape(&n.index) {
             shape = s;
             text.push("[shape=");
             text.push(&shape);

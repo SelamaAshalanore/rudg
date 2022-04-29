@@ -26,7 +26,7 @@ pub type Nodes<'a,N> = Cow<'a,[N]>;
 /// vectors.
 pub trait GraphWalk<'a, N: Clone> {
     /// Returns all the nodes in this graph.
-    fn nodes(&'a self) -> Nodes<'a, N>;
+    fn nodes(&'a self) -> Vec<&Node>;
     /// Returns all of the edges in this graph.
     fn edges(&'a self) -> Vec<&Edge>;
 
@@ -36,25 +36,25 @@ pub trait GraphWalk<'a, N: Clone> {
     /// Maps `n` to a unique identifier with respect to `self`. The
     /// implementer is responsible for ensuring that the returned name
     /// is a valid DOT identifier.
-    fn node_id(&'a self, n: &N) -> Id<'a>;
+    fn node_id(&'a self, n: &usize) -> Id<'a>;
 
     /// Maps `n` to one of the [graphviz `shape` names][1]. If `None`
     /// is returned, no `shape` attribute is specified.
     ///
     /// [1]: http://www.graphviz.org/content/node-shapes
-    fn node_shape(&'a self, _node: &N) -> Option<String> {
+    fn node_shape(&'a self, _node: &usize) -> Option<String> {
         None
     }
 
     /// Maps `n` to a label that will be used in the rendered output.
     /// The label need not be unique, and may be the empty string; the
     /// default is just the output from `node_id`.
-    fn node_label(&'a self, n: &N) -> String {
+    fn node_label(&'a self, n: &usize) -> String {
         self.node_id(n).name().to_string()
     }
 
     /// Maps `n` to a style that will be used in the rendered output.
-    fn node_style(&'a self, _n: &N) -> Style {
+    fn node_style(&'a self, _n: &usize) -> Style {
         Style::None
     }
 
@@ -62,7 +62,7 @@ pub trait GraphWalk<'a, N: Clone> {
     /// is returned, no `color` attribute is specified.
     ///
     /// [1]: https://graphviz.gitlab.io/_pages/doc/info/colors.html
-    fn node_color(&'a self, _node: &N) -> Option<String> {
+    fn node_color(&'a self, _node: &usize) -> Option<String> {
         None
     }
 
@@ -93,6 +93,7 @@ pub struct LabelledGraph {
     /// Each edge relates a from-index to a to-index along with a
     /// label; `edges` collects them.
     edges: Vec<Edge>,
+    nodes: Vec<Node>
 }
 
 impl LabelledGraph {
@@ -110,13 +111,14 @@ impl LabelledGraph {
                 Some(nodes) => nodes,
                 None => vec![Style::None; count],
             },
+            nodes: (0..count).map(|index| Node::new(index)).collect()
         }
     }
 }
 
 impl<'a> GraphWalk<'a, Node> for LabelledGraph {
-    fn nodes(&'a self) -> Nodes<'a, Node> {
-        (0..self.node_labels.len()).collect()
+    fn nodes(&'a self) -> Vec<&Node> {
+        self.nodes.iter().map(|node| node).collect()
     }
     fn edges(&'a self) -> Vec<&Edge> {
         self.edges.iter().collect()
@@ -125,16 +127,16 @@ impl<'a> GraphWalk<'a, Node> for LabelledGraph {
     fn graph_id(&'a self) -> Id<'a> {
         Id::new(&self.name[..]).unwrap()
     }
-    fn node_id(&'a self, n: &Node) -> Id<'a> {
-        id_name(n)
+    fn node_id(&'a self, n: &usize) -> Id<'a> {
+        id_name(&n)
     }
-    fn node_label(&'a self, n: &Node) -> String {
+    fn node_label(&'a self, n: &usize) -> String {
         match self.node_labels[*n] {
             Some(ref l) => (*l).into(),
             None => id_name(n).name().to_string(),
         }
     }
-    fn node_style(&'a self, n: &Node) -> Style {
+    fn node_style(&'a self, n: &usize) -> Style {
         self.node_styles[*n]
     }
 }
@@ -166,14 +168,14 @@ impl Kind {
     }
 }
 
-pub type SimpleEdge = (Node, Node);
+pub type SimpleEdge = (usize, usize);
 
 pub struct DefaultStyleGraph {
     /// The name for this graph. Used for labelling generated graph
     name: &'static str,
-    nodes: usize,
     edges: Vec<Edge>,
     kind: Kind,
+    node_vec: Vec<Node>
 }
 
 impl DefaultStyleGraph {
@@ -190,16 +192,16 @@ impl DefaultStyleGraph {
         }
         DefaultStyleGraph {
             name: name,
-            nodes: nodes,
             edges: results,
             kind: kind,
+            node_vec: (0..nodes).map(|index| Node::new(index)).collect()
         }
     }
 }
 
 impl<'a> GraphWalk<'a, Node> for DefaultStyleGraph {
-    fn nodes(&'a self) -> Nodes<'a, Node> {
-        (0..self.nodes).collect()
+    fn nodes(&'a self) -> Vec<&Node> {
+        self.node_vec.iter().collect()
     }
     fn edges(&'a self) -> Vec<&Edge> {
         self.edges.iter().collect()
@@ -208,7 +210,7 @@ impl<'a> GraphWalk<'a, Node> for DefaultStyleGraph {
     fn graph_id(&'a self) -> Id<'a> {
         Id::new(&self.name[..]).unwrap()
     }
-    fn node_id(&'a self, n: &Node) -> Id<'a> {
+    fn node_id(&'a self, n: &usize) -> Id<'a> {
         id_name(n)
     }
     fn kind(&self) -> Kind {
