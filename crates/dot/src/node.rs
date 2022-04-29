@@ -3,7 +3,8 @@
 
 use crate::{
     style::Style,
-    id::id_name
+    id::{id_name, Id},
+    utils::quote_string
 };
 
 pub struct Node {
@@ -24,4 +25,9 @@ impl Node {
     pub fn new(index: usize) -> Self {
         Node { name: id_name(&index).name().into(), label: "", style: Style::None, color: None, index: index }
     }
+
+    pub fn node_id(&self) -> &str {
+        self.name.as_str()
+    }
+
 }

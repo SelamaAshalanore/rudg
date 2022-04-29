@@ -61,12 +61,10 @@ pub fn render_opts<'a,
         let colorstring: String;
 
         indent(w)?;
-        let id = g.node_id(&n.index);
-
         let escaped: String = quote_string(g.node_label(&n.index));
         let shape: String;
 
-        let mut text = vec![id.as_slice()];
+        let mut text = vec![n.node_id()];
 
         if !options.contains(&RenderOption::NoNodeLabels) {
             text.push("[label=");

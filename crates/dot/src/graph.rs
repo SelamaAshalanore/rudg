@@ -33,11 +33,6 @@ pub trait GraphWalk<'a, N: Clone> {
     /// Must return a DOT compatible identifier naming the graph.
     fn graph_id(&'a self) -> Id<'a>;
 
-    /// Maps `n` to a unique identifier with respect to `self`. The
-    /// implementer is responsible for ensuring that the returned name
-    /// is a valid DOT identifier.
-    fn node_id(&'a self, n: &usize) -> Id<'a>;
-
     /// Maps `n` to one of the [graphviz `shape` names][1]. If `None`
     /// is returned, no `shape` attribute is specified.
     ///
@@ -50,7 +45,7 @@ pub trait GraphWalk<'a, N: Clone> {
     /// The label need not be unique, and may be the empty string; the
     /// default is just the output from `node_id`.
     fn node_label(&'a self, n: &usize) -> String {
-        self.node_id(n).name().to_string()
+        id_name(n).name().to_string()
     }
 
     /// Maps `n` to a style that will be used in the rendered output.
@@ -126,9 +121,6 @@ impl<'a> GraphWalk<'a, Node> for LabelledGraph {
 
     fn graph_id(&'a self) -> Id<'a> {
         Id::new(&self.name[..]).unwrap()
-    }
-    fn node_id(&'a self, n: &usize) -> Id<'a> {
-        id_name(&n)
     }
     fn node_label(&'a self, n: &usize) -> String {
         match self.node_labels[*n] {
@@ -209,9 +201,6 @@ impl<'a> GraphWalk<'a, Node> for DefaultStyleGraph {
 
     fn graph_id(&'a self) -> Id<'a> {
         Id::new(&self.name[..]).unwrap()
-    }
-    fn node_id(&'a self, n: &usize) -> Id<'a> {
-        id_name(n)
     }
     fn kind(&self) -> Kind {
         self.kind
