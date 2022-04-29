@@ -33,34 +33,6 @@ pub trait GraphWalk<'a, N: Clone> {
     /// Must return a DOT compatible identifier naming the graph.
     fn graph_id(&'a self) -> Id<'a>;
 
-    /// Maps `n` to one of the [graphviz `shape` names][1]. If `None`
-    /// is returned, no `shape` attribute is specified.
-    ///
-    /// [1]: http://www.graphviz.org/content/node-shapes
-    fn node_shape(&'a self, _node: &usize) -> Option<String> {
-        None
-    }
-
-    /// Maps `n` to a label that will be used in the rendered output.
-    /// The label need not be unique, and may be the empty string; the
-    /// default is just the output from `node_id`.
-    fn node_label(&'a self, n: &usize) -> String {
-        id_name(n).name().to_string()
-    }
-
-    /// Maps `n` to a style that will be used in the rendered output.
-    fn node_style(&'a self, _n: &usize) -> Style {
-        Style::None
-    }
-
-    /// Maps `n` to one of the [graphviz `color` names][1]. If `None`
-    /// is returned, no `color` attribute is specified.
-    ///
-    /// [1]: https://graphviz.gitlab.io/_pages/doc/info/colors.html
-    fn node_color(&'a self, _node: &usize) -> Option<String> {
-        None
-    }
-
     /// The kind of graph, defaults to `Kind::Digraph`.
     #[inline]
     fn kind(&self) -> Kind {
@@ -134,15 +106,6 @@ impl<'a> GraphWalk<'a, Node> for LabelledGraph {
 
     fn graph_id(&'a self) -> Id<'a> {
         Id::new(&self.name[..]).unwrap()
-    }
-    fn node_label(&'a self, n: &usize) -> String {
-        match self.node_labels[*n] {
-            Some(ref l) => (*l).into(),
-            None => id_name(n).name().to_string(),
-        }
-    }
-    fn node_style(&'a self, n: &usize) -> Style {
-        self.node_styles[*n]
     }
 }
 

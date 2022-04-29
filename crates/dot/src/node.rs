@@ -3,7 +3,7 @@
 
 use crate::{
     style::Style,
-    id::{id_name, Id},
+    id::{id_name},
     utils::quote_string,
     render::{RenderOption}
 };

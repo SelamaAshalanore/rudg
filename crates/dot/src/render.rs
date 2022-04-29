@@ -3,8 +3,7 @@ use std::io;
 
 use crate::{
     graph::{GraphWalk, LabelledGraph},
-    style::{Style},
-    utils::{quote_string}, edge::EdgeTrait
+    edge::EdgeTrait
 };
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
