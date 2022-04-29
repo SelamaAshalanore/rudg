@@ -58,45 +58,10 @@ pub fn render_opts<'a,
 
     writeln(w, &[g.kind().keyword(), " ", g.graph_id().as_slice(), " {"])?;
     for n in g.nodes().iter() {
-        let colorstring: String;
-
         indent(w)?;
-        let escaped: String = quote_string(g.node_label(&n.index));
-        let shape: String;
-
-        let mut text = vec![n.node_id()];
-
-        if !options.contains(&RenderOption::NoNodeLabels) {
-            text.push("[label=");
-            text.push(escaped.as_str());
-            text.push("]");
-        }
-
-        let style = n.style;
-        if !options.contains(&RenderOption::NoNodeStyles) && style != Style::None {
-            text.push("[style=\"");
-            text.push(style.as_slice());
-            text.push("\"]");
-        }
-
-        let color = n.color;
-        if !options.contains(&RenderOption::NoNodeColors) {
-            if let Some(c) = color {
-                colorstring = quote_string(c.to_string());
-                text.push("[color=");
-                text.push(&colorstring);
-                text.push("]");
-            }
-        }
-
-        if let Some(s) = n.shape.clone() {
-            shape = s;
-            text.push("[shape=");
-            text.push(&shape);
-            text.push("]");
-        }
-
-        text.push(";");
+        let mut text: Vec<&str> = vec![];
+        let node_dot_string: String = n.to_dot_string(options);
+        text.push(&node_dot_string.as_str());
         writeln(w, &text)?;
     }
 

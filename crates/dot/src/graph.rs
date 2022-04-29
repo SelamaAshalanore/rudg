@@ -199,7 +199,7 @@ impl DefaultStyleGraph {
             name: name,
             edges: results,
             kind: kind,
-            node_vec: (0..nodes).map(|index| Node::new(index, "", Style::None, None)).collect()
+            node_vec: (0..nodes).map(|index| Node::new(index, id_name(&index).as_slice(), Style::None, None)).collect()
         }
     }
 }
