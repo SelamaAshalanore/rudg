@@ -2,9 +2,8 @@ use std::io::prelude::*;
 use std::io;
 
 use crate::{
-    labeller::{Labeller},
     graph::{GraphWalk, LabelledGraph},
-    style::{Style}
+    edge::EdgeTrait
 };
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -27,8 +26,7 @@ pub fn default_options() -> Vec<RenderOption> {
 /// (Simple wrapper around `render_opts` that passes a default set of options.)
 pub fn render<'a,
               N: Clone + 'a,
-              E: Clone + 'a,
-              G: Labeller<'a, N, E> + GraphWalk<'a, N, E>,
+              G: GraphWalk<'a, N>,
               W: Write>
     (g: &'a G,
      w: &mut W)
@@ -40,8 +38,7 @@ pub fn render<'a,
 /// (Main entry point for the library.)
 pub fn render_opts<'a,
                    N: Clone + 'a,
-                   E: Clone + 'a,
-                   G: Labeller<'a, N, E> + GraphWalk<'a, N, E>,
+                   G: GraphWalk<'a, N>,
                    W: Write>
     (g: &'a G,
      w: &mut W,
@@ -60,109 +57,19 @@ pub fn render_opts<'a,
 
     writeln(w, &[g.kind().keyword(), " ", g.graph_id().as_slice(), " {"])?;
     for n in g.nodes().iter() {
-        let colorstring;
-
         indent(w)?;
-        let id = g.node_id(n);
-
-        let escaped = &g.node_label(n).to_dot_string();
-        let shape;
-
-        let mut text = vec![id.as_slice()];
-
-        if !options.contains(&RenderOption::NoNodeLabels) {
-            text.push("[label=");
-            text.push(escaped);
-            text.push("]");
-        }
-
-        let style = g.node_style(n);
-        if !options.contains(&RenderOption::NoNodeStyles) && style != Style::None {
-            text.push("[style=\"");
-            text.push(style.as_slice());
-            text.push("\"]");
-        }
-
-        let color = g.node_color(n);
-        if !options.contains(&RenderOption::NoNodeColors) {
-            if let Some(c) = color {
-                colorstring = c.to_dot_string();
-                text.push("[color=");
-                text.push(&colorstring);
-                text.push("]");
-            }
-        }
-
-        if let Some(s) = g.node_shape(n) {
-            shape = s.to_dot_string();
-            text.push("[shape=");
-            text.push(&shape);
-            text.push("]");
-        }
-
-        text.push(";");
+        let mut text: Vec<&str> = vec![];
+        let node_dot_string: String = n.to_dot_string(options);
+        text.push(&node_dot_string.as_str());
         writeln(w, &text)?;
     }
 
+    let edge_symbol = g.kind().edgeop();
     for e in g.edges().iter() {
-        let colorstring;
-        let escaped_label = &g.edge_label(e).to_dot_string();
-        let start_arrow = g.edge_start_arrow(e);
-        let end_arrow = g.edge_end_arrow(e);
-        let start_arrow_s = start_arrow.to_dot_string();
-        let end_arrow_s = end_arrow.to_dot_string();
-
         indent(w)?;
-        let source = g.source(e);
-        let target = g.target(e);
-        let source_id = g.node_id(&source);
-        let target_id = g.node_id(&target);
-
-        let mut text = vec![source_id.as_slice(), " ",
-                            g.kind().edgeop(), " ",
-                            target_id.as_slice()];
-
-        if !options.contains(&RenderOption::NoEdgeLabels) {
-            text.push("[label=");
-            text.push(escaped_label);
-            text.push("]");
-        }
-
-        let style = g.edge_style(e);
-        if !options.contains(&RenderOption::NoEdgeStyles) && style != Style::None {
-            text.push("[style=\"");
-            text.push(style.as_slice());
-            text.push("\"]");
-        }
-
-        let color = g.edge_color(e);
-        if !options.contains(&RenderOption::NoEdgeColors) {
-            if let Some(c) = color {
-                colorstring = c.to_dot_string();
-                text.push("[color=");
-                text.push(&colorstring);
-                text.push("]");
-            }
-        }
-
-        if !options.contains(&RenderOption::NoArrows) &&
-            (!start_arrow.is_default() || !end_arrow.is_default()) {
-            text.push("[");
-            if !end_arrow.is_default() {
-                text.push("arrowhead=\"");
-                text.push(&end_arrow_s);
-                text.push("\"");
-            }
-            if !start_arrow.is_default() {
-                text.push(" dir=\"both\" arrowtail=\"");
-                text.push(&start_arrow_s);
-                text.push("\"");
-            }
-
-            text.push("]");
-        }
-
-        text.push(";");
+        let mut text: Vec<&str> = vec![];
+        let edge_dot_string: String = e.to_dot_string(edge_symbol, options);
+        text.push(&edge_dot_string.as_str());
         writeln(w, &text)?;
     }
 

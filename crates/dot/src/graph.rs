@@ -1,12 +1,12 @@
 use crate::{
-    node::{Node, Trivial},
-    edge::{Edge},
-    style::{Style}
+    node::{Node},
+    edge::{Edge, edge},
+    style::{Style},
+    id::{Id, id_name},
 };
 use std::borrow::Cow;
 
 pub type Nodes<'a,N> = Cow<'a,[N]>;
-pub type Edges<'a,E> = Cow<'a,[E]>;
 
 // (The type parameters in GraphWalk should be associated items,
 // when/if Rust supports such.)
@@ -24,15 +24,20 @@ pub type Edges<'a,E> = Cow<'a,[E]>;
 /// `Cow<[T]>` to leave implementers the freedom to create
 /// entirely new vectors or to pass back slices into internally owned
 /// vectors.
-pub trait GraphWalk<'a, N: Clone, E: Clone> {
+pub trait GraphWalk<'a, N: Clone> {
     /// Returns all the nodes in this graph.
-    fn nodes(&'a self) -> Nodes<'a, N>;
+    fn nodes(&'a self) -> Vec<&Node>;
     /// Returns all of the edges in this graph.
-    fn edges(&'a self) -> Edges<'a, E>;
-    /// The source node for `edge`.
-    fn source(&'a self, edge: &E) -> N;
-    /// The target node for `edge`.
-    fn target(&'a self, edge: &E) -> N;
+    fn edges(&'a self) -> Vec<&Edge>;
+
+    /// Must return a DOT compatible identifier naming the graph.
+    fn graph_id(&'a self) -> Id<'a>;
+
+    /// The kind of graph, defaults to `Kind::Digraph`.
+    #[inline]
+    fn kind(&self) -> Kind {
+        Kind::Digraph
+    }
 }
 
 
@@ -55,75 +60,54 @@ pub struct LabelledGraph {
     /// Each edge relates a from-index to a to-index along with a
     /// label; `edges` collects them.
     edges: Vec<Edge>,
+    nodes: Vec<Node>
 }
-
-// A simple wrapper around LabelledGraph that forces the labels to
-// be emitted as EscStr.
-pub struct LabelledGraphWithEscStrs {
-    pub graph: LabelledGraph,
-}
-
-
 
 impl LabelledGraph {
     pub fn new(name: &'static str,
-            node_labels: Trivial,
+            node_labels: Vec<Option<&'static str>>,
             edges: Vec<Edge>,
             node_styles: Option<Vec<Style>>)
             -> LabelledGraph {
         let count = node_labels.len();
+        let mut nodes: Vec<Node> = vec![];
+        for i in 0..count {
+            let node_label = match node_labels[i] {
+                Some(ref l) => (*l).into(),
+                None => id_name(&i).name().to_string(),
+            };
+            let node_style = match node_styles {
+                Some(ref styles) => styles[i],
+                None => Style::None,
+            };
+            let node: Node = Node::new(i, &node_label, node_style, None);
+            nodes.push(node);
+        };
         LabelledGraph {
             name: name,
-            node_labels: node_labels.into_opt_strs(),
+            node_labels: node_labels.into_iter().collect(),
             edges: edges,
             node_styles: match node_styles {
                 Some(nodes) => nodes,
                 None => vec![Style::None; count],
             },
+            nodes: nodes
         }
     }
 }
 
-impl LabelledGraphWithEscStrs {
-    pub fn new(name: &'static str,
-            node_labels: Trivial,
-            edges: Vec<Edge>)
-            -> LabelledGraphWithEscStrs {
-        LabelledGraphWithEscStrs { graph: LabelledGraph::new(name, node_labels, edges, None) }
+impl<'a> GraphWalk<'a, Node> for LabelledGraph {
+    fn nodes(&'a self) -> Vec<&Node> {
+        self.nodes.iter().map(|node| node).collect()
     }
-}
-
-
-impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraph {
-    fn nodes(&'a self) -> Nodes<'a, Node> {
-        (0..self.node_labels.len()).collect()
-    }
-    fn edges(&'a self) -> Edges<'a, &'a Edge> {
+    fn edges(&'a self) -> Vec<&Edge> {
         self.edges.iter().collect()
     }
-    fn source(&'a self, edge: &&'a Edge) -> Node {
-        edge.from
-    }
-    fn target(&'a self, edge: &&'a Edge) -> Node {
-        edge.to
+
+    fn graph_id(&'a self) -> Id<'a> {
+        Id::new(&self.name[..]).unwrap()
     }
 }
-
-impl<'a> GraphWalk<'a, Node, &'a Edge> for LabelledGraphWithEscStrs {
-    fn nodes(&'a self) -> Nodes<'a, Node> {
-        self.graph.nodes()
-    }
-    fn edges(&'a self) -> Edges<'a, &'a Edge> {
-        self.graph.edges()
-    }
-    fn source(&'a self, edge: &&'a Edge) -> Node {
-        edge.from
-    }
-    fn target(&'a self, edge: &&'a Edge) -> Node {
-        edge.to
-    }
-}
-
 
 /// Graph kind determines if `digraph` or `graph` is used as keyword
 /// for the graph.
@@ -149,5 +133,52 @@ impl Kind {
             Kind::Digraph => "->",
             Kind::Graph => "--",
         }
+    }
+}
+
+pub type SimpleEdge = (usize, usize);
+
+pub struct DefaultStyleGraph {
+    /// The name for this graph. Used for labelling generated graph
+    name: &'static str,
+    edges: Vec<Edge>,
+    kind: Kind,
+    node_vec: Vec<Node>
+}
+
+impl DefaultStyleGraph {
+    pub fn new(name: &'static str,
+            nodes: usize,
+            edges: Vec<SimpleEdge>,
+            kind: Kind)
+            -> DefaultStyleGraph {
+        assert!(!name.is_empty());
+        let mut results: Vec<Edge> = vec![];
+        for (start, end) in edges.iter() {
+            let edge = edge(*start, *end, "", Style::None, None);
+            results.push(edge);
+        }
+        DefaultStyleGraph {
+            name: name,
+            edges: results,
+            kind: kind,
+            node_vec: (0..nodes).map(|index| Node::new(index, id_name(&index).as_slice(), Style::None, None)).collect()
+        }
+    }
+}
+
+impl<'a> GraphWalk<'a, Node> for DefaultStyleGraph {
+    fn nodes(&'a self) -> Vec<&Node> {
+        self.node_vec.iter().collect()
+    }
+    fn edges(&'a self) -> Vec<&Edge> {
+        self.edges.iter().collect()
+    }
+
+    fn graph_id(&'a self) -> Id<'a> {
+        Id::new(&self.name[..]).unwrap()
+    }
+    fn kind(&self) -> Kind {
+        self.kind
     }
 }
