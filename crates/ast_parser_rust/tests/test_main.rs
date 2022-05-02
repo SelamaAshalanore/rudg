@@ -7,7 +7,7 @@ mod tests {
         let code: &str = r#"
         fn main() {
             println!("Hello, world!");
-        }        
+        }
         "#;
         assert_eq!(
             code_to_dot_digraph(code), 
@@ -34,7 +34,26 @@ r#"digraph ast {
     N1[label="mock_fn"];
     N1 -> N0[label="impl"];
 }
-"# // TODO
+"#
+        )
+    }
+
+    #[test]
+    fn test_fn_dependency() {
+        let code: &str = r#"
+            fn main() {
+                hello();
+            }
+            fn hello() {}
+        "#;
+        assert_eq!(
+            code_to_dot_digraph(code), 
+r#"digraph ast {
+    N0[label="main"];
+    N1[label="hello"];
+    N0 -> N1[label="call"];
+}
+"#
         )
     }
 }
