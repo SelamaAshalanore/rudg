@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 ra_ap_syntax = "0.0.104"
+ra_ap_hir = "0.0.104"
 dot = { path = "../dot"}
