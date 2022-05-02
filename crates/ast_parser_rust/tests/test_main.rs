@@ -51,9 +51,9 @@ r#"digraph ast {
 r#"digraph ast {
     N0[label="main"];
     N1[label="hello"];
-    N1 -> N0[label="call"];
+    N0 -> N1[label="call"];
 }
-"# // TODO
+"#
         )
     }
 }

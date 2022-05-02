@@ -1,4 +1,4 @@
-use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName}, AstNode};
+use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName}};
 use dot::{LabelledGraph, graph_to_string, edge, Edge, Style};
 
 
@@ -32,7 +32,7 @@ pub fn code_to_dot_digraph(code: &str) -> String {
                                     let call_expr = call_exp.to_string();
                                     let call_names: Vec<&str> = call_expr.split("(").collect();
                                     let call_name = String::from(call_names[0]);
-                                    call_dependency_names.push((string_to_static_str(call_name), f_name));
+                                    call_dependency_names.push((f_name, (string_to_static_str(call_name))));
                                 },
                                 _ => ()
                             }
