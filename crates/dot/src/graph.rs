@@ -53,7 +53,7 @@ pub struct LabelledGraph {
     ///
     /// If a node maps to None here, then just use its name as its
     /// text.
-    pub node_labels: Vec<Option<&'static str>>,
+    pub node_labels: Vec<Option<String>>,
 
     pub node_styles: Vec<Style>,
 
@@ -65,7 +65,7 @@ pub struct LabelledGraph {
 
 impl LabelledGraph {
     pub fn new(name: &'static str,
-            node_labels: Vec<Option<&'static str>>,
+            node_labels: Vec<Option<&str>>,
             edges: Vec<Edge>,
             node_styles: Option<Vec<Style>>)
             -> LabelledGraph {
@@ -73,19 +73,26 @@ impl LabelledGraph {
         let mut nodes: Vec<Node> = vec![];
         for i in 0..count {
             let node_label = match node_labels[i] {
-                Some(ref l) => (*l).into(),
+                Some(ref l) => (*l.clone()).into(),
                 None => id_name(&i).name().to_string(),
             };
             let node_style = match node_styles {
                 Some(ref styles) => styles[i],
                 None => Style::None,
             };
-            let node: Node = Node::new(i, &node_label, node_style, None);
+            let node: Node = Node::new(id_name(&i).as_slice(), &node_label, node_style, None);
             nodes.push(node);
         };
+        let mut new_node_labels: Vec<Option<String>> = vec![];
+        for s in node_labels {
+            match s {
+                Some(st) => new_node_labels.push(Some(String::from(st))),
+                None => new_node_labels.push(None)
+            }
+        }
         LabelledGraph {
             name: name,
-            node_labels: node_labels.into_iter().collect(),
+            node_labels: new_node_labels,
             edges: edges,
             node_styles: match node_styles {
                 Some(nodes) => nodes,
@@ -93,6 +100,25 @@ impl LabelledGraph {
             },
             nodes: nodes
         }
+    }
+}
+
+pub fn new_graph(
+    name: &'static str,
+    nodes: Vec<Node>,
+    edges: Vec<Edge>,
+    node_styles: Option<Vec<Style>>)
+    -> LabelledGraph {
+    let node_labels: Vec<Option<String>> = nodes.iter().map(|n| Some(n.name.clone())).collect();
+    LabelledGraph {
+        name: name,
+        node_labels: node_labels,
+        edges: edges,
+        node_styles: match node_styles {
+            Some(nodes) => nodes,
+            None => vec![Style::None; nodes.len()],
+    },
+    nodes: nodes
     }
 }
 
@@ -162,7 +188,7 @@ impl DefaultStyleGraph {
             name: name,
             edges: results,
             kind: kind,
-            node_vec: (0..nodes).map(|index| Node::new(index, id_name(&index).as_slice(), Style::None, None)).collect()
+            node_vec: (0..nodes).map(|index| Node::new(id_name(&index).as_slice(), id_name(&index).as_slice(), Style::None, None)).collect()
         }
     }
 }

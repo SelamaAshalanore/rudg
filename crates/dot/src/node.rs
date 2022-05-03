@@ -3,7 +3,6 @@
 
 use crate::{
     style::Style,
-    id::{id_name},
     utils::quote_string,
     render::{RenderOption}
 };
@@ -24,8 +23,8 @@ impl Clone for Node {
 }
 
 impl Node {
-    pub fn new(index: usize, label: &str, style: Style, color:  Option<&'static str>) -> Self {
-        Node { name: id_name(&index).name().into(), label: label.to_string(), style: style, color: color, index: index, shape: None }
+    pub fn new(name: &str, label: &str, style: Style, color:  Option<&'static str>) -> Self {
+        Node { name: String::from(name), label: label.to_string(), style: style, color: color, index: 0, shape: None }
     }
 
     pub fn node_id(&self) -> &str {
