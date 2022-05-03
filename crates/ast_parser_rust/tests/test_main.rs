@@ -12,7 +12,7 @@ mod tests {
         assert_eq!(
             code_to_dot_digraph(code), 
 r#"digraph ast {
-    N0[label="main"];
+    main[label="main"];
 }
 "#
         )
@@ -30,9 +30,9 @@ r#"digraph ast {
         assert_eq!(
             code_to_dot_digraph(code), 
 r#"digraph ast {
-    N0[label="Mock"];
-    N1[label="mock_fn"];
-    N1 -> N0[label="impl"];
+    Mock[label="Mock"];
+    mock_fn[label="mock_fn"];
+    mock_fn -> Mock[label="impl"];
 }
 "#
         )
@@ -49,9 +49,9 @@ r#"digraph ast {
         assert_eq!(
             code_to_dot_digraph(code), 
 r#"digraph ast {
-    N0[label="main"];
-    N1[label="hello"];
-    N0 -> N1[label="call"];
+    main[label="main"];
+    hello[label="hello"];
+    main -> hello[label="call"];
 }
 "#
         )

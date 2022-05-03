@@ -2,7 +2,6 @@ use crate::{
     arrow::{Arrow},
     style::{Style},
     utils::{quote_string},
-    id::{id_name},
     render::{RenderOption}
 };
 
@@ -12,8 +11,8 @@ pub trait EdgeTrait {
 
 
 pub struct Edge {
-    pub from: usize,
-    pub to: usize,
+    pub from: String,
+    pub to: String,
     pub label: &'static str,
     pub style: Style,
     pub start_arrow: Arrow,
@@ -28,12 +27,9 @@ impl EdgeTrait for Edge {
         let start_arrow_s: String = self.start_arrow.to_dot_string();
         let end_arrow_s: String = self.end_arrow.to_dot_string();
 
-        let source_id = id_name(&self.from);
-        let target_id = id_name(&self.to);
-
-        let mut text = vec![source_id.as_slice(), " ",
+        let mut text = vec![self.from.as_str(), " ",
                             edge_symbol, " ",
-                            target_id.as_slice()];
+                            self.to.as_str()];
 
         if !options.contains(&RenderOption::NoEdgeLabels) {
             text.push("[label=");
@@ -84,10 +80,10 @@ impl EdgeTrait for Edge {
     }
 }
 
-pub fn edge(from: usize, to: usize, label: &'static str, style: Style, color: Option<&'static str>) -> Edge {
+pub fn edge(from: &str, to: &str, label: &'static str, style: Style, color: Option<&'static str>) -> Edge {
     Edge {
-        from: from,
-        to: to,
+        from: String::from(from),
+        to: String::from(to),
         label: label,
         style: style,
         start_arrow: Arrow::default(),
@@ -97,11 +93,11 @@ pub fn edge(from: usize, to: usize, label: &'static str, style: Style, color: Op
     }
 }
 
-pub fn edge_with_arrows(from: usize, to: usize, label: &'static str, style:Style,
+pub fn edge_with_arrows(from: &str, to: &str, label: &'static str, style:Style,
     start_arrow: Arrow, end_arrow: Arrow, color: Option<&'static str>) -> Edge {
     Edge {
-        from: from,
-        to: to,
+        from: String::from(from),
+        to: String::from(to),
         label: label,
         style: style,
         start_arrow: start_arrow,
