@@ -155,7 +155,7 @@ impl DefaultStyleGraph {
         assert!(!name.is_empty());
         let mut results: Vec<Edge> = vec![];
         for (start, end) in edges.iter() {
-            let edge = edge(*start, *end, "", Style::None, None);
+            let edge = edge(id_name(start).as_slice(), id_name(end).as_slice(), "", Style::None, None);
             results.push(edge);
         }
         DefaultStyleGraph {

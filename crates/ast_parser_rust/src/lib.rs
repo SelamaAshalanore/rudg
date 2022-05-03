@@ -1,5 +1,5 @@
 use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName}};
-use dot::{LabelledGraph, graph_to_string, edge, Edge, Style};
+use dot::{LabelledGraph, graph_to_string, edge, Edge, Style, id_name};
 
 
 // This should not exists! Fix dot first so this will be no longer necessary
@@ -73,7 +73,7 @@ pub fn code_to_dot_digraph(code: &str) -> String {
         let func_name = impl_desc.1;
         let struct_index = all_names.iter().position(|&name| name == struct_name).unwrap();
         let func_index = all_names.iter().position(|&name| name == func_name).unwrap();
-        edge_vec.push(edge(func_index, struct_index, "impl", Style::None, None));
+        edge_vec.push(edge(id_name(&func_index).as_slice(), id_name(&struct_index).as_slice(), "impl", Style::None, None));
     }
 
     for impl_desc in call_dependency_names {
@@ -81,7 +81,7 @@ pub fn code_to_dot_digraph(code: &str) -> String {
         let inner_name = impl_desc.1;
         let outer_index = all_names.iter().position(|&name| name == outer_name).unwrap();
         let inner_index = all_names.iter().position(|&name| name == inner_name).unwrap();
-        edge_vec.push(edge(outer_index, inner_index, "call", Style::None, None));
+        edge_vec.push(edge(id_name(&outer_index).as_slice(), id_name(&inner_index).as_slice(), "call", Style::None, None));
     }
     
 
