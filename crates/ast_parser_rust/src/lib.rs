@@ -104,7 +104,20 @@ fn get_impl_dot_entities(ip: ast::Impl) -> Vec<DotEntity> {
 
 fn get_struct_dot_entities(st: ast::Struct) -> Vec<DotEntity> {
     let mut dot_entities = vec![];
-    dot_entities.push(DotEntity::Label(st.name().unwrap().text().to_string()));
+    let st_name = st.name().unwrap().text().to_string();
+    dot_entities.push(DotEntity::Label(st_name.clone()));
+
+    // visit all Fn descendants and process CallExpr
+    for node in st.syntax().descendants() {
+        match_ast! {
+            match node {
+                ast::Path(it) => {
+                    dot_entities.push(DotEntity::Edge(edge(&it.to_string(), &st_name, "aggregation", Style::None, None)));
+                },
+                _ => (),
+            }
+        }
+    }    
     dot_entities
 }
 

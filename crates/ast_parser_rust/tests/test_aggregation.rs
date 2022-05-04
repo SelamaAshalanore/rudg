@@ -12,6 +12,7 @@ r#"digraph ast {
     B[label="B"];
     B -> Amut[label="aggregation"];
     B -> Aconst[label="aggregation"];
-}"#
+}
+"#
     )
 }
