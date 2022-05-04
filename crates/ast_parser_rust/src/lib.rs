@@ -58,10 +58,9 @@ fn get_fn_dot_entities(f: Fn) -> Vec<DotEntity> {
                 let exp = expr.expr().unwrap();
                 match exp {
                     ast::Expr::CallExpr(call_exp) => {
-                        let call_expr = call_exp.to_string();
-                        let call_names: Vec<&str> = call_expr.split("(").collect();
-                        let call_name = String::from(call_names[0]);
-                        dot_entities.push(DotEntity::Edge(edge(&f_name, call_name.as_str(), "call", Style::None, None)))
+                        for call_name in get_call_expr_fn_names(call_exp) {
+                            dot_entities.push(DotEntity::Edge(edge(&f_name, call_name.as_str(), "call", Style::None, None)))
+                        }                        
                     },
                     _ => ()
                 }
@@ -94,4 +93,11 @@ fn get_struct_dot_entities(st: ast::Struct) -> Vec<DotEntity> {
     let mut dot_entities = vec![];
     dot_entities.push(DotEntity::Label(st.name().unwrap().text().to_string()));
     dot_entities
+}
+
+fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> Vec<String> {
+    let call_expr = call_exp.to_string();
+    let call_names: Vec<&str> = call_expr.split("(").collect();
+    let call_name = String::from(call_names[0]);
+    vec![call_name]
 }
