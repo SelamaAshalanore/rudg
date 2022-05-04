@@ -56,4 +56,51 @@ r#"digraph ast {
 "#
         )
     }
+
+    #[test]
+    fn test_fns_dependency() {
+        let code: &str = r#"
+            fn main() {
+                f1();
+                f2();
+            }
+            fn f1() {}
+            fn f2() {}
+        "#;
+        assert_eq!(
+            code_to_dot_digraph(code), 
+r#"digraph ast {
+    main[label="main"];
+    f1[label="f1"];
+    f2[label="f2"];
+    main -> f1[label="call"];
+    main -> f2[label="call"];
+}
+"#
+        )
+    }
+
+    #[test]
+    fn test_nested_fn_call_dependency() {
+        let code: &str = r#"
+            fn main() {
+                f1(f2());
+            }
+            fn f1(i: usize) {}
+            fn f2() -> usize {
+                0
+            }
+        "#;
+        assert_eq!(
+            code_to_dot_digraph(code), 
+r#"digraph ast {
+    main[label="main"];
+    f1[label="f1"];
+    f2[label="f2"];
+    main -> f1[label="call"];
+    main -> f2[label="call"];
+}
+"#
+        )
+    }
 }
