@@ -59,7 +59,6 @@ fn get_fn_dot_entities(f: Fn) -> Vec<DotEntity> {
             match node {
                 ast::CallExpr(it) => {
                     let call_name = get_call_expr_fn_names(it);
-                    println!("{}", call_name);
                     dot_entities.push(DotEntity::Edge(edge(&f_name, call_name.as_str(), "call", Style::None, None)))
                 },
                 _ => (),
@@ -77,7 +76,7 @@ fn get_impl_dot_entities(ip: ast::Impl) -> Vec<DotEntity> {
         match impl_func {
             ast::AssocItem::Fn(f) => {
                 let f_name = f.name().unwrap().text().to_string();
-                dot_entities.push(DotEntity::Label(f.name().unwrap().text().to_string()));
+                dot_entities.append(&mut get_fn_dot_entities(f));
                 dot_entities.push(DotEntity::Edge(edge(f_name.as_str(), struct_name.as_str(), "impl", Style::None, None)))
             },
             _ => ()

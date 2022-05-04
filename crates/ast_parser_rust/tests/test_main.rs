@@ -55,9 +55,9 @@ r#"digraph ast {
     mock_fn[label="mock_fn"];
     f1[label="f1"];
     f2[label="f2"];
-    mock_fn -> Mock[label="impl"];
     mock_fn -> f1[label="call"];
     mock_fn -> f2[label="call"];
+    mock_fn -> Mock[label="impl"];
 }
 "#
         )
