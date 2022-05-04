@@ -3,6 +3,23 @@ mod uml_entity;
 use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName, Fn}, AstNode, match_ast};
 use dot::{graph_to_string, edge, Edge, Style, new_graph, Node};
 use uml_entity::DotEntity;
+use std::path::Path;
+use std::fs::read_to_string;
+
+/// The function `rs2dot` returns graphed file module.
+///
+/// # Examples
+/// ```
+/// extern crate staticanalyzer;
+///
+/// fn main() {
+///     let _ = staticanalyzer::rs2dot("src/lib.rs");
+/// }
+/// ```
+pub fn rs2dot<'a, P: AsRef<Path>>(path: P) -> String {
+    let file_string = read_to_string(path).unwrap();
+    code_to_dot_digraph(&file_string)
+}
 
 pub fn code_to_dot_digraph(code: &str) -> String {
     let parse: Parse<SourceFile> = SourceFile::parse(code);
