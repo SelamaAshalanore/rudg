@@ -1,6 +1,6 @@
 mod uml_entity;
 
-use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName, Fn}};
+use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName, Fn}, AstNode, match_ast};
 use dot::{graph_to_string, edge, Edge, Style, new_graph, Node};
 use uml_entity::DotEntity;
 
@@ -52,22 +52,19 @@ fn get_fn_dot_entities(f: Fn) -> Vec<DotEntity> {
     let mut dot_entities = vec![];
     let f_name = f.name().unwrap().text().to_string();
     dot_entities.push(DotEntity::Label(f_name.clone()));
-    for stmt in f.get_or_create_body().statements() {
-        match stmt {
-            ast::Stmt::ExprStmt(expr) => {
-                let exp = expr.expr().unwrap();
-                match exp {
-                    ast::Expr::CallExpr(call_exp) => {
-                        for call_name in get_call_expr_fn_names(call_exp) {
-                            dot_entities.push(DotEntity::Edge(edge(&f_name, call_name.as_str(), "call", Style::None, None)))
-                        }                        
-                    },
-                    _ => ()
-                }
-                
-            },
-            _ => ()
-        };
+
+    // visit all Fn descendants and process CallExpr
+    for node in f.syntax().descendants() {
+        match_ast! {
+            match node {
+                ast::CallExpr(it) => {
+                    let call_name = get_call_expr_fn_names(it);
+                    println!("{}", call_name);
+                    dot_entities.push(DotEntity::Edge(edge(&f_name, call_name.as_str(), "call", Style::None, None)))
+                },
+                _ => (),
+            }
+        }
     }
     dot_entities
 }
@@ -95,9 +92,8 @@ fn get_struct_dot_entities(st: ast::Struct) -> Vec<DotEntity> {
     dot_entities
 }
 
-fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> Vec<String> {
+fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> String {
     let call_expr = call_exp.to_string();
     let call_names: Vec<&str> = call_expr.split("(").collect();
-    let call_name = String::from(call_names[0]);
-    vec![call_name]
+    String::from(call_names[0])
 }
