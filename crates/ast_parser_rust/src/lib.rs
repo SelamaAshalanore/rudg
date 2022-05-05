@@ -2,7 +2,7 @@ mod uml_entity;
 
 use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName, Fn}, AstNode, match_ast};
 use dot::{graph_to_string, edge, Edge, Style, new_graph, Node};
-use uml_entity::DotEntity;
+use uml_entity::{DotEntity, UMLFn};
 
 pub fn code_to_dot_digraph(code: &str) -> String {
     let parse: Parse<SourceFile> = SourceFile::parse(code);
@@ -14,7 +14,8 @@ pub fn code_to_dot_digraph(code: &str) -> String {
     for item in file.items() {
         match item {
             ast::Item::Fn(f) => {
-                dot_entities.append(&mut get_fn_dot_entities(f));
+                let uml_fn = UMLFn::from_ast_fn(&f);
+                dot_entities.append(&mut uml_fn.get_dot_entities());
             },
             ast::Item::Impl(ip) => {
                 dot_entities.append(&mut get_impl_dot_entities(ip));
