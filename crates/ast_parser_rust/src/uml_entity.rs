@@ -50,3 +50,32 @@ fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> String {
     let call_names: Vec<&str> = call_expr.split("(").collect();
     String::from(call_names[0])
 }
+
+pub struct UMLClass {
+    name: String,
+    methods: Vec<String>
+}
+
+impl UMLClass {
+    pub fn from_ast_struct(st: &ast::Struct) -> UMLClass {
+        UMLClass { name: st.name().unwrap().text().to_string(), methods: vec![] }
+    }
+
+    pub fn add_impl_fn(&mut self, f: &ast::Fn) -> () {
+        self.methods.push(f.name().unwrap().text().to_string());
+    }
+
+    pub fn get_dot_entities(&self) -> Vec<DotEntity> {
+        let mut dot_entities = vec![];
+        dot_entities.push(DotEntity::Label(self.name.clone()));
+        dot_entities
+    }
+
+    pub fn get_impl_dot_entities(&self) -> Vec<DotEntity> {
+        let mut dot_entities = vec![];
+        self.methods
+            .iter()
+            .for_each(|f_name| dot_entities.push(DotEntity::Edge(edge(f_name, &self.name,  "call", Style::None, None))));
+        dot_entities
+    }
+}

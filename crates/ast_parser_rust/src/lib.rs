@@ -2,7 +2,7 @@ mod uml_entity;
 
 use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName, Fn}, AstNode, match_ast};
 use dot::{graph_to_string, edge, Edge, Style, new_graph, Node};
-use uml_entity::{DotEntity, UMLFn};
+use uml_entity::{DotEntity, UMLFn, UMLClass};
 
 pub fn code_to_dot_digraph(code: &str) -> String {
     let parse: Parse<SourceFile> = SourceFile::parse(code);
@@ -21,7 +21,8 @@ pub fn code_to_dot_digraph(code: &str) -> String {
                 dot_entities.append(&mut get_impl_dot_entities(ip));
             },
             ast::Item::Struct(st) => {
-                dot_entities.append(&mut get_struct_dot_entities(st));
+                let uml_class = UMLClass::from_ast_struct(&st);
+                dot_entities.append(&mut uml_class.get_dot_entities());
             },
             _ => (),
         }
@@ -83,12 +84,6 @@ fn get_impl_dot_entities(ip: ast::Impl) -> Vec<DotEntity> {
             _ => ()
         }
     }
-    dot_entities
-}
-
-fn get_struct_dot_entities(st: ast::Struct) -> Vec<DotEntity> {
-    let mut dot_entities = vec![];
-    dot_entities.push(DotEntity::Label(st.name().unwrap().text().to_string()));
     dot_entities
 }
 
