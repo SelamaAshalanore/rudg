@@ -29,10 +29,8 @@ r#"digraph ast {
         "#;
         assert_eq!(
             code_to_dot_digraph(code), 
-r#"digraph ast {
-    Mock[label="Mock"];
-    mock_fn[label="mock_fn"];
-    mock_fn -> Mock[label="impl"];
+r#"digraph "ast" {
+    "Mock" [label="{Mock|mock_fn()}", shape="record"];
 }
 "#
         )
@@ -51,13 +49,11 @@ r#"digraph ast {
         assert_eq!(
             code_to_dot_digraph(code), 
 r#"digraph ast {
-    Mock[label="Mock"];
-    mock_fn[label="mock_fn"];
+    Mock[label="{Mock|mock_fn()}", shape="record"];
     f1[label="f1"];
     f2[label="f2"];
-    mock_fn -> f1[label="call"];
-    mock_fn -> f2[label="call"];
-    mock_fn -> Mock[label="impl"];
+    Mock -> f1[label="call"];
+    Mock -> f2[label="call"];
 }
 "#
         )
