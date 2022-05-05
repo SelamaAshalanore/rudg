@@ -1,4 +1,4 @@
-use dot::{Edge, edge, Style};
+use dot::{Edge, edge, Style, Node};
 use ra_ap_syntax::{ast::{self, HasName}, AstNode, match_ast};
 use std::collections::HashMap;
 
@@ -121,5 +121,24 @@ impl UMLModule {
             .iter()
             .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));
         dot_entities
+    }
+
+    pub fn get_node_and_edge_list(&self) -> (Vec<Node>, Vec<Edge>) {
+        // transform DotEntity to nodes and edges that 'dot' can use
+        // let mut label_list: Vec<&str> = vec![];
+        let mut edge_list: Vec<Edge> = vec![];
+        let mut node_list: Vec<Node> = vec![];
+        for ent in self.get_dot_entities() {
+            match ent {
+                DotEntity::Label(ent_s) => {
+                    let node = Node::new(&ent_s, &ent_s, Style::None, None);
+                    node_list.push(node);
+                },
+                DotEntity::Edge(ent_edge) => {
+                    edge_list.push(ent_edge);
+                }
+            }
+        }
+        (node_list, edge_list)
     }
 }
