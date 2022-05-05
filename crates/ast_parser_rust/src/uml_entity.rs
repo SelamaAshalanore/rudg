@@ -1,5 +1,6 @@
 use dot::{Edge, edge, Style};
-use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName, Fn}, AstNode, match_ast};
+use ra_ap_syntax::{ast::{self, HasName}, AstNode, match_ast};
+use std::collections::HashMap;
 
 pub enum DotEntity {
     Edge(Edge),
@@ -53,7 +54,7 @@ fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> String {
 
 pub struct UMLClass {
     name: String,
-    methods: Vec<String>
+    methods: Vec<UMLFn>
 }
 
 impl UMLClass {
@@ -62,20 +63,63 @@ impl UMLClass {
     }
 
     pub fn add_impl_fn(&mut self, f: &ast::Fn) -> () {
-        self.methods.push(f.name().unwrap().text().to_string());
+        let uml_fn = UMLFn::from_ast_fn(f);
+        self.methods.push(uml_fn);
     }
 
     pub fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
         dot_entities.push(DotEntity::Label(self.name.clone()));
-        dot_entities
-    }
-
-    pub fn get_impl_dot_entities(&self) -> Vec<DotEntity> {
-        let mut dot_entities = vec![];
         self.methods
             .iter()
-            .for_each(|f_name| dot_entities.push(DotEntity::Edge(edge(f_name, &self.name,  "call", Style::None, None))));
+            .for_each(|f| {
+                dot_entities.append(&mut f.get_dot_entities());
+                dot_entities.push(DotEntity::Edge(edge(&f.name, &self.name,  "impl", Style::None, None)));
+            });
+        dot_entities
+    }
+}
+
+pub struct UMLModule {
+    structs: HashMap<String, UMLClass>,
+    fns: Vec<UMLFn>
+}
+
+impl UMLModule {
+    pub fn new() -> UMLModule {
+        UMLModule { structs: HashMap::new(), fns: vec![] }
+    }
+
+    pub fn add_struct(&mut self, st: UMLClass) -> () {
+        self.structs.insert(st.name.clone(), st);
+    }
+
+    pub fn add_fn(&mut self, f: UMLFn) -> () {
+        self.fns.push(f);
+    }
+
+    pub fn add_ast_impl(&mut self, ip: ast::Impl) -> () {
+        let struct_name: String = ip.self_ty().unwrap().to_string();
+        let st = self.structs.get_mut(&struct_name).unwrap();
+        let impl_funcs = ip.get_or_create_assoc_item_list().assoc_items();
+        for impl_func in impl_funcs {
+            match impl_func {
+                ast::AssocItem::Fn(f) => {
+                    st.add_impl_fn(&f)    
+                },
+                _ => ()
+            }
+        }
+    }
+
+    pub fn get_dot_entities(&self) -> Vec<DotEntity> {
+        let mut dot_entities = vec![];
+        self.structs
+            .iter()
+            .for_each(|(_, st)| dot_entities.append(&mut st.get_dot_entities()));
+        self.fns
+            .iter()
+            .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));
         dot_entities
     }
 }

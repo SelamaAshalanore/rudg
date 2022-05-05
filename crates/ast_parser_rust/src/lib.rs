@@ -2,9 +2,11 @@ mod uml_entity;
 
 use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem, HasName, Fn}, AstNode, match_ast};
 use dot::{graph_to_string, edge, Edge, Style, new_graph, Node};
-use uml_entity::{DotEntity, UMLFn, UMLClass};
+use uml_entity::{DotEntity, UMLFn, UMLClass, UMLModule};
 
 pub fn code_to_dot_digraph(code: &str) -> String {
+    let mut uml_module = UMLModule::new();
+
     let parse: Parse<SourceFile> = SourceFile::parse(code);
     let file: SourceFile = parse.tree();
 
@@ -16,17 +18,22 @@ pub fn code_to_dot_digraph(code: &str) -> String {
             ast::Item::Fn(f) => {
                 let uml_fn = UMLFn::from_ast_fn(&f);
                 dot_entities.append(&mut uml_fn.get_dot_entities());
+                uml_module.add_fn(uml_fn);
             },
             ast::Item::Impl(ip) => {
-                dot_entities.append(&mut get_impl_dot_entities(ip));
+                dot_entities.append(&mut get_impl_dot_entities(ip.clone()));
+                uml_module.add_ast_impl(ip);
             },
             ast::Item::Struct(st) => {
                 let uml_class = UMLClass::from_ast_struct(&st);
                 dot_entities.append(&mut uml_class.get_dot_entities());
+                uml_module.add_struct(uml_class);
             },
             _ => (),
         }
     }
+
+    let dot_entities = uml_module.get_dot_entities();
 
     // transform DotEntity to nodes and edges that 'dot' can use
     // let mut label_list: Vec<&str> = vec![];
