@@ -2,9 +2,9 @@ use dot::{Edge, edge, Style, Node};
 use ra_ap_syntax::{ast::{self, HasName}, AstNode, match_ast};
 use std::collections::HashMap;
 
-pub enum DotEntity {
+enum DotEntity {
     Edge(Edge),
-    Label(String)
+    Node(Node)
 }
 
 pub struct UMLFn {
@@ -34,9 +34,9 @@ impl UMLFn {
         UMLFn { name: f_name, dependent_fn_names: dependent_fn_names }
     }
 
-    pub fn get_dot_entities(&self) -> Vec<DotEntity> {
+    fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
-        dot_entities.push(DotEntity::Label(self.name.clone()));
+        dot_entities.push(DotEntity::Node(Node::new(&self.name, &self.name, Style::None, None)));
 
         self.dependent_fn_names
             .iter()
@@ -67,9 +67,9 @@ impl UMLClass {
         self.methods.push(uml_fn);
     }
 
-    pub fn get_dot_entities(&self) -> Vec<DotEntity> {
+    fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
-        dot_entities.push(DotEntity::Label(self.name.clone()));
+        dot_entities.push(DotEntity::Node(Node::new(&self.name, &self.name, Style::None, None)));
         self.methods
             .iter()
             .for_each(|f| {
@@ -112,7 +112,7 @@ impl UMLModule {
         }
     }
 
-    pub fn get_dot_entities(&self) -> Vec<DotEntity> {
+    fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
         self.structs
             .iter()
@@ -130,13 +130,12 @@ impl UMLModule {
         let mut node_list: Vec<Node> = vec![];
         for ent in self.get_dot_entities() {
             match ent {
-                DotEntity::Label(ent_s) => {
-                    let node = Node::new(&ent_s, &ent_s, Style::None, None);
-                    node_list.push(node);
-                },
                 DotEntity::Edge(ent_edge) => {
                     edge_list.push(ent_edge);
-                }
+                },
+                DotEntity::Node(node) => {
+                    node_list.push(node);
+                },
             }
         }
         (node_list, edge_list)
