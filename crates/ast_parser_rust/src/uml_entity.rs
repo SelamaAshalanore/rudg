@@ -1,16 +1,23 @@
-use dot::{Edge, edge, Style, Node};
 use ra_ap_syntax::{ast::{self, HasName}, AstNode, match_ast};
 
-enum DotEntity {
-    Edge(Edge),
-    Node(Node)
+pub struct UMLAggregation {
+    pub from: String,
+    pub to: String
+}
+
+
+impl UMLAggregation {
+    fn new(from: &str, to: &str) -> UMLAggregation {
+        UMLAggregation { from: String::from(from), to: String::from(to) }
+    }
 }
 
 pub struct UMLFn {
-    name: String,
-    dependent_fn_names: Vec<String>,
-    full_name: String
+    pub name: String,
+    pub dependent_fn_names: Vec<String>,
+    pub full_name: String
 }
+
 
 impl UMLFn {
     pub fn from_ast_fn(f: &ast::Fn) -> UMLFn {
@@ -39,17 +46,6 @@ impl UMLFn {
         
         UMLFn { name: f_name, dependent_fn_names: dependent_fn_names, full_name: full_name}
     }
-
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
-        let mut dot_entities = vec![];
-        dot_entities.push(DotEntity::Node(Node::new(&self.name, &self.name, Style::None, None, None)));
-
-        self.dependent_fn_names
-            .iter()
-            .for_each(|f_name| dot_entities.push(DotEntity::Edge(edge(&self.name, f_name, "call", Style::None, None))));
-
-        dot_entities
-    }
 }
 
 fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> String {
@@ -59,10 +55,11 @@ fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> String {
 }
 
 pub struct UMLClass {
-    name: String,
-    methods: Vec<UMLFn>,
-    paths: Vec<ast::Path>
+    pub name: String,
+    pub methods: Vec<UMLFn>,
+    pub paths: Vec<ast::Path>
 }
+
 
 impl UMLClass {
     pub fn from_ast_struct(st: &ast::Struct) -> UMLClass {
@@ -90,31 +87,7 @@ impl UMLClass {
             .collect()
     }
 
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
-        let mut dot_entities = vec![];
-        let mut label_text: Vec<&str> = vec![&self.name];
-        let method_names = self.get_method_names();
-
-        let method_names_str = method_names.join(r"/l");
-        if method_names.len() > 0 {  
-            label_text.insert(0, "{");
-            label_text.push("|");
-            label_text.push(&method_names_str);
-            label_text.push("}");
-        }
-        let label: String = label_text.into_iter().collect();
-        
-        dot_entities.push(DotEntity::Node(Node::new(&self.name, &label, Style::None, None, Some(String::from("record")))));
-
-        // add fn's dependency
-        self.get_method_dependency()
-            .iter()
-            .for_each(|s| dot_entities.push(DotEntity::Edge(edge(&self.name, s, "call", Style::None, None))));
-
-        dot_entities
-    }
-
-    fn get_method_names(&self) -> Vec<String> {
+    pub fn get_method_names(&self) -> Vec<String> {
         let mut names = vec![];
         self.methods
             .iter()
@@ -124,7 +97,7 @@ impl UMLClass {
         names
     }
 
-    fn get_method_dependency(&self) -> Vec<String> {
+    pub fn get_method_dependency(&self) -> Vec<String> {
         let mut dep_names = vec![];
         self.methods
             .iter()
@@ -136,9 +109,9 @@ impl UMLClass {
 }
 
 pub struct UMLModule {
-    structs: Vec<(String, UMLClass)>,
-    fns: Vec<UMLFn>,
-    aggregations: Vec<(String, String)>
+    pub structs: Vec<(String, UMLClass)>,
+    pub fns: Vec<UMLFn>,
+    pub aggregations: Vec<UMLAggregation>
 }
 
 impl UMLModule {
@@ -150,10 +123,10 @@ impl UMLModule {
         let st_name = st.name.clone();
 
         // get aggregation class names from st
-        let mut aggregation_class_relations = vec![];
+        let mut aggregation_class_relations: Vec<UMLAggregation> = vec![];
         st.get_aggregation_class_name()
             .iter()
-            .for_each(|s| aggregation_class_relations.push((s.clone(), st_name.clone())));
+            .for_each(|s| aggregation_class_relations.push(UMLAggregation::new(s, &st_name)));
         self.aggregations.append(&mut aggregation_class_relations);
 
         self.structs.push((st_name.clone(), st));
@@ -180,37 +153,5 @@ impl UMLModule {
     fn get_mut_struct(&mut self, struct_name: &str) -> &mut UMLClass {
         let (_, st) = self.structs.iter_mut().find(|(st_name, _)| st_name == struct_name).unwrap();
         st
-    }
-
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
-        let mut dot_entities = vec![];
-        self.structs
-            .iter()
-            .for_each(|(_, st)| dot_entities.append(&mut st.get_dot_entities()));
-        self.fns
-            .iter()
-            .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));
-        self.aggregations
-            .iter()
-            .for_each(|(from, to)| dot_entities.push(DotEntity::Edge(edge(from, to, "aggregation", Style::None, None))));
-        dot_entities
-    }
-
-    pub fn get_node_and_edge_list(&self) -> (Vec<Node>, Vec<Edge>) {
-        // transform DotEntity to nodes and edges that 'dot' can use
-        // let mut label_list: Vec<&str> = vec![];
-        let mut edge_list: Vec<Edge> = vec![];
-        let mut node_list: Vec<Node> = vec![];
-        for ent in self.get_dot_entities() {
-            match ent {
-                DotEntity::Edge(ent_edge) => {
-                    edge_list.push(ent_edge);
-                },
-                DotEntity::Node(node) => {
-                    node_list.push(node);
-                },
-            }
-        }
-        (node_list, edge_list)
     }
 }
