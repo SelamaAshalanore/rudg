@@ -29,8 +29,8 @@ r#"digraph ast {
         "#;
         assert_eq!(
             code_to_dot_digraph(code), 
-r#"digraph "ast" {
-    "Mock" [label="{Mock|mock_fn()}", shape="record"];
+r#"digraph ast {
+    Mock[label="{Mock|mock_fn()}"][shape="record"];
 }
 "#
         )
@@ -49,7 +49,7 @@ r#"digraph "ast" {
         assert_eq!(
             code_to_dot_digraph(code), 
 r#"digraph ast {
-    Mock[label="{Mock|mock_fn()}", shape="record"];
+    Mock[label="{Mock|mock_fn()}"][shape="record"];
     f1[label="f1"];
     f2[label="f2"];
     Mock -> f1[label="call"];

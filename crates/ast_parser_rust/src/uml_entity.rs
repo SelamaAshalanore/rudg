@@ -54,17 +54,34 @@ fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> String {
 
 pub struct UMLClass {
     name: String,
-    methods: Vec<UMLFn>
+    methods: Vec<UMLFn>,
+    paths: Vec<ast::Path>
 }
 
 impl UMLClass {
     pub fn from_ast_struct(st: &ast::Struct) -> UMLClass {
-        UMLClass { name: st.name().unwrap().text().to_string(), methods: vec![] }
+        let mut st_paths = vec![];
+        for node in st.syntax().descendants() {
+            match_ast! {
+                match node {
+                    ast::Path(p) => st_paths.push(p),
+                    _ => ()
+                }
+            }
+        };
+        UMLClass { name: st.name().unwrap().text().to_string(), methods: vec![] , paths: st_paths}
     }
 
     pub fn add_impl_fn(&mut self, f: &ast::Fn) -> () {
         let uml_fn = UMLFn::from_ast_fn(f);
         self.methods.push(uml_fn);
+    }
+
+    pub fn get_aggregation_class_name(&self) -> Vec<String> {
+        self.paths
+            .iter()
+            .map(|p| p.to_string())
+            .collect()
     }
 
     fn get_dot_entities(&self) -> Vec<DotEntity> {
@@ -81,17 +98,27 @@ impl UMLClass {
 }
 
 pub struct UMLModule {
-    structs: HashMap<String, UMLClass>,
-    fns: Vec<UMLFn>
+    structs: Vec<(String, UMLClass)>,
+    fns: Vec<UMLFn>,
+    aggregations: Vec<(String, String)>
 }
 
 impl UMLModule {
     pub fn new() -> UMLModule {
-        UMLModule { structs: HashMap::new(), fns: vec![] }
+        UMLModule { structs: vec![], fns: vec![], aggregations: vec![] }
     }
 
     pub fn add_struct(&mut self, st: UMLClass) -> () {
-        self.structs.insert(st.name.clone(), st);
+        let st_name = st.name.clone();
+
+        // get aggregation class names from st
+        let mut aggregation_class_relations = vec![];
+        st.get_aggregation_class_name()
+            .iter()
+            .for_each(|s| aggregation_class_relations.push((s.clone(), st_name.clone())));
+        self.aggregations.append(&mut aggregation_class_relations);
+
+        self.structs.push((st_name.clone(), st));
     }
 
     pub fn add_fn(&mut self, f: UMLFn) -> () {
@@ -100,7 +127,7 @@ impl UMLModule {
 
     pub fn add_ast_impl(&mut self, ip: ast::Impl) -> () {
         let struct_name: String = ip.self_ty().unwrap().to_string();
-        let st = self.structs.get_mut(&struct_name).unwrap();
+        let st = self.get_mut_struct(&struct_name);
         let impl_funcs = ip.get_or_create_assoc_item_list().assoc_items();
         for impl_func in impl_funcs {
             match impl_func {
@@ -112,6 +139,11 @@ impl UMLModule {
         }
     }
 
+    fn get_mut_struct(&mut self, struct_name: &str) -> &mut UMLClass {
+        let (_, st) = self.structs.iter_mut().find(|(st_name, _)| st_name == struct_name).unwrap();
+        st
+    }
+
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
         self.structs
@@ -120,6 +152,9 @@ impl UMLModule {
         self.fns
             .iter()
             .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));
+        self.aggregations
+            .iter()
+            .for_each(|(from, to)| dot_entities.push(DotEntity::Edge(edge(from, to, "aggregation", Style::None, None))));
         dot_entities
     }
 

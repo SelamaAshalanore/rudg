@@ -9,7 +9,7 @@ fn test_aggregation() {
 r#"digraph ast {
     Amut[label="Amut"][shape="record"];
     Aconst[label="Aconst"][shape="record"];
-    B[label="B"];
+    B[label="B"][shape="record"];
     B -> Amut[label="aggregation"];
     B -> Aconst[label="aggregation"];
 }
