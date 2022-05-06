@@ -7,8 +7,8 @@ fn test_aggregation() {
     assert_eq!(
         staticanalyzer::rs2dot("tests/examples/aggregation.rs"),
 r#"digraph ast {
-    Amut[label="Amut", shape="record"];
-    Aconst[label="Aconst", shape="record"];
+    Amut[label="Amut"][shape="record"];
+    Aconst[label="Aconst"][shape="record"];
     B[label="B"];
     B -> Amut[label="aggregation"];
     B -> Aconst[label="aggregation"];

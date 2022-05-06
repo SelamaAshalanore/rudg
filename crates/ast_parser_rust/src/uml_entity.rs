@@ -36,7 +36,7 @@ impl UMLFn {
 
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
-        dot_entities.push(DotEntity::Node(Node::new(&self.name, &self.name, Style::None, None)));
+        dot_entities.push(DotEntity::Node(Node::new(&self.name, &self.name, Style::None, None, None)));
 
         self.dependent_fn_names
             .iter()
@@ -69,7 +69,7 @@ impl UMLClass {
 
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
-        dot_entities.push(DotEntity::Node(Node::new(&self.name, &self.name, Style::None, None)));
+        dot_entities.push(DotEntity::Node(Node::new(&self.name, &self.name, Style::None, None, Some(String::from("record")))));
         self.methods
             .iter()
             .for_each(|f| {
