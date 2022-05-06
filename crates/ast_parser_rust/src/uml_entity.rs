@@ -1,6 +1,5 @@
 use dot::{Edge, edge, Style, Node};
 use ra_ap_syntax::{ast::{self, HasName}, AstNode, match_ast};
-use std::collections::HashMap;
 
 enum DotEntity {
     Edge(Edge),
@@ -9,13 +8,14 @@ enum DotEntity {
 
 pub struct UMLFn {
     name: String,
-    dependent_fn_names: Vec<String>
+    dependent_fn_names: Vec<String>,
+    full_name: String
 }
 
 impl UMLFn {
     pub fn from_ast_fn(f: &ast::Fn) -> UMLFn {
         let f_name = f.name().unwrap().text().to_string();
-
+        let mut full_name: String = f_name.clone();
 
         let mut dependent_fn_names = vec![];
         // visit all Fn descendants and process CallExpr
@@ -26,12 +26,18 @@ impl UMLFn {
                         let call_name = get_call_expr_fn_names(it);
                         dependent_fn_names.push(call_name)
                     },
-                    _ => (),
+                    ast::ParamList(pl) => {
+                        full_name.push_str(&pl.to_string());
+                    },
+                    _ => {
+                        // println!("{:?}", node);
+                        // println!("{}", node)
+                    },
                 }
             }
         }
         
-        UMLFn { name: f_name, dependent_fn_names: dependent_fn_names }
+        UMLFn { name: f_name, dependent_fn_names: dependent_fn_names, full_name: full_name}
     }
 
     fn get_dot_entities(&self) -> Vec<DotEntity> {
@@ -86,14 +92,46 @@ impl UMLClass {
 
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
-        dot_entities.push(DotEntity::Node(Node::new(&self.name, &self.name, Style::None, None, Some(String::from("record")))));
+        let mut label_text: Vec<&str> = vec![&self.name];
+        let method_names = self.get_method_names();
+
+        let method_names_str = method_names.join(r"/l");
+        if method_names.len() > 0 {  
+            label_text.insert(0, "{");
+            label_text.push("|");
+            label_text.push(&method_names_str);
+            label_text.push("}");
+        }
+        let label: String = label_text.into_iter().collect();
+        
+        dot_entities.push(DotEntity::Node(Node::new(&self.name, &label, Style::None, None, Some(String::from("record")))));
+
+        // add fn's dependency
+        self.get_method_dependency()
+            .iter()
+            .for_each(|s| dot_entities.push(DotEntity::Edge(edge(&self.name, s, "call", Style::None, None))));
+
+        dot_entities
+    }
+
+    fn get_method_names(&self) -> Vec<String> {
+        let mut names = vec![];
         self.methods
             .iter()
             .for_each(|f| {
-                dot_entities.append(&mut f.get_dot_entities());
-                dot_entities.push(DotEntity::Edge(edge(&f.name, &self.name,  "impl", Style::None, None)));
+                names.push(f.full_name.clone());
             });
-        dot_entities
+        names
+    }
+
+    fn get_method_dependency(&self) -> Vec<String> {
+        let mut dep_names = vec![];
+        self.methods
+            .iter()
+            .for_each(|f| {
+                dep_names.extend(f.dependent_fn_names.iter().map(|s| s.clone()));
+            });
+            dep_names
     }
 }
 
