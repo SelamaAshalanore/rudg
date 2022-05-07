@@ -1,8 +1,8 @@
 pub mod uml_entity;
 mod uml_to_dot;
 
-use ra_ap_syntax::{SourceFile, Parse, ast::{self, HasModuleItem}};
-use uml_entity::{UMLClass, UMLModule, UMLFn};
+use ra_ap_syntax::{SourceFile, Parse};
+use uml_entity::{UMLModule};
 use uml_to_dot::{DotEntity, UMLEntity};
 use dot::{graph_to_string, new_graph};
 use std::path::Path;
@@ -29,24 +29,7 @@ pub fn code_to_dot_digraph(code: &str) -> String {
 
     let parse: Parse<SourceFile> = SourceFile::parse(code);
     let file: SourceFile = parse.tree();
-
-    // visit all items in SourceFile and extract dot entities from every type of them
-    for item in file.items() {
-        match item {
-            ast::Item::Fn(f) => {
-                let uml_fn = UMLFn::from_ast_fn(&f);
-                uml_module.add_fn(uml_fn);
-            },
-            ast::Item::Impl(ip) => {
-                uml_module.add_ast_impl(ip);
-            },
-            ast::Item::Struct(st) => {
-                let uml_class = UMLClass::from_ast_struct(&st);
-                uml_module.add_struct(uml_class);
-            },
-            _ => (),
-        }
-    }
+    uml_module.parse_source_file(file);
 
     let (node_list, edge_list) = get_node_and_edge_list(uml_module.get_dot_entities());
 

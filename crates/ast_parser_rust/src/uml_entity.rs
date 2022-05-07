@@ -1,4 +1,4 @@
-use ra_ap_syntax::{ast::{self, HasName}, AstNode, match_ast};
+use ra_ap_syntax::{ast::{self, HasName, HasModuleItem}, AstNode, match_ast, SourceFile};
 
 pub struct UMLAggregation {
     pub from: String,
@@ -20,7 +20,7 @@ pub struct UMLFn {
 
 
 impl UMLFn {
-    pub fn from_ast_fn(f: &ast::Fn) -> UMLFn {
+    fn from_ast_fn(f: &ast::Fn) -> UMLFn {
         let f_name = f.name().unwrap().text().to_string();
         let mut full_name: String = f_name.clone();
 
@@ -62,7 +62,7 @@ pub struct UMLClass {
 
 
 impl UMLClass {
-    pub fn from_ast_struct(st: &ast::Struct) -> UMLClass {
+    fn from_ast_struct(st: &ast::Struct) -> UMLClass {
         let mut st_paths = vec![];
         for node in st.syntax().descendants() {
             match_ast! {
@@ -75,12 +75,12 @@ impl UMLClass {
         UMLClass { name: st.name().unwrap().text().to_string(), methods: vec![] , paths: st_paths}
     }
 
-    pub fn add_impl_fn(&mut self, f: &ast::Fn) -> () {
+    fn add_impl_fn(&mut self, f: &ast::Fn) -> () {
         let uml_fn = UMLFn::from_ast_fn(f);
         self.methods.push(uml_fn);
     }
 
-    pub fn get_aggregation_class_name(&self) -> Vec<String> {
+    fn get_aggregation_class_name(&self) -> Vec<String> {
         self.paths
             .iter()
             .map(|p| p.to_string())
@@ -119,7 +119,27 @@ impl UMLModule {
         UMLModule { structs: vec![], fns: vec![], aggregations: vec![] }
     }
 
-    pub fn add_struct(&mut self, st: UMLClass) -> () {
+    pub fn parse_source_file(&mut self, src_file: SourceFile) -> () {
+        // visit all items in SourceFile and extract dot entities from every type of them
+        for item in src_file.items() {
+            match item {
+                ast::Item::Fn(f) => {
+                    let uml_fn = UMLFn::from_ast_fn(&f);
+                    self.add_fn(uml_fn);
+                },
+                ast::Item::Impl(ip) => {
+                    self.add_ast_impl(ip);
+                },
+                ast::Item::Struct(st) => {
+                    let uml_class = UMLClass::from_ast_struct(&st);
+                    self.add_struct(uml_class);
+                },
+                _ => (),
+            }
+        }
+    }
+
+    fn add_struct(&mut self, st: UMLClass) -> () {
         let st_name = st.name.clone();
 
         // get aggregation class names from st
@@ -132,11 +152,11 @@ impl UMLModule {
         self.structs.push((st_name.clone(), st));
     }
 
-    pub fn add_fn(&mut self, f: UMLFn) -> () {
+    fn add_fn(&mut self, f: UMLFn) -> () {
         self.fns.push(f);
     }
 
-    pub fn add_ast_impl(&mut self, ip: ast::Impl) -> () {
+    fn add_ast_impl(&mut self, ip: ast::Impl) -> () {
         let struct_name: String = ip.self_ty().unwrap().to_string();
         let st = self.get_mut_struct(&struct_name);
         let impl_funcs = ip.get_or_create_assoc_item_list().assoc_items();
