@@ -1,5 +1,5 @@
 
-use dot::{Edge, edge, Style, Node};
+use dot::{Edge, edge, Style, Node, edge_with_arrows, Arrow, ArrowShape, Fill, Side};
 use crate::uml_entity::*;
 pub enum DotEntity {
     Edge(Edge),
@@ -13,7 +13,15 @@ pub trait UMLEntity {
 
 impl UMLEntity for UMLAggregation {
     fn get_dot_entities(&self) -> Vec<DotEntity> {
-        vec![DotEntity::Edge(edge(&self.from, &self.to, "aggregation", Style::None, None))]
+        vec![DotEntity::Edge(edge_with_arrows(
+            &self.from, 
+            &self.to, 
+            "", 
+            Style::None, 
+            Arrow::default(),
+            Arrow::from_arrow(ArrowShape::Diamond(Fill::Open, Side::Both)),
+            None
+        ))]
     }
 }
 

@@ -264,7 +264,7 @@ pub mod render;
 mod utils;
 
 pub use style::Style;
-pub use arrow::{Arrow, ArrowShape, Side};
+pub use arrow::{Arrow, ArrowShape, Side, Fill};
 pub use node::{Node};
 pub use edge::{edge, edge_with_arrows, Edge};
 pub use graph::{GraphWalk, LabelledGraph, Nodes, Kind, DefaultStyleGraph, new_graph};
