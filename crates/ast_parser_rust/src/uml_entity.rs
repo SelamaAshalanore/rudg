@@ -1,5 +1,7 @@
 use ra_ap_syntax::{ast::{self, HasName, HasModuleItem}, AstNode, match_ast, SourceFile};
 
+use crate::ast_parser::HasUMLFn;
+
 pub struct UMLAggregation {
     pub from: String,
     pub to: String
@@ -140,8 +142,7 @@ impl UMLModule {
         for item in src_file.items() {
             match item {
                 ast::Item::Fn(f) => {
-                    let uml_fn = UMLFn::from_ast_fn(&f);
-                    self.add_fn(uml_fn);
+                    self.add_fns(&mut f.get_uml_fn());
                 },
                 ast::Item::Impl(ip) => {
                     self.add_ast_impl(ip);
@@ -168,8 +169,8 @@ impl UMLModule {
         self.structs.push((st_name.clone(), st));
     }
 
-    fn add_fn(&mut self, f: UMLFn) -> () {
-        self.fns.push(f);
+    fn add_fns(&mut self, fns: &mut Vec<UMLFn>) -> () {
+        self.fns.append(fns)
     }
 
     fn add_ast_impl(&mut self, ip: ast::Impl) -> () {

@@ -1,5 +1,6 @@
 pub mod uml_entity;
 mod uml_to_dot;
+mod ast_parser;
 
 use ra_ap_syntax::{SourceFile, Parse};
 use uml_entity::{UMLModule};
