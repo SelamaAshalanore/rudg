@@ -58,7 +58,9 @@ pub struct UMLClass {
     pub name: String,
     pub methods: Vec<UMLFn>,
     pub paths: Vec<ast::Path>,
-    pub record_fields: Vec<ast::RecordField>
+    pub record_fields: Vec<ast::RecordField>,
+    aggregations_list: Vec<String>,
+    compositions_list: Vec<String>,
 }
 
 
@@ -70,14 +72,16 @@ impl UMLClass {
             match_ast! {
                 match node {
                     ast::Path(p) => st_paths.push(p),
-                    ast::RecordField(rf) => record_fields.push(rf),
+                    ast::RecordField(rf) => {
+                        record_fields.push(rf)
+                    },
                     _ => ()
                 }
             }
-            println!("{:?}", node);
-            println!("{}", node);
+            // println!("{:?}", node);
+            // println!("{}", node);
         };
-        UMLClass { name: st.name().unwrap().text().to_string(), methods: vec![] , paths: st_paths, record_fields: record_fields}
+        UMLClass { name: st.name().unwrap().text().to_string(), methods: vec![] , paths: st_paths, record_fields: record_fields, aggregations_list: vec![], compositions_list: vec![]}
     }
 
     fn add_impl_fn(&mut self, f: &ast::Fn) -> () {
@@ -86,10 +90,7 @@ impl UMLClass {
     }
 
     fn get_aggregation_class_name(&self) -> Vec<String> {
-        self.paths
-            .iter()
-            .map(|p| p.to_string())
-            .collect()
+        self.aggregations_list.clone()
     }
 
     pub fn get_method_names(&self) -> Vec<String> {
