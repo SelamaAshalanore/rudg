@@ -57,22 +57,27 @@ fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> String {
 pub struct UMLClass {
     pub name: String,
     pub methods: Vec<UMLFn>,
-    pub paths: Vec<ast::Path>
+    pub paths: Vec<ast::Path>,
+    pub record_fields: Vec<ast::RecordField>
 }
 
 
 impl UMLClass {
     fn from_ast_struct(st: &ast::Struct) -> UMLClass {
         let mut st_paths = vec![];
+        let mut record_fields = vec![];
         for node in st.syntax().descendants() {
             match_ast! {
                 match node {
                     ast::Path(p) => st_paths.push(p),
+                    ast::RecordField(rf) => record_fields.push(rf),
                     _ => ()
                 }
             }
+            println!("{:?}", node);
+            println!("{}", node);
         };
-        UMLClass { name: st.name().unwrap().text().to_string(), methods: vec![] , paths: st_paths}
+        UMLClass { name: st.name().unwrap().text().to_string(), methods: vec![] , paths: st_paths, record_fields: record_fields}
     }
 
     fn add_impl_fn(&mut self, f: &ast::Fn) -> () {
@@ -93,6 +98,16 @@ impl UMLClass {
             .iter()
             .for_each(|f| {
                 names.push(f.full_name.clone());
+            });
+        names
+    }
+
+    pub fn get_field_names(&self) -> Vec<String> {
+        let mut names = vec![];
+        self.record_fields
+            .iter()
+            .for_each(|p| {
+                names.push(p.to_string())
             });
         names
     }

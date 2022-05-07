@@ -45,12 +45,19 @@ impl UMLEntity for UMLClass {
         let mut dot_entities = vec![];
         let mut label_text: Vec<&str> = vec![&self.name];
         let method_names = self.get_method_names();
+        let field_names = self.get_field_names();
 
         let method_names_str = method_names.join(r"/l");
-        if method_names.len() > 0 {  
+        let field_names_str = field_names.join(r"/l");
+        if method_names.len() + field_names.len() > 0 {
             label_text.insert(0, "{");
-            label_text.push("|");
-            label_text.push(&method_names_str);
+            if field_names.len() > 0 {
+                label_text.push("|");
+                label_text.push(&field_names_str);
+            } else if method_names.len() > 0 {
+                label_text.push("|");
+                label_text.push(&method_names_str);    
+            }
             label_text.push("}");
         }
         let label: String = label_text.into_iter().collect();
