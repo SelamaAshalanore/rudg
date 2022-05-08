@@ -17,6 +17,10 @@ pub trait HasUMLDependency {
     fn get_uml_dependency(&self) -> Vec<UMLDependency>;
 }
 
+pub trait HasUMLComposition {
+    fn get_uml_composition(&self) -> Vec<UMLComposition>;
+}
+
 impl HasUMLClass for ast::Struct {
     fn get_uml_class(&self) -> Vec<UMLClass> {
         let mut record_fields = vec![];
@@ -48,6 +52,28 @@ impl HasUMLAggregation for ast::Struct {
                             get_paths_str_from_record_field(rf)
                                 .iter()
                                 .for_each(|p| aggregations.push(UMLAggregation::new(&p, &self.name().unwrap().text().to_string())))
+                        }
+                    },
+                    _ => ()
+                }
+            }
+        };
+        aggregations
+    }
+}
+
+impl HasUMLComposition for ast::Struct {
+    fn get_uml_composition(&self) -> Vec<UMLComposition> {
+        let mut aggregations = vec![];
+        for node in self.syntax().descendants() {
+            match_ast! {
+                match node {
+                    ast::RecordField(rf) => {
+                        let rf_str = rf.to_string();
+                        if !rf_str.contains(r"*mut") && !rf_str.contains(r"*const") {
+                            get_paths_str_from_record_field(rf)
+                                .iter()
+                                .for_each(|p| aggregations.push(UMLComposition::new(&p, &self.name().unwrap().text().to_string())))
                         }
                     },
                     _ => ()

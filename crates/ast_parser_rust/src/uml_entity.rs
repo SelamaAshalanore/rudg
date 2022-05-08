@@ -1,6 +1,6 @@
 use ra_ap_syntax::{ast::{self, HasModuleItem}, SourceFile};
 
-use crate::ast_parser::{HasUMLFn, HasUMLClass, HasUMLAggregation, HasUMLDependency};
+use crate::ast_parser::{HasUMLFn, HasUMLClass, HasUMLAggregation, HasUMLDependency, HasUMLComposition};
 
 pub struct UMLAggregation {
     pub from: String,
@@ -25,6 +25,18 @@ impl UMLDependency {
         UMLDependency { from: String::from(from), to: String::from(to) }
     }
 }
+
+pub struct UMLComposition {
+    pub from: String,
+    pub to: String
+}
+
+impl UMLComposition {
+    pub fn new(from: &str, to: &str) -> UMLComposition {
+        UMLComposition { from: String::from(from), to: String::from(to) }
+    }
+}
+
 
 pub struct UMLFn {
     pub name: String,
@@ -68,12 +80,13 @@ pub struct UMLModule {
     pub structs: Vec<(String, UMLClass)>,
     pub fns: Vec<UMLFn>,
     pub aggregations: Vec<UMLAggregation>,
-    pub dependency: Vec<UMLDependency>
+    pub dependency: Vec<UMLDependency>,
+    pub composition: Vec<UMLComposition>
 }
 
 impl UMLModule {
     pub fn new() -> UMLModule {
-        UMLModule { structs: vec![], fns: vec![], aggregations: vec![] , dependency: vec![]}
+        UMLModule { structs: vec![], fns: vec![], aggregations: vec![] , dependency: vec![], composition: vec![]}
     }
 
     pub fn parse_source_file(&mut self, src_file: SourceFile) -> () {
@@ -90,6 +103,7 @@ impl UMLModule {
                 ast::Item::Struct(st) => {
                     self.add_structs(st.get_uml_class());
                     self.aggregations.append(&mut st.get_uml_aggregation());
+                    self.composition.append(&mut st.get_uml_composition());
                 },
                 _ => (),
             }
