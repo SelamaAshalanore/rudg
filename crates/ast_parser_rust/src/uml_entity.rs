@@ -1,6 +1,24 @@
 use ra_ap_syntax::{ast::{self, HasModuleItem}, SourceFile};
 
-use crate::ast_parser::{HasUMLFn, HasUMLClass, HasUMLAggregation, HasUMLDependency, HasUMLComposition};
+use crate::ast_parser::{HasUMLFn, HasUMLClass, HasUMLDependency, HasUMLRelation};
+
+pub enum UMLRelationKind {
+    UMLAggregation,
+    UMLComposition,
+    UMLDependency
+}
+
+pub struct UMLRelation {
+    pub from: String,
+    pub to: String,
+    pub kind: UMLRelationKind
+}
+
+impl UMLRelation {
+    pub fn new(from: &str, to: &str, kind: UMLRelationKind) -> UMLRelation {
+        UMLRelation { from: String::from(from), to: String::from(to), kind: kind }
+    }
+}
 
 pub struct UMLAggregation {
     pub from: String,
@@ -79,14 +97,13 @@ impl UMLClass {
 pub struct UMLModule {
     pub structs: Vec<(String, UMLClass)>,
     pub fns: Vec<UMLFn>,
-    pub aggregations: Vec<UMLAggregation>,
     pub dependency: Vec<UMLDependency>,
-    pub composition: Vec<UMLComposition>
+    pub relations: Vec<UMLRelation>
 }
 
 impl UMLModule {
     pub fn new() -> UMLModule {
-        UMLModule { structs: vec![], fns: vec![], aggregations: vec![] , dependency: vec![], composition: vec![]}
+        UMLModule { structs: vec![], fns: vec![], dependency: vec![], relations: vec![]}
     }
 
     pub fn parse_source_file(&mut self, src_file: SourceFile) -> () {
@@ -95,15 +112,16 @@ impl UMLModule {
             match item {
                 ast::Item::Fn(f) => {
                     self.fns.append(&mut f.get_uml_fn());
+                    self.relations.append(&mut f.get_uml_relations());
                 },
                 ast::Item::Impl(ip) => {
                     self.add_structs(ip.get_uml_class());
                     self.dependency.append(&mut ip.get_uml_dependency());
+                    self.relations.append(&mut ip.get_uml_relations());
                 },
                 ast::Item::Struct(st) => {
                     self.add_structs(st.get_uml_class());
-                    self.aggregations.append(&mut st.get_uml_aggregation());
-                    self.composition.append(&mut st.get_uml_composition());
+                    self.relations.append(&mut st.get_uml_relations());
                 },
                 _ => (),
             }

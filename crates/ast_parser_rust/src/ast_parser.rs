@@ -9,16 +9,12 @@ pub trait HasUMLClass {
     fn get_uml_class(&self) -> Vec<UMLClass>;
 }
 
-pub trait HasUMLAggregation {
-    fn get_uml_aggregation(&self) -> Vec<UMLAggregation>;
-}
-
 pub trait HasUMLDependency {
     fn get_uml_dependency(&self) -> Vec<UMLDependency>;
 }
 
-pub trait HasUMLComposition {
-    fn get_uml_composition(&self) -> Vec<UMLComposition>;
+pub trait HasUMLRelation {
+    fn get_uml_relations(&self) -> Vec<UMLRelation>;
 }
 
 impl HasUMLClass for ast::Struct {
@@ -40,9 +36,9 @@ impl HasUMLClass for ast::Struct {
     }
 }
 
-impl HasUMLAggregation for ast::Struct {
-    fn get_uml_aggregation(&self) -> Vec<UMLAggregation> {
-        let mut aggregations = vec![];
+impl HasUMLRelation for ast::Struct {
+    fn get_uml_relations(&self) -> Vec<UMLRelation> {
+        let mut results = vec![];
         for node in self.syntax().descendants() {
             match_ast! {
                 match node {
@@ -51,36 +47,18 @@ impl HasUMLAggregation for ast::Struct {
                         if rf_str.contains(r"*mut") || rf_str.contains(r"*const") {
                             get_paths_str_from_record_field(rf)
                                 .iter()
-                                .for_each(|p| aggregations.push(UMLAggregation::new(&p, &self.name().unwrap().text().to_string())))
-                        }
-                    },
-                    _ => ()
-                }
-            }
-        };
-        aggregations
-    }
-}
-
-impl HasUMLComposition for ast::Struct {
-    fn get_uml_composition(&self) -> Vec<UMLComposition> {
-        let mut aggregations = vec![];
-        for node in self.syntax().descendants() {
-            match_ast! {
-                match node {
-                    ast::RecordField(rf) => {
-                        let rf_str = rf.to_string();
-                        if !rf_str.contains(r"*mut") && !rf_str.contains(r"*const") {
+                                .for_each(|p| results.push(UMLRelation::new(&p, &self.name().unwrap().text().to_string(), UMLRelationKind::UMLAggregation)))
+                        } else if !rf_str.contains(r"*mut") && !rf_str.contains(r"*const") {
                             get_paths_str_from_record_field(rf)
                                 .iter()
-                                .for_each(|p| aggregations.push(UMLComposition::new(&p, &self.name().unwrap().text().to_string())))
+                                .for_each(|p| results.push(UMLRelation::new(&p, &self.name().unwrap().text().to_string(), UMLRelationKind::UMLComposition)))
                         }
                     },
                     _ => ()
                 }
             }
         };
-        aggregations
+        results
     }
 }
 
@@ -120,6 +98,25 @@ impl HasUMLDependency for ast::Impl {
     }
 }
 
+impl HasUMLRelation for ast::Impl {
+    fn get_uml_relations(&self) -> Vec<UMLRelation> {
+        let mut dep_fn_names: Vec<String> = vec![];
+        let struct_name: String = self.self_ty().unwrap().to_string();
+        let impl_funcs = self.get_or_create_assoc_item_list().assoc_items();
+        for impl_func in impl_funcs {
+            match impl_func {
+                ast::AssocItem::Fn(f) => {
+                    f.get_uml_fn().iter().for_each(|f| dep_fn_names.append(&mut f.dependent_fn_names.clone()));
+                },
+                _ => ()
+            }
+        }
+        dep_fn_names.iter()
+                    .map(|f| UMLRelation::new(&struct_name, f, UMLRelationKind::UMLDependency))
+                    .collect()
+    }
+}
+
 fn get_paths_str_from_record_field(rf: ast::RecordField) -> Vec<String> {
     let mut results = vec![];
     for node in rf.syntax().descendants() {
@@ -148,6 +145,35 @@ impl HasUMLDependency for ast::Fn {
                     ast::CallExpr(it) => {
                         let call_name = get_call_expr_fn_names(it);
                         dependent_fn_names.push(UMLDependency::new(&f_name, &call_name))
+                    },
+                    ast::ParamList(pl) => {
+                        full_name.push_str(&pl.to_string());
+                    },
+                    _ => {
+                        // println!("{:?}", node);
+                        // println!("{}", node)
+                    },
+                }
+            }
+        }
+        
+        dependent_fn_names
+    }
+}
+
+impl HasUMLRelation for ast::Fn {
+    fn get_uml_relations(&self) -> Vec<UMLRelation> {
+        let f_name = self.name().unwrap().text().to_string();
+        let mut full_name: String = f_name.clone();
+
+        let mut dependent_fn_names: Vec<UMLRelation> = vec![];
+        // visit all Fn descendants and process CallExpr
+        for node in self.syntax().descendants() {
+            match_ast! {
+                match node {
+                    ast::CallExpr(it) => {
+                        let call_name = get_call_expr_fn_names(it);
+                        dependent_fn_names.push(UMLRelation::new(&f_name, &call_name, UMLRelationKind::UMLDependency))
                     },
                     ast::ParamList(pl) => {
                         full_name.push_str(&pl.to_string());

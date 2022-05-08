@@ -103,15 +103,50 @@ impl UMLEntity for UMLModule {
         self.fns
             .iter()
             .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));
-        self.aggregations
+        // self.dependency
+        //     .iter()
+        //     .for_each(|dep| dot_entities.append(&mut dep.get_dot_entities()));
+        self.relations
             .iter()
-            .for_each(|ag| dot_entities.append(&mut ag.get_dot_entities()));
-        self.dependency
-            .iter()
-            .for_each(|dep| dot_entities.append(&mut dep.get_dot_entities()));
-        self.composition
-            .iter()
-            .for_each(|comp| dot_entities.append(&mut comp.get_dot_entities()));
+            .for_each(|r| dot_entities.append(&mut r.get_dot_entities()));
         dot_entities
+    }
+}
+
+impl UMLEntity for UMLRelation {
+    fn get_dot_entities(&self) -> Vec<DotEntity> {
+        match self.kind {
+            UMLRelationKind::UMLAggregation => {
+                vec![DotEntity::Edge(edge_with_arrows(
+                    &self.from, 
+                    &self.to, 
+                    "", 
+                    Style::None, 
+                    Arrow::default(),
+                    Arrow::from_arrow(ArrowShape::Diamond(Fill::Open, Side::Both)),
+                    None
+                ))]
+            },
+            UMLRelationKind::UMLComposition => {
+                vec![DotEntity::Edge(edge_with_arrows(
+                    &self.from, 
+                    &self.to, 
+                    "",
+                    Style::None,
+                    Arrow::default(),
+                    Arrow::from_arrow(ArrowShape::diamond()),
+                    None
+                ))]
+            },
+            UMLRelationKind::UMLDependency => {
+                vec![DotEntity::Edge(edge(
+                    &self.from, 
+                    &self.to, 
+                    "call", 
+                    Style::None,
+                    None
+                ))]
+            }
+        }
     }
 }
