@@ -9,10 +9,6 @@ pub trait HasUMLClass {
     fn get_uml_class(&self) -> Vec<UMLClass>;
 }
 
-pub trait HasUMLDependency {
-    fn get_uml_dependency(&self) -> Vec<UMLDependency>;
-}
-
 pub trait HasUMLRelation {
     fn get_uml_relations(&self) -> Vec<UMLRelation>;
 }
@@ -79,25 +75,6 @@ impl HasUMLClass for ast::Impl {
     }
 }
 
-impl HasUMLDependency for ast::Impl {
-    fn get_uml_dependency(&self) -> Vec<UMLDependency> {
-        let mut dep_fn_names: Vec<String> = vec![];
-        let struct_name: String = self.self_ty().unwrap().to_string();
-        let impl_funcs = self.get_or_create_assoc_item_list().assoc_items();
-        for impl_func in impl_funcs {
-            match impl_func {
-                ast::AssocItem::Fn(f) => {
-                    f.get_uml_fn().iter().for_each(|f| dep_fn_names.append(&mut f.dependent_fn_names.clone()));
-                },
-                _ => ()
-            }
-        }
-        dep_fn_names.iter()
-                    .map(|f| UMLDependency::new(&struct_name, f))
-                    .collect()
-    }
-}
-
 impl HasUMLRelation for ast::Impl {
     fn get_uml_relations(&self) -> Vec<UMLRelation> {
         let mut dep_fn_names: Vec<String> = vec![];
@@ -106,7 +83,7 @@ impl HasUMLRelation for ast::Impl {
         for impl_func in impl_funcs {
             match impl_func {
                 ast::AssocItem::Fn(f) => {
-                    f.get_uml_fn().iter().for_each(|f| dep_fn_names.append(&mut f.dependent_fn_names.clone()));
+                    dep_fn_names.append(&mut get_dependency_names(&f).clone());
                 },
                 _ => ()
             }
@@ -130,35 +107,6 @@ fn get_paths_str_from_record_field(rf: ast::RecordField) -> Vec<String> {
         }
     };
     results
-}
-
-impl HasUMLDependency for ast::Fn {
-    fn get_uml_dependency(&self) -> Vec<UMLDependency> {
-        let f_name = self.name().unwrap().text().to_string();
-        let mut full_name: String = f_name.clone();
-
-        let mut dependent_fn_names: Vec<UMLDependency> = vec![];
-        // visit all Fn descendants and process CallExpr
-        for node in self.syntax().descendants() {
-            match_ast! {
-                match node {
-                    ast::CallExpr(it) => {
-                        let call_name = get_call_expr_fn_names(it);
-                        dependent_fn_names.push(UMLDependency::new(&f_name, &call_name))
-                    },
-                    ast::ParamList(pl) => {
-                        full_name.push_str(&pl.to_string());
-                    },
-                    _ => {
-                        // println!("{:?}", node);
-                        // println!("{}", node)
-                    },
-                }
-            }
-        }
-        
-        dependent_fn_names
-    }
 }
 
 impl HasUMLRelation for ast::Fn {
@@ -215,7 +163,7 @@ impl HasUMLFn for ast::Fn {
             }
         }
         
-        vec![UMLFn::new(&f_name, dependent_fn_names, &full_name)]
+        vec![UMLFn::new(&f_name, &full_name)]
     }
 }
 
@@ -223,4 +171,21 @@ fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> String {
     let call_expr = call_exp.to_string();
     let call_names: Vec<&str> = call_expr.split("(").collect();
     String::from(call_names[0])
+}
+
+fn get_dependency_names(f: &ast::Fn) -> Vec<String> {
+    let mut dependent_fn_names = vec![];
+    // visit all Fn descendants and process CallExpr
+    for node in f.syntax().descendants() {
+        match_ast! {
+            match node {
+                ast::CallExpr(it) => {
+                    let call_name = get_call_expr_fn_names(it);
+                    dependent_fn_names.push(call_name)
+                },
+                _ => (),
+            }
+        }
+    }
+    dependent_fn_names
 }

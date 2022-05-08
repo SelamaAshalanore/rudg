@@ -1,6 +1,6 @@
 use ra_ap_syntax::{ast::{self, HasModuleItem}, SourceFile};
 
-use crate::ast_parser::{HasUMLFn, HasUMLClass, HasUMLDependency, HasUMLRelation};
+use crate::ast_parser::{HasUMLFn, HasUMLClass, HasUMLRelation};
 
 pub enum UMLRelationKind {
     UMLAggregation,
@@ -20,51 +20,15 @@ impl UMLRelation {
     }
 }
 
-pub struct UMLAggregation {
-    pub from: String,
-    pub to: String
-}
-
-
-impl UMLAggregation {
-    pub fn new(from: &str, to: &str) -> UMLAggregation {
-        UMLAggregation { from: String::from(from), to: String::from(to) }
-    }
-}
-
-pub struct UMLDependency {
-    pub from: String,
-    pub to: String
-}
-
-
-impl UMLDependency {
-    pub fn new(from: &str, to: &str) -> UMLDependency {
-        UMLDependency { from: String::from(from), to: String::from(to) }
-    }
-}
-
-pub struct UMLComposition {
-    pub from: String,
-    pub to: String
-}
-
-impl UMLComposition {
-    pub fn new(from: &str, to: &str) -> UMLComposition {
-        UMLComposition { from: String::from(from), to: String::from(to) }
-    }
-}
-
 
 pub struct UMLFn {
     pub name: String,
-    pub dependent_fn_names: Vec<String>,
     pub full_name: String
 }
 
 impl UMLFn {
-    pub fn new(name: &str, dependent_fn_names: Vec<String>, full_name: &str) -> UMLFn {
-        UMLFn { name: String::from(name), dependent_fn_names: dependent_fn_names, full_name: String::from(full_name) }
+    pub fn new(name: &str, full_name: &str) -> UMLFn {
+        UMLFn { name: String::from(name), full_name: String::from(full_name) }
     }
 }
 
@@ -97,13 +61,12 @@ impl UMLClass {
 pub struct UMLModule {
     pub structs: Vec<(String, UMLClass)>,
     pub fns: Vec<UMLFn>,
-    pub dependency: Vec<UMLDependency>,
     pub relations: Vec<UMLRelation>
 }
 
 impl UMLModule {
     pub fn new() -> UMLModule {
-        UMLModule { structs: vec![], fns: vec![], dependency: vec![], relations: vec![]}
+        UMLModule { structs: vec![], fns: vec![], relations: vec![]}
     }
 
     pub fn parse_source_file(&mut self, src_file: SourceFile) -> () {
@@ -116,7 +79,6 @@ impl UMLModule {
                 },
                 ast::Item::Impl(ip) => {
                     self.add_structs(ip.get_uml_class());
-                    self.dependency.append(&mut ip.get_uml_dependency());
                     self.relations.append(&mut ip.get_uml_relations());
                 },
                 ast::Item::Struct(st) => {

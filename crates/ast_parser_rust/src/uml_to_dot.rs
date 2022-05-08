@@ -10,56 +10,10 @@ pub trait UMLEntity {
     fn get_dot_entities(&self) -> Vec<DotEntity>;
 }
 
-
-impl UMLEntity for UMLAggregation {
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
-        vec![DotEntity::Edge(edge_with_arrows(
-            &self.from, 
-            &self.to, 
-            "", 
-            Style::None, 
-            Arrow::default(),
-            Arrow::from_arrow(ArrowShape::Diamond(Fill::Open, Side::Both)),
-            None
-        ))]
-    }
-}
-
-impl UMLEntity for UMLDependency {
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
-        vec![DotEntity::Edge(edge(
-            &self.from, 
-            &self.to, 
-            "call", 
-            Style::None,
-            None
-        ))]
-    }
-}
-
-impl UMLEntity for UMLComposition {
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
-        vec![DotEntity::Edge(edge_with_arrows(
-            &self.from, 
-            &self.to, 
-            "",
-            Style::None,
-            Arrow::default(),
-            Arrow::from_arrow(ArrowShape::diamond()),
-            None
-        ))]
-    }
-}
-
 impl UMLEntity for UMLFn {
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
         dot_entities.push(DotEntity::Node(Node::new(&self.name, &self.name, Style::None, None, None)));
-
-        self.dependent_fn_names
-            .iter()
-            .for_each(|f_name| dot_entities.push(DotEntity::Edge(edge(&self.name, f_name, "call", Style::None, None))));
-
         dot_entities
     }
 }
@@ -103,9 +57,6 @@ impl UMLEntity for UMLModule {
         self.fns
             .iter()
             .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));
-        // self.dependency
-        //     .iter()
-        //     .for_each(|dep| dot_entities.append(&mut dep.get_dot_entities()));
         self.relations
             .iter()
             .for_each(|r| dot_entities.append(&mut r.get_dot_entities()));
