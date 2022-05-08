@@ -25,6 +25,17 @@ impl UMLEntity for UMLAggregation {
     }
 }
 
+impl UMLEntity for UMLDependency {
+    fn get_dot_entities(&self) -> Vec<DotEntity> {
+        vec![DotEntity::Edge(edge(
+            &self.from, 
+            &self.to, 
+            "call", 
+            Style::None,
+            None
+        ))]
+    }
+}
 
 impl UMLEntity for UMLFn {
     fn get_dot_entities(&self) -> Vec<DotEntity> {
@@ -64,11 +75,6 @@ impl UMLEntity for UMLClass {
         
         dot_entities.push(DotEntity::Node(Node::new(&self.name, &label, Style::None, None, Some(String::from("record")))));
 
-        // add fn's dependency
-        self.get_method_dependency()
-            .iter()
-            .for_each(|s| dot_entities.push(DotEntity::Edge(edge(&self.name, s, "call", Style::None, None))));
-
         dot_entities
     }
 }
@@ -84,6 +90,9 @@ impl UMLEntity for UMLModule {
             .iter()
             .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));
         self.aggregations
+            .iter()
+            .for_each(|ag| dot_entities.append(&mut ag.get_dot_entities()));
+        self.dependency
             .iter()
             .for_each(|ag| dot_entities.append(&mut ag.get_dot_entities()));
         dot_entities

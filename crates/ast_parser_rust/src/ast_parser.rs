@@ -66,12 +66,31 @@ impl HasUMLClass for ast::Impl {
         for impl_func in impl_funcs {
             match impl_func {
                 ast::AssocItem::Fn(f) => {
-                    impl_fn_names.push(f.name().unwrap().to_string());
+                    f.get_uml_fn().iter().for_each(|f| impl_fn_names.push(f.full_name.clone()));
                 },
                 _ => ()
             }
         }
         vec![UMLClass::new(&struct_name, vec![], impl_fn_names)]
+    }
+}
+
+impl HasUMLDependency for ast::Impl {
+    fn get_uml_dependency(&self) -> Vec<UMLDependency> {
+        let mut dep_fn_names: Vec<String> = vec![];
+        let struct_name: String = self.self_ty().unwrap().to_string();
+        let impl_funcs = self.get_or_create_assoc_item_list().assoc_items();
+        for impl_func in impl_funcs {
+            match impl_func {
+                ast::AssocItem::Fn(f) => {
+                    f.get_uml_fn().iter().for_each(|f| dep_fn_names.append(&mut f.dependent_fn_names.clone()));
+                },
+                _ => ()
+            }
+        }
+        dep_fn_names.iter()
+                    .map(|f| UMLDependency::new(&struct_name, f))
+                    .collect()
     }
 }
 
