@@ -5,7 +5,9 @@ use crate::ast_parser::{HasUMLFn, HasUMLClass, HasUMLRelation};
 pub enum UMLRelationKind {
     UMLAggregation,
     UMLComposition,
-    UMLDependency
+    UMLDependency,
+    UMLAssociationUni,
+    UMLAggregationBi
 }
 
 pub struct UMLRelation {
@@ -75,19 +77,23 @@ impl UMLModule {
             match item {
                 ast::Item::Fn(f) => {
                     self.fns.append(&mut f.get_uml_fn());
-                    self.relations.append(&mut f.get_uml_relations());
+                    self.add_relations(&mut f.get_uml_relations());
                 },
                 ast::Item::Impl(ip) => {
                     self.add_structs(ip.get_uml_class());
-                    self.relations.append(&mut ip.get_uml_relations());
+                    self.add_relations(&mut ip.get_uml_relations());
                 },
                 ast::Item::Struct(st) => {
                     self.add_structs(st.get_uml_class());
-                    self.relations.append(&mut st.get_uml_relations());
+                    self.add_relations(&mut st.get_uml_relations());
                 },
                 _ => (),
             }
         }
+    }
+
+    fn add_relations(&mut self, rel_list: &mut Vec<UMLRelation>) -> () {
+        self.relations.append(rel_list);
     }
 
     fn add_structs(&mut self, st_list: Vec<UMLClass>) -> () {

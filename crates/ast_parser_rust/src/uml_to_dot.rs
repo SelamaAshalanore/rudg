@@ -99,7 +99,29 @@ impl UMLEntity for UMLRelation {
                     Arrow::from_arrow(ArrowShape::vee()),
                     None
                 ))]
-            }
+            },
+            UMLRelationKind::UMLAssociationUni => {
+                vec![DotEntity::Edge(edge_with_arrows(
+                    &self.from, 
+                    &self.to, 
+                    "",
+                    Style::None,
+                    Arrow::default(),
+                    Arrow::from_arrow(ArrowShape::vee()),
+                    None
+                ))]
+            },
+            UMLRelationKind::UMLAggregationBi => {
+                vec![DotEntity::Edge(edge_with_arrows(
+                    &self.from, 
+                    &self.to, 
+                    "",
+                    Style::None,
+                    Arrow::default(),
+                    Arrow::none(),
+                    None
+                ))]
+            },
         }
     }
 }

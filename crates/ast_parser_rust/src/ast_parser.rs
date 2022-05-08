@@ -41,11 +41,11 @@ impl HasUMLRelation for ast::Struct {
                     ast::RecordField(rf) => {
                         let rf_str = rf.to_string();
                         if rf_str.contains(r"*mut") || rf_str.contains(r"*const") {
-                            get_paths_str_from_record_field(rf)
+                            get_paths_str_from_ast_node(rf)
                                 .iter()
                                 .for_each(|p| results.push(UMLRelation::new(&p, &self.name().unwrap().text().to_string(), UMLRelationKind::UMLAggregation)))
                         } else if !rf_str.contains(r"*mut") && !rf_str.contains(r"*const") {
-                            get_paths_str_from_record_field(rf)
+                            get_paths_str_from_ast_node(rf)
                                 .iter()
                                 .for_each(|p| results.push(UMLRelation::new(&p, &self.name().unwrap().text().to_string(), UMLRelationKind::UMLComposition)))
                         }
@@ -82,11 +82,23 @@ impl HasUMLRelation for ast::Impl {
         for node in self.syntax().descendants() {
             match_ast! {
                 match node {
-                    ast::Path(p) => {
-                        let p_name = p.to_string();
-                        if p_name != struct_name {
-                            results.push(UMLRelation::new(&struct_name, &p_name, UMLRelationKind::UMLDependency));
-                        }
+                    ast::ParamList(pl) => {
+                        let path_names: Vec<String> = get_paths_str_from_ast_node(pl);
+                        results.extend(
+                            path_names.iter().map(|p| UMLRelation::new(&struct_name, &p, UMLRelationKind::UMLDependency))
+                        );
+                    },
+                    ast::BlockExpr(ex) => {
+                        let path_names: Vec<String> = get_paths_str_from_ast_node(ex);
+                        results.extend(
+                            path_names.iter().map(|p| UMLRelation::new(&struct_name, &p, UMLRelationKind::UMLDependency))
+                        );
+                    },
+                    ast::RetType(rt) => {
+                        let path_names: Vec<String> = get_paths_str_from_ast_node(rt);
+                        results.extend(
+                            path_names.iter().map(|p| UMLRelation::new(&struct_name, &p, UMLRelationKind::UMLAssociationUni))
+                        );
                     },
                     _ => (),
                 }
@@ -98,9 +110,9 @@ impl HasUMLRelation for ast::Impl {
     }
 }
 
-fn get_paths_str_from_record_field(rf: ast::RecordField) -> Vec<String> {
+fn get_paths_str_from_ast_node(node: impl ast::AstNode) -> Vec<String> {
     let mut results = vec![];
-    for node in rf.syntax().descendants() {
+    for node in node.syntax().descendants() {
         match_ast! {
             match node {
                 ast::Path(p) => {
@@ -116,7 +128,6 @@ fn get_paths_str_from_record_field(rf: ast::RecordField) -> Vec<String> {
 impl HasUMLRelation for ast::Fn {
     fn get_uml_relations(&self) -> Vec<UMLRelation> {
         let f_name = self.name().unwrap().text().to_string();
-        let mut full_name: String = f_name.clone();
 
         let mut dependent_fn_names: Vec<UMLRelation> = vec![];
         // visit all Fn descendants and process CallExpr
@@ -126,9 +137,6 @@ impl HasUMLRelation for ast::Fn {
                     ast::CallExpr(it) => {
                         let call_name = get_call_expr_fn_names(it);
                         dependent_fn_names.push(UMLRelation::new(&f_name, &call_name, UMLRelationKind::UMLDependency))
-                    },
-                    ast::ParamList(pl) => {
-                        full_name.push_str(&pl.to_string());
                     },
                     _ => {
                         // println!("{:?}", node);
@@ -158,6 +166,10 @@ impl HasUMLFn for ast::Fn {
                     },
                     ast::ParamList(pl) => {
                         full_name.push_str(&pl.to_string());
+                    },
+                    ast::RetType(rt) => {
+                        full_name.push_str(" ");
+                        full_name.push_str(&rt.to_string());
                     },
                     _ => {
                         // println!("{:?}", node);
