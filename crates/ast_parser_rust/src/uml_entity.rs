@@ -93,7 +93,6 @@ impl UMLModule {
     fn add_structs(&mut self, st_list: Vec<UMLClass>) -> () {
         for mut st in st_list {
             if self.get_struct_names().contains(&st.name) {
-                println!("{} struct exists!", &st.name);
                 self.get_mut_struct(&st.name).unwrap().merge_from(&mut st);
             } else {
                 let st_name = st.name.clone();

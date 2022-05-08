@@ -52,8 +52,8 @@ r#"digraph ast {
     Mock[label="{Mock|mock_fn()}"][shape="record"];
     f1[label="f1"];
     f2[label="f2"];
-    Mock -> f1[label="call"];
-    Mock -> f2[label="call"];
+    f1 -> Mock[label=""][style="dashed"][arrowhead="vee"];
+    f2 -> Mock[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
@@ -72,7 +72,7 @@ r#"digraph ast {
 r#"digraph ast {
     main[label="main"];
     hello[label="hello"];
-    main -> hello[label="call"];
+    hello -> main[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
@@ -94,8 +94,8 @@ r#"digraph ast {
     main[label="main"];
     f1[label="f1"];
     f2[label="f2"];
-    main -> f1[label="call"];
-    main -> f2[label="call"];
+    f1 -> main[label=""][style="dashed"][arrowhead="vee"];
+    f2 -> main[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
@@ -116,8 +116,8 @@ r#"digraph ast {
     main[label="main"];
     f1[label="f1"];
     f2[label="f2"];
-    main -> f1[label="call"];
-    main -> f2[label="call"];
+    f1 -> main[label=""][style="dashed"][arrowhead="vee"];
+    f2 -> main[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )

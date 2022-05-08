@@ -1,5 +1,5 @@
 
-use dot::{Edge, edge, Style, Node, edge_with_arrows, Arrow, ArrowShape, Fill, Side};
+use dot::{Edge, Style, Node, edge_with_arrows, Arrow, ArrowShape, Fill, Side};
 use crate::uml_entity::*;
 pub enum DotEntity {
     Edge(Edge),
@@ -90,11 +90,13 @@ impl UMLEntity for UMLRelation {
                 ))]
             },
             UMLRelationKind::UMLDependency => {
-                vec![DotEntity::Edge(edge(
-                    &self.from, 
+                vec![DotEntity::Edge(edge_with_arrows(
                     &self.to, 
-                    "call", 
-                    Style::None,
+                    &self.from, 
+                    "",
+                    Style::Dashed,
+                    Arrow::default(),
+                    Arrow::from_arrow(ArrowShape::vee()),
                     None
                 ))]
             }
