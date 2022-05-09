@@ -113,26 +113,7 @@ impl UMLModule {
                 _ => (),
             }
         }
-        // for node in src_file.syntax().descendants() {
-        //     match_ast! {
-        //         match node {
-        //             ast::Fn(f) => {
-        //                 self.fns.append(&mut f.get_uml_fn());
-        //                 self.add_relations(&mut f.get_uml_relations());
-        //             },
-        //             ast::Impl(ip) => {
-        //                 impls.push(ip);
-        //             },
-        //             ast::Struct(st) => {
-        //                 self.add_structs(st.get_uml_class());
-        //                 self.add_relations(&mut st.get_uml_relations());
-        //             },
-        //             _ => (),
-        //         }
-        //     }
-        // }
 
-        println!("module has {} structs and impls has {} items", self.structs.len(), impls.len());
         impls.iter()
             .for_each(|ip| {
                 self.add_impl_classes(ip.get_uml_class());

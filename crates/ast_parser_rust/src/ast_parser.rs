@@ -62,16 +62,20 @@ impl HasUMLClass for ast::Impl {
     fn get_uml_class(&self) -> Vec<UMLClass> {
         let mut impl_fn_names = vec![];
         let struct_name: String = self.self_ty().unwrap().to_string();
-        let impl_funcs = self.get_or_create_assoc_item_list().assoc_items();
-        for impl_func in impl_funcs {
-            match impl_func {
-                ast::AssocItem::Fn(f) => {
-                    f.get_uml_fn().iter().for_each(|f| impl_fn_names.push(f.full_name.clone()));
-                },
-                _ => ()
+        let class_name: Vec<&str> = struct_name.split(r"<").collect();
+        
+        for node in self.syntax().descendants() {
+            match_ast! {
+                match node {
+                    ast::Fn(f) => {
+                        f.get_uml_fn().iter().for_each(|f| impl_fn_names.push(f.full_name.clone()));
+                    },
+                    _ => ()
+                }
             }
         }
-        vec![UMLClass::new(&struct_name, vec![], impl_fn_names, UMLClassKind::Unknown)]
+        // println!("get UMLClass from impl with name: {} and fn_names: {:?}", class_name[0], impl_fn_names);
+        vec![UMLClass::new(class_name[0], vec![], impl_fn_names, UMLClassKind::Unknown)]
     }
 }
 
