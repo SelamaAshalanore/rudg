@@ -22,26 +22,37 @@ impl UMLEntity for UMLFn {
 impl UMLEntity for UMLClass {
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
-        let mut label_text: Vec<&str> = vec![&self.name];
-        let method_names = self.get_method_names();
-        let field_names = self.get_field_names();
+        match self.kind {
+            UMLClassKind::UMLClass => {
+                let mut label_text: Vec<&str> = vec![&self.name];
+                let method_names = self.get_method_names();
+                let field_names = self.get_field_names();
 
-        let method_names_str = method_names.join(r"/l");
-        let field_names_str = field_names.join(r"/l");
-        if method_names.len() + field_names.len() > 0 {
-            label_text.insert(0, "{");
-            if field_names.len() > 0 {
-                label_text.push("|");
-                label_text.push(&field_names_str);
-            } else if method_names.len() > 0 {
-                label_text.push("|");
-                label_text.push(&method_names_str);    
+                let method_names_str = method_names.join(r"/l");
+                let field_names_str = field_names.join(r"/l");
+                if method_names.len() + field_names.len() > 0 {
+                    label_text.insert(0, "{");
+                    if field_names.len() > 0 {
+                        label_text.push("|");
+                        label_text.push(&field_names_str);
+                    } else if method_names.len() > 0 {
+                        label_text.push("|");
+                        label_text.push(&method_names_str);    
+                    }
+                    label_text.push("}");
+                }
+                let label: String = label_text.into_iter().collect();
+                
+                dot_entities.push(DotEntity::Node(Node::new(&self.name, &label, Style::None, None, Some(String::from("record")))));
+                
+            },
+            UMLClassKind::UMLTrait => {
+
+            },
+            UMLClassKind::Unknown => {
+                
             }
-            label_text.push("}");
         }
-        let label: String = label_text.into_iter().collect();
-        
-        dot_entities.push(DotEntity::Node(Node::new(&self.name, &label, Style::None, None, Some(String::from("record")))));
 
         dot_entities
     }

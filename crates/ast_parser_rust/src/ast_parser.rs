@@ -28,7 +28,7 @@ impl HasUMLClass for ast::Struct {
             // println!("{:?}", node);
             // println!("{}", node);
         };
-        vec![UMLClass::new(&self.name().unwrap().text().to_string(), record_fields, vec![])]
+        vec![UMLClass::new(&self.name().unwrap().text().to_string(), record_fields, vec![], UMLClassKind::UMLClass)]
     }
 }
 
@@ -71,7 +71,7 @@ impl HasUMLClass for ast::Impl {
                 _ => ()
             }
         }
-        vec![UMLClass::new(&struct_name, vec![], impl_fn_names)]
+        vec![UMLClass::new(&struct_name, vec![], impl_fn_names, UMLClassKind::Unknown)]
     }
 }
 

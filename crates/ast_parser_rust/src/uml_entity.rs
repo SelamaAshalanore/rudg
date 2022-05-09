@@ -1,6 +1,6 @@
 use std::ops::Index;
 
-use ra_ap_syntax::{ast::{self, HasModuleItem}, SourceFile};
+use ra_ap_syntax::{ast::{self, HasModuleItem}, SourceFile, AstNode, match_ast};
 
 use crate::ast_parser::{HasUMLFn, HasUMLClass, HasUMLRelation};
 
@@ -11,6 +11,12 @@ pub enum UMLRelationKind {
     UMLAssociationBi=2,
     UMLAggregation=3,
     UMLComposition=4,
+}
+
+pub enum UMLClassKind {
+    UMLClass,
+    UMLTrait,
+    Unknown,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
@@ -49,12 +55,13 @@ pub struct UMLClass {
     pub name: String,
     method_names: Vec<String>,
     fields: Vec<String>,
+    pub kind: UMLClassKind
 }
 
 
 impl UMLClass {
-    pub fn new(name: &str, fields: Vec<String>, method_names: Vec<String>) -> UMLClass {
-        UMLClass { name: String::from(name), fields: fields, method_names: method_names}
+    pub fn new(name: &str, fields: Vec<String>, method_names: Vec<String>, kind: UMLClassKind) -> UMLClass {
+        UMLClass { name: String::from(name), fields: fields, method_names: method_names, kind: kind}
     }
 
     pub fn merge_from(&mut self, from: &mut UMLClass) -> () {
@@ -83,6 +90,10 @@ impl UMLModule {
     }
 
     pub fn parse_source_file(&mut self, src_file: SourceFile) -> () {
+        // parsing impls after all other nodes have been parsed
+        let mut impls: Vec<ast::Impl> = vec![];
+
+
         // visit all items in SourceFile and extract dot entities from every type of them
         for item in src_file.items() {
             match item {
@@ -91,16 +102,43 @@ impl UMLModule {
                     self.add_relations(&mut f.get_uml_relations());
                 },
                 ast::Item::Impl(ip) => {
-                    self.add_structs(ip.get_uml_class());
-                    self.add_relations(&mut ip.get_uml_relations());
+                    impls.push(ip);
                 },
                 ast::Item::Struct(st) => {
                     self.add_structs(st.get_uml_class());
                     self.add_relations(&mut st.get_uml_relations());
                 },
+                ast::Item::Trait(tt) => {
+                },
                 _ => (),
             }
         }
+        // for node in src_file.syntax().descendants() {
+        //     match_ast! {
+        //         match node {
+        //             ast::Fn(f) => {
+        //                 self.fns.append(&mut f.get_uml_fn());
+        //                 self.add_relations(&mut f.get_uml_relations());
+        //             },
+        //             ast::Impl(ip) => {
+        //                 impls.push(ip);
+        //             },
+        //             ast::Struct(st) => {
+        //                 self.add_structs(st.get_uml_class());
+        //                 self.add_relations(&mut st.get_uml_relations());
+        //             },
+        //             _ => (),
+        //         }
+        //     }
+        // }
+
+        println!("module has {} structs and impls has {} items", self.structs.len(), impls.len());
+        impls.iter()
+            .for_each(|ip| {
+                self.add_impl_classes(ip.get_uml_class());
+                self.add_relations(&mut ip.get_uml_relations());
+            })
+
     }
 
     fn add_relations(&mut self, rel_list: &mut Vec<UMLRelation>) -> () {
@@ -163,12 +201,22 @@ impl UMLModule {
     }
 
     fn add_structs(&mut self, st_list: Vec<UMLClass>) -> () {
-        for mut st in st_list {
+        for st in st_list {
             if self.get_struct_names().contains(&st.name) {
-                self.get_mut_struct(&st.name).unwrap().merge_from(&mut st);
+                println!("struct or trait with name {} exists!", st.name);
             } else {
                 let st_name = st.name.clone();
                 self.structs.push((st_name.clone(), st));
+            }
+        }
+    }
+
+    fn add_impl_classes(&mut self, ip_list: Vec<UMLClass>) -> () {
+        for mut ip in ip_list {
+            if self.get_struct_names().contains(&ip.name) {
+                self.get_mut_struct(&ip.name).unwrap().merge_from(&mut ip);
+            } else {
+                println!("no struct or trait with name: {}", ip.name);
             }
         }
     }
