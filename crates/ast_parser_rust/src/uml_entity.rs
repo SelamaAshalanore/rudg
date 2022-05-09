@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 use ra_ap_syntax::{ast::{self, HasModuleItem}, SourceFile};
 
 use crate::ast_parser::{HasUMLFn, HasUMLClass, HasUMLRelation};
@@ -25,6 +27,10 @@ impl UMLRelation {
 
     fn same_objects(&self, other: &UMLRelation) -> bool {
         self.from == other.from && self.to == other.to
+    }
+
+    fn opposite_objects(&self, other: &UMLRelation) -> bool {
+        self.from == other.to && self.to == other.from
     }
 }
 
@@ -103,18 +109,56 @@ impl UMLModule {
 
     pub fn get_relations(&self) -> Vec<UMLRelation> {
         let mut relations = self.relations.clone();
+
+        // compare two adjacent relation, if they have same "from" and "to", then the less ordered Relation will not count in
         relations.sort();
         relations.reverse();
-
         let mut results: Vec<UMLRelation> = vec![];
         for r in relations {
             match results.last() {
-                Some(r_other) => if r.same_objects(r_other) {
+                Some(r_other) => if !r.same_objects(r_other) {
                     results.push(r);
                 },
                 None => { results.push(r) }
             }
         }
+        
+        self.merge_association(results)
+    }
+
+    fn merge_association(&self, relations: Vec<UMLRelation>) -> Vec<UMLRelation> {
+        let mut results = vec![];
+        // temp vec for storing association relations
+        let mut uni_associations: Vec<UMLRelation> = vec![];
+        for r in relations {
+            match r.kind {
+                // compare relation with Uni Association Type with every Relation in uni_associations,
+                // if match with opposite relation, push Bi-Association to Results and remove matched relation from uni_associations,
+                // if not, push the relation to uni_associations
+                UMLRelationKind::UMLAssociationUni => {
+                    let mut match_bi_index: Option<usize> = None;
+                    for ua_index in 0..uni_associations.len() {
+                        if r.opposite_objects(uni_associations.index(ua_index)) {
+                            match_bi_index = Some(ua_index);
+                            break;
+                        }
+                    }
+                    match match_bi_index {
+                        Some(i) => {
+                            results.push(UMLRelation::new(&r.from, &r.to, UMLRelationKind::UMLAssociationBi));
+                            uni_associations.remove(i);
+                        },
+                        None => {
+                            uni_associations.push(r);
+                        }
+                    }
+                },
+                _ => { results.push(r) }
+            }
+        }
+
+        // finally merge uni_associations to include unmatched association relations
+        results.append(&mut uni_associations);
         results
     }
 

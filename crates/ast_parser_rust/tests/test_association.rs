@@ -3,7 +3,7 @@ extern crate staticanalyzer;
 
 
 #[test]
-fn test_aggregation() {
+fn test_association() {
     assert_eq!(
         staticanalyzer::rs2dot("tests/examples/association.rs"),
 r#"digraph ast {

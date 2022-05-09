@@ -102,8 +102,8 @@ impl UMLEntity for UMLRelation {
             },
             UMLRelationKind::UMLAssociationUni => {
                 vec![DotEntity::Edge(edge_with_arrows(
+                    &self.to,
                     &self.from, 
-                    &self.to, 
                     "",
                     Style::None,
                     Arrow::default(),
