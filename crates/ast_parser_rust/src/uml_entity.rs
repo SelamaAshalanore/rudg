@@ -2,14 +2,16 @@ use ra_ap_syntax::{ast::{self, HasModuleItem}, SourceFile};
 
 use crate::ast_parser::{HasUMLFn, HasUMLClass, HasUMLRelation};
 
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub enum UMLRelationKind {
-    UMLAggregation,
-    UMLComposition,
-    UMLDependency,
-    UMLAssociationUni,
-    UMLAggregationBi
+    UMLDependency=0,
+    UMLAssociationUni=1,
+    UMLAssociationBi=2,
+    UMLAggregation=3,
+    UMLComposition=4,
 }
 
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct UMLRelation {
     pub from: String,
     pub to: String,
@@ -20,8 +22,11 @@ impl UMLRelation {
     pub fn new(from: &str, to: &str, kind: UMLRelationKind) -> UMLRelation {
         UMLRelation { from: String::from(from), to: String::from(to), kind: kind }
     }
-}
 
+    fn same_objects(&self, other: &UMLRelation) -> bool {
+        self.from == other.from && self.to == other.to
+    }
+}
 
 pub struct UMLFn {
     pub name: String,
@@ -63,7 +68,7 @@ impl UMLClass {
 pub struct UMLModule {
     pub structs: Vec<(String, UMLClass)>,
     pub fns: Vec<UMLFn>,
-    pub relations: Vec<UMLRelation>
+    relations: Vec<UMLRelation>
 }
 
 impl UMLModule {
@@ -96,8 +101,21 @@ impl UMLModule {
         self.relations.append(rel_list);
     }
 
-    pub fn get_relations(&self) -> &Vec<UMLRelation> {
-        &self.relations
+    pub fn get_relations(&self) -> Vec<UMLRelation> {
+        let mut relations = self.relations.clone();
+        relations.sort();
+        relations.reverse();
+
+        let mut results: Vec<UMLRelation> = vec![];
+        for r in relations {
+            match results.last() {
+                Some(r_other) => if r.same_objects(r_other) {
+                    results.push(r);
+                },
+                None => { results.push(r) }
+            }
+        }
+        results
     }
 
     fn add_structs(&mut self, st_list: Vec<UMLClass>) -> () {

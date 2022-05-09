@@ -111,7 +111,7 @@ impl UMLEntity for UMLRelation {
                     None
                 ))]
             },
-            UMLRelationKind::UMLAggregationBi => {
+            UMLRelationKind::UMLAssociationBi => {
                 vec![DotEntity::Edge(edge_with_arrows(
                     &self.from, 
                     &self.to, 
