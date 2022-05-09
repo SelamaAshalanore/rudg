@@ -57,7 +57,7 @@ impl UMLEntity for UMLModule {
         self.fns
             .iter()
             .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));
-        self.relations
+        self.get_relations()
             .iter()
             .for_each(|r| dot_entities.append(&mut r.get_dot_entities()));
         dot_entities

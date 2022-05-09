@@ -96,6 +96,10 @@ impl UMLModule {
         self.relations.append(rel_list);
     }
 
+    pub fn get_relations(&self) -> &Vec<UMLRelation> {
+        &self.relations
+    }
+
     fn add_structs(&mut self, st_list: Vec<UMLClass>) -> () {
         for mut st in st_list {
             if self.get_struct_names().contains(&st.name) {
