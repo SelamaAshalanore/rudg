@@ -109,6 +109,8 @@ impl UMLModule {
                     self.add_relations(&mut st.get_uml_relations());
                 },
                 ast::Item::Trait(tt) => {
+                    self.add_structs(tt.get_uml_class());
+                    self.add_relations(&mut tt.get_uml_relations());
                 },
                 _ => (),
             }

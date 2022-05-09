@@ -58,6 +58,38 @@ impl HasUMLRelation for ast::Struct {
     }
 }
 
+impl HasUMLClass for ast::Trait {
+    fn get_uml_class(&self) -> Vec<UMLClass> {
+        vec![UMLClass::new(&self.name().unwrap().text().to_string(), vec![], vec![], UMLClassKind::UMLTrait)]
+    }
+}
+
+impl HasUMLRelation for ast::Trait {
+    fn get_uml_relations(&self) -> Vec<UMLRelation> {
+        let mut results = vec![];
+        for node in self.syntax().descendants() {
+            match_ast! {
+                match node {
+                    ast::RecordField(rf) => {
+                        let rf_str = rf.to_string();
+                        if rf_str.contains(r"*mut") || rf_str.contains(r"*const") {
+                            get_paths_str_from_ast_node(rf)
+                                .iter()
+                                .for_each(|p| results.push(UMLRelation::new(&p, &self.name().unwrap().text().to_string(), UMLRelationKind::UMLAggregation)))
+                        } else if !rf_str.contains(r"*mut") && !rf_str.contains(r"*const") {
+                            get_paths_str_from_ast_node(rf)
+                                .iter()
+                                .for_each(|p| results.push(UMLRelation::new(&p, &self.name().unwrap().text().to_string(), UMLRelationKind::UMLComposition)))
+                        }
+                    },
+                    _ => ()
+                }
+            }
+        };
+        results
+    }
+}
+
 impl HasUMLClass for ast::Impl {
     fn get_uml_class(&self) -> Vec<UMLClass> {
         let mut impl_fn_names = vec![];

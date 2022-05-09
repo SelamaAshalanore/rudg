@@ -48,7 +48,19 @@ impl UMLEntity for UMLClass {
                 
             },
             UMLClassKind::UMLTrait => {
+                let mut label_text: Vec<&str> = vec![r"Interface\l", &self.name];
+                let method_names = self.get_method_names();
 
+                let method_names_str = method_names.join(r"\l");
+                if method_names.len() > 0 {
+                    label_text.insert(0, "{");
+                    label_text.push("|");
+                    label_text.push(&method_names_str);
+                    label_text.push("}");
+                }
+                let label: String = label_text.into_iter().collect();
+                
+                dot_entities.push(DotEntity::Node(Node::new(&self.name, &label, Style::None, None, Some(String::from("record")))));
             },
             UMLClassKind::Unknown => {
                 
