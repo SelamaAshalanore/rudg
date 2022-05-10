@@ -1,6 +1,6 @@
 use std::ops::Index;
 
-use ra_ap_syntax::{ast::{self, HasModuleItem}, SourceFile, AstNode, match_ast};
+use ra_ap_syntax::{ast::{self, HasModuleItem}, SourceFile};
 
 use crate::ast_parser::{HasUMLFn, HasUMLClass, HasUMLRelation};
 
@@ -11,6 +11,7 @@ pub enum UMLRelationKind {
     UMLAssociationBi=2,
     UMLAggregation=3,
     UMLComposition=4,
+    UMLRealization=5
 }
 
 pub enum UMLClassKind {
@@ -143,8 +144,18 @@ impl UMLModule {
                 None => { results.push(r) }
             }
         }
+
+        // if relation's "from" or "to" not in structs/fns, then drop it
+        let mut final_results: Vec<UMLRelation> = vec![];
+        for r in results {
+            if (self.get_fn_names().contains(&r.from) || self.get_struct_names().contains(&r.from)) &&
+                (self.get_fn_names().contains(&r.to) || self.get_struct_names().contains(&r.to)) &&
+                (&r.from != &r.to) {
+                    final_results.push(r);
+                }
+        }
         
-        self.merge_association(results)
+        self.merge_association(final_results)
     }
 
     fn merge_association(&self, relations: Vec<UMLRelation>) -> Vec<UMLRelation> {
@@ -215,6 +226,13 @@ impl UMLModule {
         self.structs
             .iter()
             .map(|(st_name, _)| st_name.clone())
+            .collect()
+    }
+
+    fn get_fn_names(&self) -> Vec<String> {
+        self.fns
+            .iter()
+            .map(|f| f.name.clone())
             .collect()
     }
 }

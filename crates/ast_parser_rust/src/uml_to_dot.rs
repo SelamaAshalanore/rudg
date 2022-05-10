@@ -146,6 +146,17 @@ impl UMLEntity for UMLRelation {
                     None
                 ))]
             },
+            UMLRelationKind::UMLRealization => {
+                vec![DotEntity::Edge(edge_with_arrows(
+                    &self.from, 
+                    &self.to, 
+                    "",
+                    Style::Dashed,
+                    Arrow::default(),
+                    Arrow::from_arrow(ArrowShape::Normal(Fill::Open, Side::Both)),
+                    None
+                ))]
+            },
         }
     }
 }

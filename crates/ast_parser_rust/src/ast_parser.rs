@@ -93,8 +93,8 @@ impl HasUMLRelation for ast::Trait {
 impl HasUMLClass for ast::Impl {
     fn get_uml_class(&self) -> Vec<UMLClass> {
         let mut impl_fn_names = vec![];
-        let struct_name: String = self.self_ty().unwrap().to_string();
-        let class_name: Vec<&str> = struct_name.split(r"<").collect();
+        let struct_name: String = strip_trait_bound(&self.self_ty().unwrap().to_string());
+
         
         for node in self.syntax().descendants() {
             match_ast! {
@@ -105,16 +105,26 @@ impl HasUMLClass for ast::Impl {
                     _ => ()
                 }
             }
+            // println!("{:?}", node);
+            // println!("{}", node);
         }
         // println!("get UMLClass from impl with name: {} and fn_names: {:?}", class_name[0], impl_fn_names);
-        vec![UMLClass::new(class_name[0], vec![], impl_fn_names, UMLClassKind::Unknown)]
+        vec![UMLClass::new(&struct_name, vec![], impl_fn_names, UMLClassKind::Unknown)]
     }
 }
 
 impl HasUMLRelation for ast::Impl {
     fn get_uml_relations(&self) -> Vec<UMLRelation> {
         let mut results: Vec<UMLRelation> = vec![];
-        let struct_name: String = self.self_ty().unwrap().to_string();
+        let struct_name: String = strip_trait_bound(&self.self_ty().unwrap().to_string());
+        match self.trait_() {
+            Some(tt) => {
+                results.push(UMLRelation::new(&strip_trait_bound(&tt.to_string()), &struct_name, UMLRelationKind::UMLRealization));
+                println!("trait: {}", tt.to_string());
+            },
+            None => ()
+        }
+
         for node in self.syntax().descendants() {
             match_ast! {
                 match node {
@@ -146,6 +156,11 @@ impl HasUMLRelation for ast::Impl {
     }
 }
 
+fn strip_trait_bound(s: &str) -> String {
+    let class_name: Vec<&str> = s.split(r"<").collect();
+    String::from(class_name[0])
+}
+
 fn get_paths_str_from_ast_node(node: impl ast::AstNode) -> Vec<String> {
     let mut results = vec![];
     for node in node.syntax().descendants() {
@@ -157,6 +172,8 @@ fn get_paths_str_from_ast_node(node: impl ast::AstNode) -> Vec<String> {
                 _ => ()
             }
         }
+        // println!("{:?}", node);
+        // println!("{}", node);
     };
     results
 }
