@@ -30,9 +30,7 @@ r#"digraph ast {
         assert_eq!(
             code_to_dot_digraph(code), 
 r#"digraph ast {
-    Mock[label="Mock"];
-    mock_fn[label="mock_fn"];
-    mock_fn -> Mock[label="impl"];
+    Mock[label="{Mock|mock_fn()}"][shape="record"];
 }
 "#
         )
@@ -51,13 +49,11 @@ r#"digraph ast {
         assert_eq!(
             code_to_dot_digraph(code), 
 r#"digraph ast {
-    Mock[label="Mock"];
-    mock_fn[label="mock_fn"];
+    Mock[label="{Mock|mock_fn()}"][shape="record"];
     f1[label="f1"];
     f2[label="f2"];
-    mock_fn -> f1[label="call"];
-    mock_fn -> f2[label="call"];
-    mock_fn -> Mock[label="impl"];
+    f2 -> Mock[label=""][style="dashed"][arrowhead="vee"];
+    f1 -> Mock[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
@@ -76,7 +72,7 @@ r#"digraph ast {
 r#"digraph ast {
     main[label="main"];
     hello[label="hello"];
-    main -> hello[label="call"];
+    hello -> main[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
@@ -98,8 +94,8 @@ r#"digraph ast {
     main[label="main"];
     f1[label="f1"];
     f2[label="f2"];
-    main -> f1[label="call"];
-    main -> f2[label="call"];
+    f2 -> main[label=""][style="dashed"][arrowhead="vee"];
+    f1 -> main[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
@@ -120,8 +116,8 @@ r#"digraph ast {
     main[label="main"];
     f1[label="f1"];
     f2[label="f2"];
-    main -> f1[label="call"];
-    main -> f2[label="call"];
+    f2 -> main[label=""][style="dashed"][arrowhead="vee"];
+    f1 -> main[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )

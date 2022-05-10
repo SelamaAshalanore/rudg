@@ -23,8 +23,8 @@ impl Clone for Node {
 }
 
 impl Node {
-    pub fn new(name: &str, label: &str, style: Style, color:  Option<&'static str>) -> Self {
-        Node { name: String::from(name), label: label.to_string(), style: style, color: color, index: 0, shape: None }
+    pub fn new(name: &str, label: &str, style: Style, color: Option<&'static str>, shape: Option<String>) -> Self {
+        Node { name: String::from(name), label: label.to_string(), style: style, color: color, index: 0, shape: shape }
     }
 
     pub fn node_id(&self) -> &str {
@@ -64,9 +64,9 @@ impl Node {
 
         if let Some(s) = self.shape.clone() {
             shape = s;
-            text.push("[shape=");
+            text.push("[shape=\"");
             text.push(&shape);
-            text.push("]");
+            text.push("\"]");
         }
 
         text.push(";");
