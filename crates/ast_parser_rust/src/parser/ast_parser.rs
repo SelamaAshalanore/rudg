@@ -1,6 +1,7 @@
-use ra_ap_syntax::{ast::{self, AstNode, HasName, HasModuleItem}, match_ast, SourceFile};
+use ra_ap_syntax::{ast::{self, AstNode, HasName, HasModuleItem}, match_ast, SourceFile, Parse};
 
 use crate::uml_entity::*;
+use super::StringParser;
 
 pub trait HasUMLFn {
     fn get_uml_fn(&self) -> Vec<UMLFn>;
@@ -243,7 +244,7 @@ fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> String {
     String::from(call_names[0])
 }
 
-impl UMLModule {
+impl UMLGraph {
     pub fn parse_source_file(&mut self, src_file: SourceFile) -> () {
         // parsing impls after all other nodes have been parsed
         let mut impls: Vec<ast::Impl> = vec![];
@@ -277,5 +278,48 @@ impl UMLModule {
                 self.add_relations(&mut ip.get_uml_relations());
             })
 
+    }
+}
+
+pub struct AstParser;
+
+impl StringParser for AstParser {
+    fn parse_string(input: &str) -> UMLGraph {
+        let parse: Parse<SourceFile> = SourceFile::parse(input);
+        let file: SourceFile = parse.tree();
+        // parsing impls after all other nodes have been parsed
+        let mut impls: Vec<ast::Impl> = vec![];
+        let mut uml_graph = UMLGraph::new();
+
+
+        // visit all items in SourceFile and extract dot entities from every type of them
+        for item in file.items() {
+            match item {
+                ast::Item::Fn(f) => {
+                    uml_graph.fns.append(&mut f.get_uml_fn());
+                    uml_graph.add_relations(&mut f.get_uml_relations());
+                },
+                ast::Item::Impl(ip) => {
+                    impls.push(ip);
+                },
+                ast::Item::Struct(st) => {
+                    uml_graph.add_structs(st.get_uml_class());
+                    uml_graph.add_relations(&mut st.get_uml_relations());
+                },
+                ast::Item::Trait(tt) => {
+                    uml_graph.add_structs(tt.get_uml_class());
+                    uml_graph.add_relations(&mut tt.get_uml_relations());
+                },
+                _ => (),
+            }
+        }
+
+        impls.iter()
+            .for_each(|ip| {
+                uml_graph.add_impl_classes(ip.get_uml_class());
+                uml_graph.add_relations(&mut ip.get_uml_relations());
+            });
+        
+        uml_graph
     }
 }

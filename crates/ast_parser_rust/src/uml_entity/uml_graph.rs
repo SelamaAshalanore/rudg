@@ -9,15 +9,15 @@ use {
 };
 
 
-pub struct UMLModule {
+pub struct UMLGraph {
     pub structs: Vec<(String, UMLClass)>,
     pub fns: Vec<UMLFn>,
     relations: Vec<UMLRelation>
 }
 
-impl UMLModule {
-    pub fn new() -> UMLModule {
-        UMLModule { structs: vec![], fns: vec![], relations: vec![]}
+impl UMLGraph {
+    pub fn new() -> UMLGraph {
+        UMLGraph { structs: vec![], fns: vec![], relations: vec![]}
     }
 
     pub fn add_relations(&mut self, rel_list: &mut Vec<UMLRelation>) -> () {

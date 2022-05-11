@@ -75,7 +75,7 @@ impl UMLEntity for UMLClass {
 }
 
 
-impl UMLEntity for UMLModule {
+impl UMLEntity for UMLGraph {
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
         self.structs
@@ -91,7 +91,7 @@ impl UMLEntity for UMLModule {
     }
 }
 
-impl GraphExporter for UMLModule {
+impl GraphExporter for UMLGraph {
     fn to_string(&self) -> String {
         let (node_list, edge_list) = get_node_and_edge_list(self.get_dot_entities());
 
