@@ -1,7 +1,5 @@
 use std::ops::Index;
 
-
-
 use {
     super::uml_fn::UMLFn,
     super::{UMLClass},
