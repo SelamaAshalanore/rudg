@@ -1,12 +1,11 @@
 pub mod uml_entity;
 pub mod parser;
-mod uml_to_dot;
+pub mod graph_exporter;
 
 
 use ra_ap_syntax::{SourceFile, Parse};
 use uml_entity::{UMLModule};
-use uml_to_dot::{DotEntity, UMLEntity};
-use dot::{graph_to_string, new_graph};
+use graph_exporter::{to_dot::{DotEntity,}, GraphExporter};
 use std::path::Path;
 use std::fs::read_to_string;
 use dot::{Edge, Node};
@@ -33,12 +32,7 @@ pub fn code_to_dot_digraph(code: &str) -> String {
     let file: SourceFile = parse.tree();
     uml_module.parse_source_file(file);
 
-    let (node_list, edge_list) = get_node_and_edge_list(uml_module.get_dot_entities());
-
-    // generate digraph from nodes and edges
-    let new_digraph = new_graph("ast", node_list, edge_list, None);
-
-    return graph_to_string(new_digraph).unwrap();
+    return uml_module.to_string();
 }
 
 pub fn get_node_and_edge_list(dot_entities: Vec<DotEntity>) -> (Vec<Node>, Vec<Edge>) {
