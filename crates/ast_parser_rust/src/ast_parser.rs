@@ -1,4 +1,5 @@
-use ra_ap_syntax::{ast::{self, AstNode, HasName}, match_ast};
+use ra_ap_syntax::{ast::{self, AstNode, HasName, HasModuleItem}, match_ast, SourceFile};
+
 use crate::uml_entity::*;
 
 pub trait HasUMLFn {
@@ -240,4 +241,41 @@ fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> String {
     let call_expr = call_exp.to_string();
     let call_names: Vec<&str> = call_expr.split("(").collect();
     String::from(call_names[0])
+}
+
+impl UMLModule {
+    pub fn parse_source_file(&mut self, src_file: SourceFile) -> () {
+        // parsing impls after all other nodes have been parsed
+        let mut impls: Vec<ast::Impl> = vec![];
+
+
+        // visit all items in SourceFile and extract dot entities from every type of them
+        for item in src_file.items() {
+            match item {
+                ast::Item::Fn(f) => {
+                    self.fns.append(&mut f.get_uml_fn());
+                    self.add_relations(&mut f.get_uml_relations());
+                },
+                ast::Item::Impl(ip) => {
+                    impls.push(ip);
+                },
+                ast::Item::Struct(st) => {
+                    self.add_structs(st.get_uml_class());
+                    self.add_relations(&mut st.get_uml_relations());
+                },
+                ast::Item::Trait(tt) => {
+                    self.add_structs(tt.get_uml_class());
+                    self.add_relations(&mut tt.get_uml_relations());
+                },
+                _ => (),
+            }
+        }
+
+        impls.iter()
+            .for_each(|ip| {
+                self.add_impl_classes(ip.get_uml_class());
+                self.add_relations(&mut ip.get_uml_relations());
+            })
+
+    }
 }
