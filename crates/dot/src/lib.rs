@@ -491,7 +491,7 @@ r#"digraph test_some_labelled {
 r#"digraph test_some_labelled {
     N0[label="A"];
     N1[label="N1"][style="dotted"];
-    N0 -> N1[label="A-1"][arrowhead="lcrow" dir="both" arrowtail="tee"];
+    N0 -> N1[label="A-1"][arrowhead="lcrow" arrowtail="tee" dir="both"];
 }
 "#);
     }
