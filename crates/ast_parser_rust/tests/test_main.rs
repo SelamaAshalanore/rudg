@@ -72,7 +72,7 @@ r#"digraph ast {
 r#"digraph ast {
     main[label="main"];
     hello[label="hello"];
-    hello -> main[label=""][style="dashed"][arrowhead="vee"];
+    main -> hello[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
@@ -94,8 +94,8 @@ r#"digraph ast {
     main[label="main"];
     f1[label="f1"];
     f2[label="f2"];
-    f2 -> main[label=""][style="dashed"][arrowhead="vee"];
-    f1 -> main[label=""][style="dashed"][arrowhead="vee"];
+    main -> f2[label=""][style="dashed"][arrowhead="vee"];
+    main -> f1[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
@@ -116,8 +116,8 @@ r#"digraph ast {
     main[label="main"];
     f1[label="f1"];
     f2[label="f2"];
-    f2 -> main[label=""][style="dashed"][arrowhead="vee"];
-    f1 -> main[label=""][style="dashed"][arrowhead="vee"];
+    main -> f2[label=""][style="dashed"][arrowhead="vee"];
+    main -> f1[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )

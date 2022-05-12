@@ -111,19 +111,19 @@ impl HasUMLEntity for ast::Impl {
                     ast::ParamList(pl) => {
                         let path_names: Vec<String> = get_paths_str_from_ast_node(pl);
                         results.extend(
-                            path_names.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&struct_name, &p, UMLRelationKind::UMLDependency)))
+                            path_names.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&p, &struct_name, UMLRelationKind::UMLDependency)))
                         );
                     },
                     ast::BlockExpr(ex) => {
                         let path_names: Vec<String> = get_paths_str_from_ast_node(ex);
                         results.extend(
-                            path_names.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&struct_name, &p, UMLRelationKind::UMLDependency)))
+                            path_names.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&p, &struct_name, UMLRelationKind::UMLDependency)))
                         );
                     },
                     ast::RetType(rt) => {
                         let path_names: Vec<String> = get_paths_str_from_ast_node(rt);
                         results.extend(
-                            path_names.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&struct_name, &p, UMLRelationKind::UMLAssociationUni)))
+                            path_names.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&p, &struct_name, UMLRelationKind::UMLAssociationUni)))
                         );
                     },
                     _ => ()
@@ -283,18 +283,58 @@ mod tests {
         assert_eq!(parsed_graph, target_graph);
     }
 
-    // #[test]
-    // fn test_parse_struct() {
-    //     let code: &str = r#"
-    //     pub struct Mock;
-    //         impl Mock {
-    //             pub fn mock_fn() {}
-    //         }
-    //     "#;
-    //     let parsed_graph = AstParser::parse_string(code);
-    //     let mut target_graph: UMLGraph = UMLGraph::new();
-    //     target_graph.add_fn(UMLFn::new("main", "main()"));
-    //     assert_eq!(parsed_graph, target_graph);
-    // }
+    #[test]
+    fn test_parse_struct() {
+        let code: &str = r#"
+        pub struct Mock;
+            impl Mock {
+                pub fn mock_fn() {}
+            }
+        "#;
+        let parsed_graph = AstParser::parse_string(code);
+        let mut target_graph: UMLGraph = UMLGraph::new();
+        target_graph.add_struct(UMLClass::new("Mock", vec![], vec![String::from("mock_fn()")], UMLClassKind::UMLClass));
+        assert_eq!(parsed_graph, target_graph);
+    }
+
+    #[test]
+    fn test_fn_dependency() {
+        let code: &str = r#"
+            fn main() {
+                hello();
+            }
+            fn hello() {}
+        "#;
+        let parsed_graph = AstParser::parse_string(code);
+        let mut target_graph: UMLGraph = UMLGraph::new();
+
+        target_graph.add_fn(UMLFn::new("main", "main()"));
+        target_graph.add_fn(UMLFn::new("hello", "hello()"));
+        target_graph.add_relation(UMLRelation::new("main", "hello", UMLRelationKind::UMLDependency));
+        
+        assert_eq!(parsed_graph, target_graph);
+    }
+
+    #[test]
+    fn test_class_dependency() {
+        let code: &str = r#"
+        pub struct Mock;
+        impl Mock {
+            pub fn mock_fn() { f1(f2()) }    
+        }
+        fn f1(i: usize) {}
+        fn f2() -> usize { 0 }
+        "#;
+        let parsed_graph = AstParser::parse_string(code);
+        let mut target_graph: UMLGraph = UMLGraph::new();
+
+        target_graph.add_struct(UMLClass::new("Mock", vec![], vec![String::from("mock_fn()")], UMLClassKind::UMLClass));
+        target_graph.add_fn(UMLFn::new("f1", "f1(i: usize)"));
+        target_graph.add_fn(UMLFn::new("f2", "f2() -> usize"));
+        target_graph.add_relation(UMLRelation::new("f1", "Mock", UMLRelationKind::UMLDependency));
+        target_graph.add_relation(UMLRelation::new("f2", "Mock", UMLRelationKind::UMLDependency));
+        
+        assert_eq!(parsed_graph, target_graph);
+    }
 
 }
