@@ -19,7 +19,16 @@ impl UMLGraph {
     }
 
     pub fn add_relation(&mut self, rel: UMLRelation) -> () {
-        self.relations.push(rel);
+        if (self.get_fn_names().contains(&rel.from) || self.get_struct_names().contains(&rel.from)) &&
+                (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to)) &&
+                (&rel.from != &rel.to) {
+                    self.relations.push(rel);
+                }
+        else {
+            dbg!("warning: this graph cannot add Relation now", rel);
+        }
+        // self.relations.push(rel);
+        
     }
 
     pub fn add_struct(&mut self, cls: UMLClass) -> () {

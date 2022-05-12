@@ -125,7 +125,7 @@ impl HasUMLEntity for ast::Impl {
                 results.push(
                     UMLEntity::UMLRelation(UMLRelation::new(&strip_trait_bound(&tt.to_string()), &struct_name, UMLRelationKind::UMLRealization))
                 );
-                println!("trait: {}", tt.to_string());
+                // println!("trait: {}", tt.to_string());
             },
             None => {
                 results.push(UMLEntity::UMLClass(UMLClass::new(&struct_name, vec![], impl_fn_names, UMLClassKind::UMLClass)));
@@ -222,11 +222,8 @@ impl StringParser for AstParser {
     fn parse_string(input: &str) -> UMLGraph {
         let parse: Parse<SourceFile> = SourceFile::parse(input);
         let file: SourceFile = parse.tree();
-        // parsing impls after all other nodes have been parsed
         let mut uml_graph = UMLGraph::new();
         let mut uml_entities: Vec<UMLEntity> = vec![];
-        let mut impl_entities: Vec<UMLEntity> = vec![];
-
 
         // visit all items in SourceFile and extract dot entities from every type of them
         for item in file.items() {
@@ -235,7 +232,7 @@ impl StringParser for AstParser {
                     uml_entities.append(&mut f.get_uml_entities());
                 },
                 ast::Item::Impl(ip) => {
-                    impl_entities.append(&mut ip.get_uml_entities());
+                    uml_entities.append(&mut ip.get_uml_entities());
                 },
                 ast::Item::Struct(st) => {
                     uml_entities.append(&mut st.get_uml_entities());
@@ -247,20 +244,20 @@ impl StringParser for AstParser {
             }
         }
 
+        // add relations last
+        let mut relations: Vec<UMLRelation> = vec![];
         for e in uml_entities {
             match e {
                 UMLEntity::UMLClass(c) => uml_graph.add_struct(c),
                 UMLEntity::UMLFn(f) => uml_graph.add_fn(f),
-                UMLEntity::UMLRelation(r) => uml_graph.add_relation(r),
+                UMLEntity::UMLRelation(r) => {
+                    // uml_graph.add_relation(r);
+                    relations.push(r);
+                },
             }
         }
-        
-        for e in impl_entities {
-            match e {
-                UMLEntity::UMLClass(c) => uml_graph.add_struct(c),
-                UMLEntity::UMLFn(f) => uml_graph.add_fn(f),
-                UMLEntity::UMLRelation(r) => uml_graph.add_relation(r),
-            }
+        for rel in relations {
+            uml_graph.add_relation(rel);
         }
 
         uml_graph
