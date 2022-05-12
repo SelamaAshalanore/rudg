@@ -129,8 +129,8 @@ impl UMLEntity for UMLRelation {
                     &self.to, 
                     "", 
                     Style::None, 
-                    Arrow::default(),
                     Arrow::from_arrow(ArrowShape::Diamond(Fill::Open, Side::Both)),
+                    Arrow::default(),
                     None
                 ))]
             },

@@ -10,8 +10,8 @@ r#"digraph ast {
     Amut[label="{Amut|b: *mut B}"][shape="record"];
     Aconst[label="{Aconst|b: *const B}"][shape="record"];
     B[label="B"][shape="record"];
-    B -> Amut[label=""][arrowhead="odiamond"];
-    B -> Aconst[label=""][arrowhead="odiamond"];
+    Amut -> B[label=""][arrowtail="odiamond"];
+    Aconst -> B[label=""][arrowtail="odiamond"];
 }
 "#
     )

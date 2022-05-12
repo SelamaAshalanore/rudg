@@ -24,13 +24,13 @@ impl HasUMLEntity for ast::Struct {
                             get_paths_str_from_ast_node(rf)
                                 .iter()
                                 .for_each(|p| results.push(
-                                    UMLEntity::UMLRelation(UMLRelation::new(&p, &self.name().unwrap().text().to_string(), UMLRelationKind::UMLAggregation)))
+                                    UMLEntity::UMLRelation(UMLRelation::new(&self.name().unwrap().text().to_string(), &p, UMLRelationKind::UMLAggregation)))
                                 )
                         } else if !rf_str.contains(r"*mut") && !rf_str.contains(r"*const") {
                             get_paths_str_from_ast_node(rf)
                                 .iter()
                                 .for_each(|p| results.push(
-                                    UMLEntity::UMLRelation(UMLRelation::new(&p, &self.name().unwrap().text().to_string(), UMLRelationKind::UMLComposition)))
+                                    UMLEntity::UMLRelation(UMLRelation::new(&self.name().unwrap().text().to_string(), &p, UMLRelationKind::UMLComposition)))
                                 )
                         }
                     },
@@ -61,13 +61,13 @@ impl HasUMLEntity for ast::Trait {
                             get_paths_str_from_ast_node(rf)
                                 .iter()
                                 .for_each(|p| results.push(
-                                    UMLEntity::UMLRelation(UMLRelation::new(&p, &self.name().unwrap().text().to_string(), UMLRelationKind::UMLAggregation)))
+                                    UMLEntity::UMLRelation(UMLRelation::new(&self.name().unwrap().text().to_string(), &p, UMLRelationKind::UMLAggregation)))
                                 )
                         } else if !rf_str.contains(r"*mut") && !rf_str.contains(r"*const") {
                             get_paths_str_from_ast_node(rf)
                                 .iter()
                                 .for_each(|p| results.push(
-                                    UMLEntity::UMLRelation(UMLRelation::new(&p, &self.name().unwrap().text().to_string(), UMLRelationKind::UMLComposition)))
+                                    UMLEntity::UMLRelation(UMLRelation::new(&self.name().unwrap().text().to_string(), &p, UMLRelationKind::UMLComposition)))
                                 )
                         }
                     },
@@ -333,6 +333,52 @@ mod tests {
         target_graph.add_fn(UMLFn::new("f2", "f2() -> usize"));
         target_graph.add_relation(UMLRelation::new("f1", "Mock", UMLRelationKind::UMLDependency));
         target_graph.add_relation(UMLRelation::new("f2", "Mock", UMLRelationKind::UMLDependency));
+        
+        assert_eq!(parsed_graph, target_graph);
+    }
+
+    #[test]
+    fn test_aggregation() {
+        let code: &str = r#"
+        struct Amut {
+            b: *mut B,
+        }
+        
+        struct Aconst {
+            b: *const B,
+        }
+        
+        struct B {
+        }
+        "#;
+        let parsed_graph = AstParser::parse_string(code);
+        let mut target_graph: UMLGraph = UMLGraph::new();
+
+        target_graph.add_struct(UMLClass::new("Amut", vec![String::from(r"b: *mut B")], vec![], UMLClassKind::UMLClass));
+        target_graph.add_struct(UMLClass::new("Aconst", vec![String::from(r"b: *const B")], vec![], UMLClassKind::UMLClass));
+        target_graph.add_struct(UMLClass::new("B", vec![], vec![], UMLClassKind::UMLClass));
+        target_graph.add_relation(UMLRelation::new("Amut", "B", UMLRelationKind::UMLAggregation));
+        target_graph.add_relation(UMLRelation::new("Aconst", "B", UMLRelationKind::UMLAggregation));
+        
+        assert_eq!(parsed_graph, target_graph);
+    }
+
+    #[test]
+    fn test_composition() {
+        let code: &str = r#"
+        struct A {
+            b: B,
+        }
+        
+        struct B {
+        }
+        "#;
+        let parsed_graph = AstParser::parse_string(code);
+        let mut target_graph: UMLGraph = UMLGraph::new();
+
+        target_graph.add_struct(UMLClass::new("A", vec![String::from(r"b: B")], vec![], UMLClassKind::UMLClass));
+        target_graph.add_struct(UMLClass::new("B", vec![], vec![], UMLClassKind::UMLClass));
+        target_graph.add_relation(UMLRelation::new("A", "B", UMLRelationKind::UMLComposition));
         
         assert_eq!(parsed_graph, target_graph);
     }
