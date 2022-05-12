@@ -24,7 +24,7 @@ impl UMLGraph {
 
     pub fn add_struct(&mut self, cls: UMLClass) -> () {
         if self.get_struct_names().contains(&cls.name) {
-            println!("struct or trait with name {} exists!", cls.name);
+            self.get_mut_struct(&cls.name).unwrap().merge_from(&mut cls.clone());
         } else {
             let st_name = cls.name.clone();
             self.structs.push((st_name.clone(), cls));
@@ -33,16 +33,6 @@ impl UMLGraph {
 
     pub fn add_fn(&mut self, f: UMLFn) -> () {
         self.fns.push(f);
-    }
-
-    pub fn add_impl_classes(&mut self, ip_list: Vec<UMLClass>) -> () {
-        for mut ip in ip_list {
-            if self.get_struct_names().contains(&ip.name) {
-                self.get_mut_struct(&ip.name).unwrap().merge_from(&mut ip);
-            } else {
-                println!("no struct or trait with name: {}", ip.name);
-            }
-        }
     }
 
     pub fn get_relations(&self) -> Vec<UMLRelation> {

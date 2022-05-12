@@ -1,11 +1,11 @@
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum UMLClassKind {
     UMLClass,
     UMLTrait,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct UMLClass {
     pub name: String,
     method_names: Vec<String>,
