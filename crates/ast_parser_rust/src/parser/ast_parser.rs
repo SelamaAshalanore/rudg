@@ -123,7 +123,7 @@ impl HasUMLEntity for ast::Impl {
         match self.trait_() {
             Some(tt) => {
                 results.push(
-                    UMLEntity::UMLRelation(UMLRelation::new(&strip_trait_bound(&tt.to_string()), &struct_name, UMLRelationKind::UMLRealization))
+                    UMLEntity::UMLRelation(UMLRelation::new(&struct_name, &strip_trait_bound(&tt.to_string()), UMLRelationKind::UMLRealization))
                 );
                 // println!("trait: {}", tt.to_string());
             },

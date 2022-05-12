@@ -7,7 +7,7 @@ fn test_realization() {
         r#"digraph ast {
     A[label="{A|a: T|a(a: T) -> Self}"][shape="record"];
     B[label="{Interface\lB|a(&self) -> Option<T>}"][shape="record"];
-    B -> A[label=""][style="dashed"][arrowhead="onormal"];
+    A -> B[label=""][style="dashed"][arrowhead="onormal"];
 }
 "#);
 }
