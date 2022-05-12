@@ -130,7 +130,7 @@ impl HasUMLEntity for ast::Impl {
                 }
             }
         }
-        results.push(UMLEntity::UMLClass(UMLClass::new(&struct_name, vec![], impl_fn_names, UMLClassKind::Unknown)));
+        results.push(UMLEntity::UMLClass(UMLClass::new(&struct_name, vec![], impl_fn_names, UMLClassKind::UMLClass)));
 
         results
     }
@@ -379,6 +379,51 @@ mod tests {
         target_graph.add_struct(UMLClass::new("A", vec![String::from(r"b: B")], vec![], UMLClassKind::UMLClass));
         target_graph.add_struct(UMLClass::new("B", vec![], vec![], UMLClassKind::UMLClass));
         target_graph.add_relation(UMLRelation::new("A", "B", UMLRelationKind::UMLComposition));
+        
+        assert_eq!(parsed_graph, target_graph);
+    }
+
+    
+    #[test]
+    fn test_realization() {
+        let code: &str = r#"
+        use std::fmt::Debug;
+
+        #[derive(Debug)]
+        struct A<T> where T: Debug {
+            a: T,
+        }
+
+        impl<T> A<T> where T: Debug {
+            fn a(a: T) -> Self {
+                A {
+                    a: a,
+                }
+            }
+        }
+
+        impl <T>B<T> for A<T> where T: Debug {
+            fn a(&self) -> Option<T> {
+                None
+            }
+        }
+
+        trait B<T> : Debug where T: Debug {
+            fn a(&self) -> Option<T>;
+        }
+
+        impl <T>B<T> {
+            fn a(&self) -> Option<T> {
+                None
+            }
+        }
+        "#;
+        let parsed_graph = AstParser::parse_string(code);
+        let mut target_graph: UMLGraph = UMLGraph::new();
+
+        target_graph.add_struct(UMLClass::new("A", vec![String::from(r"a: T")], vec![String::from(r"a(a: T) -> Self")], UMLClassKind::UMLClass));
+        target_graph.add_struct(UMLClass::new("B", vec![], vec![String::from(r"a(&self) -> Option<T>")], UMLClassKind::UMLTrait));
+        target_graph.add_relation(UMLRelation::new("A", "B", UMLRelationKind::UMLRealization));
         
         assert_eq!(parsed_graph, target_graph);
     }

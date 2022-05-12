@@ -3,7 +3,6 @@
 pub enum UMLClassKind {
     UMLClass,
     UMLTrait,
-    Unknown,
 }
 
 #[derive(PartialEq, Debug)]

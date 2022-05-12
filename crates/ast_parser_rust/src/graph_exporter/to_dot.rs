@@ -65,9 +65,6 @@ impl UMLEntity for UMLClass {
                 
                 dot_entities.push(DotEntity::Node(Node::new(&self.name, &label, Style::None, None, Some(String::from("record")))));
             },
-            UMLClassKind::Unknown => {
-                
-            }
         }
 
         dot_entities
