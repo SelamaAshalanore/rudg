@@ -18,18 +18,16 @@ impl UMLGraph {
         UMLGraph { structs: vec![], fns: vec![], relations: vec![]}
     }
 
-    pub fn add_relations(&mut self, rel_list: &mut Vec<UMLRelation>) -> () {
-        self.relations.append(rel_list);
+    pub fn add_relation(&mut self, rel: UMLRelation) -> () {
+        self.relations.push(rel);
     }
 
-    pub fn add_structs(&mut self, st_list: Vec<UMLClass>) -> () {
-        for st in st_list {
-            if self.get_struct_names().contains(&st.name) {
-                println!("struct or trait with name {} exists!", st.name);
-            } else {
-                let st_name = st.name.clone();
-                self.structs.push((st_name.clone(), st));
-            }
+    pub fn add_struct(&mut self, cls: UMLClass) -> () {
+        if self.get_struct_names().contains(&cls.name) {
+            println!("struct or trait with name {} exists!", cls.name);
+        } else {
+            let st_name = cls.name.clone();
+            self.structs.push((st_name.clone(), cls));
         }
     }
 

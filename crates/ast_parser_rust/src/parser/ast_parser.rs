@@ -248,9 +248,9 @@ impl StringParser for AstParser {
 
         for e in uml_entities {
             match e {
-                UMLEntity::UMLClass(c) => uml_graph.add_structs(vec![c]),
+                UMLEntity::UMLClass(c) => uml_graph.add_struct(c),
                 UMLEntity::UMLFn(f) => uml_graph.add_fn(f),
-                UMLEntity::UMLRelation(r) => uml_graph.add_relations(&mut vec![r]),
+                UMLEntity::UMLRelation(r) => uml_graph.add_relation(r),
             }
         }
         
@@ -258,7 +258,7 @@ impl StringParser for AstParser {
             match e {
                 UMLEntity::UMLClass(c) => uml_graph.add_impl_classes(vec![c]),
                 UMLEntity::UMLFn(f) => uml_graph.add_fn(f),
-                UMLEntity::UMLRelation(r) => uml_graph.add_relations(&mut vec![r]),
+                UMLEntity::UMLRelation(r) => uml_graph.add_relation(r),
             }
         }
 
