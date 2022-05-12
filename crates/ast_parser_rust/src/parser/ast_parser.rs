@@ -88,24 +88,12 @@ impl HasUMLEntity for ast::Impl {
         let mut impl_fn_names = vec![];
         let struct_name: String = strip_trait_bound(&self.self_ty().unwrap().to_string());
 
-        // get trait if there is any
-        match self.trait_() {
-            Some(tt) => {
-                results.push(
-                    UMLEntity::UMLRelation(UMLRelation::new(&strip_trait_bound(&tt.to_string()), &struct_name, UMLRelationKind::UMLRealization))
-                );
-                println!("trait: {}", tt.to_string());
-            },
-            None => ()
-        }
-
         for node in self.syntax().descendants() {
             match_ast! {
                 match node {
                     // get impl functions' names
                     ast::Fn(f) => {
                         impl_fn_names.push(get_fn_full_name(&f));
-                        // f.get_uml_fn().iter().for_each(|f| impl_fn_names.push(get_fn_full_name(f)));
                     },
                     // get Dependency and Association Relations
                     ast::ParamList(pl) => {
@@ -130,7 +118,20 @@ impl HasUMLEntity for ast::Impl {
                 }
             }
         }
-        results.push(UMLEntity::UMLClass(UMLClass::new(&struct_name, vec![], impl_fn_names, UMLClassKind::UMLClass)));
+
+        // get trait if there is any
+        match self.trait_() {
+            Some(tt) => {
+                results.push(
+                    UMLEntity::UMLRelation(UMLRelation::new(&strip_trait_bound(&tt.to_string()), &struct_name, UMLRelationKind::UMLRealization))
+                );
+                println!("trait: {}", tt.to_string());
+            },
+            None => {
+                results.push(UMLEntity::UMLClass(UMLClass::new(&struct_name, vec![], impl_fn_names, UMLClassKind::UMLClass)));
+            }
+        }
+        
 
         results
     }
