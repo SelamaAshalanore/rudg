@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use staticanalyzer::code_to_dot_digraph;
+    use staticanalyzer::{code_to_dot_digraph};
 
     #[test]
     fn parse_simple_r_code() {
@@ -122,4 +122,74 @@ r#"digraph ast {
 "#
         )
     }
+
+    #[test]
+    fn test_aggregation() {
+        assert_eq!(
+            staticanalyzer::rs2dot("tests/examples/aggregation.rs"),
+r#"digraph ast {
+    Amut[label="{Amut|b: *mut B}"][shape="record"];
+    Aconst[label="{Aconst|b: *const B}"][shape="record"];
+    B[label="B"][shape="record"];
+    Amut -> B[label=""][arrowtail="odiamond"];
+    Aconst -> B[label=""][arrowtail="odiamond"];
+}
+"#
+        )
+    }
+
+    #[test]
+    fn test_association() {
+        assert_eq!(
+            staticanalyzer::rs2dot("tests/examples/association.rs"),
+r#"digraph ast {
+    A[label="{A|b() -> B}"][shape="record"];
+    Ab[label="{Ab|b() -> B}"][shape="record"];
+    B[label="{B|a() -> Ab}"][shape="record"];
+    Ab -> B[label=""][arrowhead="none"];
+    B -> A[label=""][arrowhead="vee"];
+}
+"#
+        )
+    }
+
+    #[test]
+    fn test_composition() {
+        assert_eq!(
+            staticanalyzer::rs2dot("tests/examples/composition.rs"),
+r#"digraph ast {
+    A[label="{A|b: B}"][shape="record"];
+    B[label="B"][shape="record"];
+    A -> B[label=""][arrowhead="diamond"];
+}
+"#
+    );
+    }
+
+    #[test]
+    fn test_dependency() {
+        assert_eq!(
+            staticanalyzer::rs2dot("tests/examples/dependency.rs"),
+r#"digraph ast {
+    A[label="{A|b(b: &B)}"][shape="record"];
+    B[label="B"][shape="record"];
+    B -> A[label=""][style="dashed"][arrowhead="vee"];
+}
+"#
+    );
+    }
+
+    #[test]
+    fn test_realization() {
+        assert_eq!(
+            staticanalyzer::rs2dot("tests/examples/realization.rs"),
+r#"digraph ast {
+    A[label="{A|a: T|a(a: T) -> Self}"][shape="record"];
+    B[label="{Interface\lB|a(&self) -> Option<T>}"][shape="record"];
+    A -> B[label=""][style="dashed"][arrowhead="onormal"];
+}
+"#
+    );
+    }
+
 }
