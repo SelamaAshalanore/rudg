@@ -249,7 +249,7 @@ impl StringParser for AstParser {
         for e in uml_entities {
             match e {
                 UMLEntity::UMLClass(c) => uml_graph.add_structs(vec![c]),
-                UMLEntity::UMLFn(f) => uml_graph.fns.push(f),
+                UMLEntity::UMLFn(f) => uml_graph.add_fn(f),
                 UMLEntity::UMLRelation(r) => uml_graph.add_relations(&mut vec![r]),
             }
         }
@@ -257,11 +257,44 @@ impl StringParser for AstParser {
         for e in impl_entities {
             match e {
                 UMLEntity::UMLClass(c) => uml_graph.add_impl_classes(vec![c]),
-                UMLEntity::UMLFn(f) => uml_graph.fns.push(f),
+                UMLEntity::UMLFn(f) => uml_graph.add_fn(f),
                 UMLEntity::UMLRelation(r) => uml_graph.add_relations(&mut vec![r]),
             }
         }
 
         uml_graph
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_fn() {
+        let code: &str = r#"
+        fn main() {
+            println!("Hello, world!");
+        }
+        "#;
+        let parsed_graph = AstParser::parse_string(code);
+        let mut target_graph: UMLGraph = UMLGraph::new();
+        target_graph.add_fn(UMLFn::new("main", "main()"));
+        assert_eq!(parsed_graph, target_graph);
+    }
+
+    // #[test]
+    // fn test_parse_struct() {
+    //     let code: &str = r#"
+    //     pub struct Mock;
+    //         impl Mock {
+    //             pub fn mock_fn() {}
+    //         }
+    //     "#;
+    //     let parsed_graph = AstParser::parse_string(code);
+    //     let mut target_graph: UMLGraph = UMLGraph::new();
+    //     target_graph.add_fn(UMLFn::new("main", "main()"));
+    //     assert_eq!(parsed_graph, target_graph);
+    // }
+
 }

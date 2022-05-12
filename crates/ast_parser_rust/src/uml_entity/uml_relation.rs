@@ -1,5 +1,5 @@
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
 pub enum UMLRelationKind {
     UMLDependency=0,
     UMLAssociationUni=1,
@@ -9,7 +9,7 @@ pub enum UMLRelationKind {
     UMLRealization=5
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
 pub struct UMLRelation {
     pub from: String,
     pub to: String,

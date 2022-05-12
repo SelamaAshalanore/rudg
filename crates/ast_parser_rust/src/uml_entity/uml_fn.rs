@@ -1,4 +1,5 @@
 
+#[derive(PartialEq, Debug)]
 pub struct UMLFn {
     pub name: String,
     pub full_name: String

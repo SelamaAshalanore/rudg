@@ -1,4 +1,4 @@
-use std::ops::Index;
+use std::{ops::Index};
 
 use {
     super::uml_fn::UMLFn,
@@ -6,7 +6,7 @@ use {
     super::{UMLRelation, UMLRelationKind},
 };
 
-
+#[derive(PartialEq, Debug)]
 pub struct UMLGraph {
     pub structs: Vec<(String, UMLClass)>,
     pub fns: Vec<UMLFn>,
@@ -31,6 +31,10 @@ impl UMLGraph {
                 self.structs.push((st_name.clone(), st));
             }
         }
+    }
+
+    pub fn add_fn(&mut self, f: UMLFn) -> () {
+        self.fns.push(f);
     }
 
     pub fn add_impl_classes(&mut self, ip_list: Vec<UMLClass>) -> () {
