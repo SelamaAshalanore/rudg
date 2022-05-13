@@ -81,7 +81,7 @@ impl UMLEntity for UMLGraph {
         self.fns
             .iter()
             .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));
-        self.get_relations()
+        self.relations
             .iter()
             .for_each(|r| dot_entities.append(&mut r.get_dot_entities()));
         dot_entities
