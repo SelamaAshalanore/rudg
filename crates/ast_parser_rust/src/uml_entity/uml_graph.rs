@@ -19,15 +19,38 @@ impl UMLGraph {
     }
 
     pub fn add_relation(&mut self, rel: UMLRelation) -> () {
+        // if relation's from or to not in graph already, it cannot be added
         if (self.get_fn_names().contains(&rel.from) || self.get_struct_names().contains(&rel.from)) &&
                 (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to)) &&
                 (&rel.from != &rel.to) {
-                    self.relations.push(rel);
+                    // if new relation's kind is associationUni, then search for associationUni relation with opposite direction and replace it with associationBi
+                    if &rel.kind == &UMLRelationKind::UMLAssociationUni {
+                        match self.get_relation(&rel.to, &rel.from) {
+                            Some(e_rel) => {
+                                if &e_rel.kind == &rel.kind {
+                                    e_rel.change_relation_kind(UMLRelationKind::UMLAssociationBi);
+                                    return
+                                }
+                            },
+                            None => ()
+                        }
+                    }
+                    
+                    match self.get_relation(&rel.from, &rel.to) {
+                        Some(e_rel) => {
+                            // if existing relation's kind has less priority than new relation's, change the relation kind
+                            if e_rel.kind < rel.kind {
+                                e_rel.change_relation_kind(rel.kind);
+                            }
+                        },
+                        None => {
+                            self.relations.push(rel);
+                        }
+                    }                    
                 }
         else {
             dbg!("warning: this graph cannot add Relation now", rel);
         }
-        // self.relations.push(rel);
         
     }
 
@@ -59,18 +82,8 @@ impl UMLGraph {
                 None => { results.push(r) }
             }
         }
-
-        // if relation's "from" or "to" not in structs/fns, then drop it
-        let mut final_results: Vec<UMLRelation> = vec![];
-        for r in results {
-            if (self.get_fn_names().contains(&r.from) || self.get_struct_names().contains(&r.from)) &&
-                (self.get_fn_names().contains(&r.to) || self.get_struct_names().contains(&r.to)) &&
-                (&r.from != &r.to) {
-                    final_results.push(r);
-                }
-        }
         
-        self.merge_association(final_results)
+        self.merge_association(results)
     }
 
     fn merge_association(&self, relations: Vec<UMLRelation>) -> Vec<UMLRelation> {
@@ -128,5 +141,14 @@ impl UMLGraph {
             .iter()
             .map(|f| f.name.clone())
             .collect()
+    }
+
+    fn get_relation(&mut self, from: &str, to: &str) -> Option<&mut UMLRelation> {
+        for rel in &mut self.relations {
+            if rel.from == from && rel.to == to {
+                return Some(rel)
+            }
+        }
+        None
     }
 }

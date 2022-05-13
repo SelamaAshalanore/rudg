@@ -21,6 +21,10 @@ impl UMLRelation {
         UMLRelation { from: String::from(from), to: String::from(to), kind: kind }
     }
 
+    pub fn change_relation_kind(&mut self, new_relation_kind: UMLRelationKind) -> () {
+        self.kind = new_relation_kind
+    }
+
     pub fn same_objects(&self, other: &UMLRelation) -> bool {
         self.from == other.from && self.to == other.to
     }

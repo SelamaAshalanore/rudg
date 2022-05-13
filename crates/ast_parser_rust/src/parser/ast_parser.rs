@@ -88,6 +88,8 @@ impl HasUMLEntity for ast::Impl {
         let mut impl_fn_names = vec![];
         let struct_name: String = strip_trait_bound(&self.self_ty().unwrap().to_string());
 
+        let mut dep_list: Vec<String> = vec![];
+        let mut asct_list: Vec<String> = vec![];
         for node in self.syntax().descendants() {
             match_ast! {
                 match node {
@@ -97,27 +99,30 @@ impl HasUMLEntity for ast::Impl {
                     },
                     // get Dependency and Association Relations
                     ast::ParamList(pl) => {
-                        let path_names: Vec<String> = get_paths_str_from_ast_node(pl);
-                        results.extend(
-                            path_names.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&p, &struct_name, UMLRelationKind::UMLDependency)))
-                        );
+                        dep_list.append(&mut get_paths_str_from_ast_node(pl));
                     },
                     ast::BlockExpr(ex) => {
-                        let path_names: Vec<String> = get_paths_str_from_ast_node(ex);
-                        results.extend(
-                            path_names.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&p, &struct_name, UMLRelationKind::UMLDependency)))
-                        );
+                        dep_list.append(&mut get_paths_str_from_ast_node(ex));
                     },
                     ast::RetType(rt) => {
-                        let path_names: Vec<String> = get_paths_str_from_ast_node(rt);
-                        results.extend(
-                            path_names.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&p, &struct_name, UMLRelationKind::UMLAssociationUni)))
-                        );
+                        asct_list.append(&mut get_paths_str_from_ast_node(rt));
                     },
                     _ => ()
                 }
             }
         }
+
+        // first add Association Relation, then add dependency relation if the name not occured in assocaitions
+        results.extend(
+            asct_list.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&p, &struct_name, UMLRelationKind::UMLAssociationUni)))
+        );
+        let mut dep_set: Vec<&String> = dep_list.iter().filter(|p| !asct_list.contains(p)).collect();
+        dep_set.sort();
+        dep_set.dedup();
+        results.extend(
+            dep_set.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&p, &struct_name, UMLRelationKind::UMLDependency)))
+        );
+
 
         // get trait if there is any
         match self.trait_() {
@@ -422,6 +427,51 @@ mod tests {
         target_graph.add_struct(UMLClass::new("A", vec![String::from(r"a: T")], vec![String::from(r"a(a: T) -> Self")], UMLClassKind::UMLClass));
         target_graph.add_struct(UMLClass::new("B", vec![], vec![String::from(r"a(&self) -> Option<T>")], UMLClassKind::UMLTrait));
         target_graph.add_relation(UMLRelation::new("A", "B", UMLRelationKind::UMLRealization));
+        
+        assert_eq!(parsed_graph, target_graph);
+    }
+
+    #[test]
+    fn test_association() {
+        let code: &str = r#"
+        struct A {
+        }
+        
+        impl A {
+            fn b() -> B {
+                B {
+                }
+            }
+        }
+        
+        struct Ab {
+        }
+        
+        impl Ab {
+            fn b() -> B {
+                B {
+                }
+            }
+        }
+        
+        struct B {
+        }
+        
+        impl B {
+            fn a() -> Ab {
+                Ab {
+                }
+            }
+        }
+        "#;
+        let parsed_graph = AstParser::parse_string(code);
+        let mut target_graph: UMLGraph = UMLGraph::new();
+
+        target_graph.add_struct(UMLClass::new("A", vec![], vec![String::from(r"b() -> B")], UMLClassKind::UMLClass));
+        target_graph.add_struct(UMLClass::new("Ab", vec![], vec![String::from(r"b() -> B")], UMLClassKind::UMLClass));
+        target_graph.add_struct(UMLClass::new("B", vec![], vec![String::from(r"a() -> Ab")], UMLClassKind::UMLClass));
+        target_graph.add_relation(UMLRelation::new("B", "A", UMLRelationKind::UMLAssociationUni));
+        target_graph.add_relation(UMLRelation::new("B", "Ab", UMLRelationKind::UMLAssociationBi));
         
         assert_eq!(parsed_graph, target_graph);
     }
