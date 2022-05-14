@@ -58,22 +58,43 @@ impl EdgeTrait for Edge {
             }
         }
 
+        let mut arrow_text: Vec<String> = vec![];
+        let mut arrow_str: String = String::new();
         if !options.contains(&RenderOption::NoArrows) &&
             (!self.start_arrow.is_default() || !self.end_arrow.is_default()) {
-            text.push("[");
-            if !self.end_arrow.is_default() {
-                text.push("arrowhead=\"");
-                text.push(&end_arrow_s);
-                text.push("\"");
+                
+                if !self.end_arrow.is_default() {
+                    arrow_text.push(vec!["arrowhead=\"", &end_arrow_s, "\""].into_iter().collect());
+                }
+                if !self.start_arrow.is_default() {
+                    arrow_text.push(vec!["arrowtail=\"", &start_arrow_s, "\""].into_iter().collect());
+                }
+                if !self.start_arrow.is_default() && !self.end_arrow.is_default() {
+                    arrow_text.push(String::from("dir=\"both\""));
+                }
             }
-            if !self.start_arrow.is_default() {
-                text.push(" dir=\"both\" arrowtail=\"");
-                text.push(&start_arrow_s);
-                text.push("\"");
-            }
+        if arrow_text.len() > 0 {
+            arrow_str.push_str(&arrow_text.join(" "));
+            arrow_str.insert(0, '[');
+            arrow_str.push_str("]");
+            text.push(arrow_str.as_str());
+        }      
+        
 
-            text.push("]");
-        }
+            // text.push("[");
+            // if !self.end_arrow.is_default() {
+            //     text.push("arrowhead=\"");
+            //     text.push(&end_arrow_s);
+            //     text.push("\"");
+            // }
+            // if !self.start_arrow.is_default() {
+            //     text.push("dir=\"both\" arrowtail=\"");
+            //     text.push(&start_arrow_s);
+            //     text.push("\"");
+            // }
+
+            // text.push("]");
+        
 
         text.push(";");
         return text.into_iter().collect();

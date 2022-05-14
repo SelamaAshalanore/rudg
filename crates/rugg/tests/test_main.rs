@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use staticanalyzer::code_to_dot_digraph;
+    use rugg::{code_to_dot_digraph};
 
     #[test]
     fn parse_simple_r_code() {
@@ -52,8 +52,8 @@ r#"digraph ast {
     Mock[label="{Mock|mock_fn()}"][shape="record"];
     f1[label="f1"];
     f2[label="f2"];
-    f2 -> Mock[label=""][style="dashed"][arrowhead="vee"];
     f1 -> Mock[label=""][style="dashed"][arrowhead="vee"];
+    f2 -> Mock[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
@@ -72,7 +72,7 @@ r#"digraph ast {
 r#"digraph ast {
     main[label="main"];
     hello[label="hello"];
-    hello -> main[label=""][style="dashed"][arrowhead="vee"];
+    main -> hello[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
@@ -94,8 +94,8 @@ r#"digraph ast {
     main[label="main"];
     f1[label="f1"];
     f2[label="f2"];
-    f2 -> main[label=""][style="dashed"][arrowhead="vee"];
-    f1 -> main[label=""][style="dashed"][arrowhead="vee"];
+    main -> f1[label=""][style="dashed"][arrowhead="vee"];
+    main -> f2[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
@@ -116,10 +116,80 @@ r#"digraph ast {
     main[label="main"];
     f1[label="f1"];
     f2[label="f2"];
-    f2 -> main[label=""][style="dashed"][arrowhead="vee"];
-    f1 -> main[label=""][style="dashed"][arrowhead="vee"];
+    main -> f1[label=""][style="dashed"][arrowhead="vee"];
+    main -> f2[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
     }
+
+    #[test]
+    fn test_aggregation() {
+        assert_eq!(
+            rugg::rs2dot("tests/examples/aggregation.rs"),
+r#"digraph ast {
+    Amut[label="{Amut|b: *mut B}"][shape="record"];
+    Aconst[label="{Aconst|b: *const B}"][shape="record"];
+    B[label="B"][shape="record"];
+    Amut -> B[label=""][arrowtail="odiamond"];
+    Aconst -> B[label=""][arrowtail="odiamond"];
+}
+"#
+        )
+    }
+
+    #[test]
+    fn test_association() {
+        assert_eq!(
+            rugg::rs2dot("tests/examples/association.rs"),
+r#"digraph ast {
+    A[label="{A|b() -> B}"][shape="record"];
+    Ab[label="{Ab|b() -> B}"][shape="record"];
+    B[label="{B|a() -> Ab}"][shape="record"];
+    B -> A[label=""][arrowhead="vee"];
+    B -> Ab[label=""][arrowhead="none"];
+}
+"#
+        )
+    }
+
+    #[test]
+    fn test_composition() {
+        assert_eq!(
+            rugg::rs2dot("tests/examples/composition.rs"),
+r#"digraph ast {
+    A[label="{A|b: B}"][shape="record"];
+    B[label="B"][shape="record"];
+    A -> B[label=""][arrowhead="diamond"];
+}
+"#
+    );
+    }
+
+    #[test]
+    fn test_dependency() {
+        assert_eq!(
+            rugg::rs2dot("tests/examples/dependency.rs"),
+r#"digraph ast {
+    A[label="{A|b(b: &B)}"][shape="record"];
+    B[label="B"][shape="record"];
+    B -> A[label=""][style="dashed"][arrowhead="vee"];
+}
+"#
+    );
+    }
+
+    #[test]
+    fn test_realization() {
+        assert_eq!(
+            rugg::rs2dot("tests/examples/realization.rs"),
+r#"digraph ast {
+    A[label="{A|a: T|a(a: T) -> Self}"][shape="record"];
+    B[label="{Interface\lB|a(&self) -> Option<T>}"][shape="record"];
+    A -> B[label=""][style="dashed"][arrowhead="onormal"];
+}
+"#
+    );
+    }
+
 }
