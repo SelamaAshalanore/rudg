@@ -1,19 +1,19 @@
-# rugg
+# rudg
 
-> **Rust UML Graph Generator**
+> **Rust UML Diagram Generator**
 
-Tools that parsing Rust code into UML graph (in dot format currently).
+Tools that parsing Rust code into UML diagram (in dot format currently).
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Usage
 ```
-$ rugg.exe --help
-rugg 0.1.0
+$ rudg.exe --help
+rudg 0.1.0
 
 USAGE:
-    rugg.exe [file] [OPTIONS]
+    rudg.exe [file] [OPTIONS]
 
 ARGS:
     <file>    Rust source code file path
@@ -33,6 +33,6 @@ OPTIONS:
 - We belive that TDD(Test-Driven Development) approach is helpful not only in development, but also in communication with each other. So adding more tests might be a good way to report a bug or even suggest a new feature.
 
 ## License
-rugg is primarily distributed under the terms of both the MIT license and the Apache License (Version 2.0).
+rudg is primarily distributed under the terms of both the MIT license and the Apache License (Version 2.0).
 
 See LICENSE-APACHE and LICENSE-MIT for details.

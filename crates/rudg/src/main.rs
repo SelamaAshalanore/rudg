@@ -1,4 +1,4 @@
-use rugg::rs2dot;
+use rudg::rs2dot;
 use std::{env, fs};
 use std::path::{Path, PathBuf};
 use clap::{arg, command};

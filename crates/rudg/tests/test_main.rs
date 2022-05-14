@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use rugg::{code_to_dot_digraph};
+    use rudg::{code_to_dot_digraph};
 
     #[test]
     fn parse_simple_r_code() {
@@ -126,7 +126,7 @@ r#"digraph ast {
     #[test]
     fn test_aggregation() {
         assert_eq!(
-            rugg::rs2dot("tests/examples/aggregation.rs"),
+            rudg::rs2dot("tests/examples/aggregation.rs"),
 r#"digraph ast {
     Amut[label="{Amut|b: *mut B}"][shape="record"];
     Aconst[label="{Aconst|b: *const B}"][shape="record"];
@@ -141,7 +141,7 @@ r#"digraph ast {
     #[test]
     fn test_association() {
         assert_eq!(
-            rugg::rs2dot("tests/examples/association.rs"),
+            rudg::rs2dot("tests/examples/association.rs"),
 r#"digraph ast {
     A[label="{A|b() -> B}"][shape="record"];
     Ab[label="{Ab|b() -> B}"][shape="record"];
@@ -156,7 +156,7 @@ r#"digraph ast {
     #[test]
     fn test_composition() {
         assert_eq!(
-            rugg::rs2dot("tests/examples/composition.rs"),
+            rudg::rs2dot("tests/examples/composition.rs"),
 r#"digraph ast {
     A[label="{A|b: B}"][shape="record"];
     B[label="B"][shape="record"];
@@ -169,7 +169,7 @@ r#"digraph ast {
     #[test]
     fn test_dependency() {
         assert_eq!(
-            rugg::rs2dot("tests/examples/dependency.rs"),
+            rudg::rs2dot("tests/examples/dependency.rs"),
 r#"digraph ast {
     A[label="{A|b(b: &B)}"][shape="record"];
     B[label="B"][shape="record"];
@@ -182,7 +182,7 @@ r#"digraph ast {
     #[test]
     fn test_realization() {
         assert_eq!(
-            rugg::rs2dot("tests/examples/realization.rs"),
+            rudg::rs2dot("tests/examples/realization.rs"),
 r#"digraph ast {
     A[label="{A|a: T|a(a: T) -> Self}"][shape="record"];
     B[label="{Interface\lB|a(&self) -> Option<T>}"][shape="record"];
