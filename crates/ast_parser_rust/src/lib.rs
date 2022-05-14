@@ -12,10 +12,10 @@ use parser::{ast_parser::AstParser, StringParser};
 ///
 /// # Examples
 /// ```
-/// extern crate staticanalyzer;
+/// extern crate rugg;
 ///
 /// fn main() {
-///     let _ = staticanalyzer::rs2dot("src/lib.rs");
+///     let _ = rugg::rs2dot("src/lib.rs");
 /// }
 /// ```
 pub fn rs2dot<'a, P: AsRef<Path>>(path: P) -> String {

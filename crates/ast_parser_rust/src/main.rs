@@ -1,4 +1,4 @@
-use staticanalyzer::rs2dot;
+use rugg::rs2dot;
 use std::{env, fs};
 use std::path::{Path, PathBuf};
 use clap::{arg, command};
