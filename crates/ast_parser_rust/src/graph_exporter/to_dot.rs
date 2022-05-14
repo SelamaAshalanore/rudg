@@ -4,16 +4,16 @@ use crate::uml_entity::*;
 use dot::{graph_to_string, new_graph};
 
 use super::GraphExporter;
-pub enum DotEntity {
+enum DotEntity {
     Edge(Edge),
     Node(Node)
 }
 
-pub trait UMLEntity {
+trait HasDotEntity {
     fn get_dot_entities(&self) -> Vec<DotEntity>;
 }
 
-impl UMLEntity for UMLFn {
+impl HasDotEntity for UMLFn {
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
         dot_entities.push(DotEntity::Node(Node::new(&self.name, &self.name, Style::None, None, None)));
@@ -22,7 +22,7 @@ impl UMLEntity for UMLFn {
 }
 
 
-impl UMLEntity for UMLClass {
+impl HasDotEntity for UMLClass {
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
         match self.kind {
@@ -72,7 +72,7 @@ impl UMLEntity for UMLClass {
 }
 
 
-impl UMLEntity for UMLGraph {
+impl HasDotEntity for UMLGraph {
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
         self.structs
@@ -117,7 +117,7 @@ fn get_node_and_edge_list(dot_entities: Vec<DotEntity>) -> (Vec<Node>, Vec<Edge>
     (node_list, edge_list)
 }
 
-impl UMLEntity for UMLRelation {
+impl HasDotEntity for UMLRelation {
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         match self.kind {
             UMLRelationKind::UMLAggregation => {
