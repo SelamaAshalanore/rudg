@@ -29,7 +29,7 @@ OPTIONS:
 - support for modelling the whole crate's source code
 
 ## Contributing
-- All sorts of contributing are welcome. create issue and/or PR as you please.
+- All sorts of contributing are welcome. Please feel free to open issue and/or PR.
 - We belive that TDD(Test-Driven Development) approach is helpful not only in development, but also in communication with each other. So adding more tests might be a good way to report a bug or even suggest a new feature.
 
 ## License
