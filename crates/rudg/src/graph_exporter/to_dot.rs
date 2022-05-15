@@ -1,7 +1,7 @@
 
-use dot::{Edge, Style, Node, edge_with_arrows, Arrow, ArrowShape, Fill, Side};
+use dot_graph::{Edge, Style, Node, edge_with_arrows, Arrow, ArrowShape, Fill, Side};
 use crate::uml_entity::*;
-use dot::{graph_to_string, new_graph};
+use dot_graph::{graph_to_string, new_graph};
 
 use super::GraphExporter;
 enum DotEntity {
