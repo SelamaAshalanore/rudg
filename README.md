@@ -36,3 +36,6 @@ OPTIONS:
 rudg is primarily distributed under the terms of both the MIT license and the Apache License (Version 2.0).
 
 See LICENSE-APACHE and LICENSE-MIT for details.
+
+## Related Project
+[dot_graph](https://github.com/SelamaAshalanore/dot_graph): A library for generating Graphviz DOT language files.
