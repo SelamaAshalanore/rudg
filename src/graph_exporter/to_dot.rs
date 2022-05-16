@@ -1,7 +1,6 @@
 
-use dot_graph::{Edge, Style, Node, edge_with_arrows, Arrow, ArrowShape, Fill, Side};
+use dot_graph::{Edge, Style, Node, Arrow, ArrowShape, Fill, Side, Graph};
 use crate::uml_entity::*;
-use dot_graph::{graph_to_string, new_graph};
 
 use super::GraphExporter;
 enum DotEntity {
@@ -16,7 +15,7 @@ trait HasDotEntity {
 impl HasDotEntity for UMLFn {
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
-        dot_entities.push(DotEntity::Node(Node::new(&self.name, &self.name, Style::None, None, None)));
+        dot_entities.push(DotEntity::Node(Node::new(&self.name)));
         dot_entities
     }
 }
@@ -47,7 +46,7 @@ impl HasDotEntity for UMLClass {
                 }
                 let label: String = label_text.into_iter().collect();
                 
-                dot_entities.push(DotEntity::Node(Node::new(&self.name, &label, Style::None, None, Some(String::from("record")))));
+                dot_entities.push(DotEntity::Node(Node::new(&self.name).label(&label).shape(Some("record"))));
                 
             },
             UMLClassKind::UMLTrait => {
@@ -63,7 +62,7 @@ impl HasDotEntity for UMLClass {
                 }
                 let label: String = label_text.into_iter().collect();
                 
-                dot_entities.push(DotEntity::Node(Node::new(&self.name, &label, Style::None, None, Some(String::from("record")))));
+                dot_entities.push(DotEntity::Node(Node::new(&self.name).label(&label).shape(Some("record"))));
             },
         }
 
@@ -93,9 +92,15 @@ impl GraphExporter for UMLGraph {
         let (node_list, edge_list) = get_node_and_edge_list(self.get_dot_entities());
 
         // generate digraph from nodes and edges
-        let new_digraph = new_graph("ast", node_list, edge_list, None);
+        let mut graph = Graph::new("ast", dot_graph::Kind::Digraph);
+        for node in node_list {
+            graph.add_node(node)
+        }
+        for edge in edge_list {
+            graph.add_edge(edge)
+        }
 
-        return graph_to_string(new_digraph).unwrap();
+        return graph.to_dot_string().unwrap();
     }
 }
 
@@ -121,70 +126,54 @@ impl HasDotEntity for UMLRelation {
     fn get_dot_entities(&self) -> Vec<DotEntity> {
         match self.kind {
             UMLRelationKind::UMLAggregation => {
-                vec![DotEntity::Edge(edge_with_arrows(
+                vec![DotEntity::Edge(Edge::new(
                     &self.from, 
                     &self.to, 
-                    "", 
-                    Style::None, 
-                    Arrow::from_arrow(ArrowShape::Diamond(Fill::Open, Side::Both)),
-                    Arrow::default(),
-                    None
-                ))]
+                    "")
+                    .start_arrow(Arrow::from_arrow(ArrowShape::Diamond(Fill::Open, Side::Both))),
+                )]
             },
             UMLRelationKind::UMLComposition => {
-                vec![DotEntity::Edge(edge_with_arrows(
+                vec![DotEntity::Edge(Edge::new(
                     &self.from, 
                     &self.to, 
-                    "",
-                    Style::None,
-                    Arrow::default(),
-                    Arrow::from_arrow(ArrowShape::diamond()),
-                    None
-                ))]
+                    "")
+                    .end_arrow(Arrow::from_arrow(ArrowShape::diamond()))
+                )]
             },
             UMLRelationKind::UMLDependency => {
-                vec![DotEntity::Edge(edge_with_arrows(
+                vec![DotEntity::Edge(Edge::new(
                     &self.from,
                     &self.to, 
-                    "",
-                    Style::Dashed,
-                    Arrow::default(),
-                    Arrow::from_arrow(ArrowShape::vee()),
-                    None
-                ))]
+                    "")
+                    .style(Style::Dashed)
+                    .end_arrow(Arrow::from_arrow(ArrowShape::vee()))
+                )]
             },
             UMLRelationKind::UMLAssociationUni => {
-                vec![DotEntity::Edge(edge_with_arrows(
+                vec![DotEntity::Edge(Edge::new(
                     &self.from,
                     &self.to,
-                    "",
-                    Style::None,
-                    Arrow::default(),
-                    Arrow::from_arrow(ArrowShape::vee()),
-                    None
-                ))]
+                    "")
+                    .end_arrow(Arrow::from_arrow(ArrowShape::vee()))
+                )]
             },
             UMLRelationKind::UMLAssociationBi => {
-                vec![DotEntity::Edge(edge_with_arrows(
+                vec![DotEntity::Edge(Edge::new(
                     &self.from, 
                     &self.to, 
-                    "",
-                    Style::None,
-                    Arrow::default(),
-                    Arrow::none(),
-                    None
-                ))]
+                    "")
+                    .end_arrow(Arrow::none())
+                )]
             },
             UMLRelationKind::UMLRealization => {
-                vec![DotEntity::Edge(edge_with_arrows(
+                vec![DotEntity::Edge(Edge::new(
                     &self.from, 
                     &self.to, 
-                    "",
-                    Style::Dashed,
-                    Arrow::default(),
-                    Arrow::from_arrow(ArrowShape::Normal(Fill::Open, Side::Both)),
-                    None
-                ))]
+                    "")
+                    .end_arrow(Arrow::from_arrow(ArrowShape::Normal(Fill::Open, Side::Both)))
+                    .style(Style::Dashed),
+                )]
             },
         }
     }
