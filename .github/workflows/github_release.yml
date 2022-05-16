@@ -88,10 +88,6 @@ jobs:
           path: dist
       - uses: actions/download-artifact@v1
         with:
-          name: dist-x86_64-unknown-linux-musl
-          path: dist
-      - uses: actions/download-artifact@v1
-        with:
           name: dist-aarch64-unknown-linux-gnu
           path: dist
       - uses: actions/download-artifact@v1
@@ -103,10 +99,10 @@ jobs:
           name: dist-aarch64-pc-windows-msvc
           path: dist
       - run: ls -al ./dist
-
-      - name: Publish Release
-        uses: ./.github/actions/github-release
+      
+      - name: Release with Notes
+        uses: softprops/action-gh-release@v1
         with:
           files: "dist/*"
-          name: ${{ env.TAG }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
