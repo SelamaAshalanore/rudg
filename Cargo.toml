@@ -1,6 +1,6 @@
 [package]
 name = "rudg"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Rust UML Diagram Generator. A library for generating UML diagram from Rust source code."
 readme = "README.md"
