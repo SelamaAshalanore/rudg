@@ -192,4 +192,15 @@ r#"digraph ast {
     );
     }
 
+    #[test]
+    fn test_parse_simple_crate() {
+        assert_eq!(
+            rudg::rs2dot("tests/simple_crate"),
+r#"digraph ast {
+    main[label="main"];
+}
+"#
+    );
+    }
+
 }

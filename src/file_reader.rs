@@ -33,11 +33,11 @@ mod tests {
 
     #[test]
     fn test_visit_dirs() {
-        let results: Vec<PathBuf> = get_rs_file_paths("tests/sample_crate");
+        let results: Vec<PathBuf> = get_rs_file_paths("tests/simple_crate");
         assert_eq!(
             results,
             [
-                Path::new("tests/sample_crate\\src\\main.rs").to_path_buf(),
+                Path::new("tests/simple_crate\\src\\main.rs").to_path_buf(),
             ]
         )
     }

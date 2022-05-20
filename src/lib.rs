@@ -25,6 +25,13 @@ pub fn rs2dot<'a, P: AsRef<Path>>(path: P) -> String {
     if p.is_file() {
         let file_string = read_to_string(path).unwrap();
         code_to_dot_digraph(&file_string)
+    } else if p.is_dir() {
+        let mut result = String::new();
+        for file_p in get_rs_file_paths(p) {
+            let file_string = read_to_string(file_p).unwrap();
+            result.push_str(&code_to_dot_digraph(&file_string));
+        }
+        result
     } else {
         String::new()
     }
