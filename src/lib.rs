@@ -1,6 +1,6 @@
-pub mod uml_entity;
-pub mod parser;
-pub mod graph_exporter;
+mod uml_entity;
+mod parser;
+mod graph_exporter;
 
 use uml_entity::{UMLGraph};
 use graph_exporter::{GraphExporter};
