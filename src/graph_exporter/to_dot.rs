@@ -1,5 +1,5 @@
 
-use dot_graph::{Edge, Style, Node, Arrow, ArrowShape, Fill, Side, Graph};
+use dot_graph::{Edge, Style, Node, Arrow, ArrowShape, Fill, Side, Graph, Subgraph};
 use crate::uml_entity::*;
 
 use super::GraphExporter;
@@ -98,6 +98,13 @@ impl GraphExporter for UMLGraph {
         }
         for edge in edge_list {
             graph.add_edge(edge)
+        }
+        for (name, m) in &self.modules {
+            let (node_list, edge_list) = get_node_and_edge_list(m.get_dot_entities());
+            let mut subgraph = Subgraph::new(name).label(name);
+            subgraph.add_nodes(node_list);
+            edge_list.iter().for_each(|e| subgraph.add_edge(e.clone()));
+            graph.add_subgraph(subgraph);
         }
 
         return graph.to_dot_string().unwrap();
@@ -310,6 +317,33 @@ r#"digraph ast {
     E2[label="{E2|a() -> Mock}"][shape="record"];
     E1 -> Mock[label=""][arrowhead="vee"];
     E2 -> Mock[label=""][arrowhead="none"];
+}
+"#;
+        assert_eq!(dot_string, target_string);
+    }
+
+    #[test]
+    fn test_mods() {
+        let mut uml_graph = UMLGraph::new();
+        let mut uml_mod = UMLGraph::new();
+        uml_mod.add_struct(UMLClass::new("Mock", vec![], vec![String::from("e2() -> E2")], UMLClassKind::UMLClass));
+        uml_mod.add_struct(UMLClass::new("E1", vec![], vec![String::from(r"b() -> Mock")], UMLClassKind::UMLClass));
+        uml_mod.add_struct(UMLClass::new("E2", vec![], vec![String::from(r"a() -> Mock")], UMLClassKind::UMLClass));
+        uml_mod.add_relation(UMLRelation::new("E1", "Mock", UMLRelationKind::UMLAssociationUni));
+        uml_mod.add_relation(UMLRelation::new("E2", "Mock", UMLRelationKind::UMLAssociationBi));
+        uml_graph.add_module(uml_mod, "mock_mod");
+
+        let dot_string = uml_graph.to_string();
+        let target_string = 
+r#"digraph ast {
+    subgraph mock_mod {
+        label="mock_mod";
+        Mock[label="{Mock|e2() -> E2}"][shape="record"];
+        E1[label="{E1|b() -> Mock}"][shape="record"];
+        E2[label="{E2|a() -> Mock}"][shape="record"];
+        E1 -> Mock[label=""][arrowhead="vee"];
+        E2 -> Mock[label=""][arrowhead="none"];
+    }
 }
 "#;
         assert_eq!(dot_string, target_string);

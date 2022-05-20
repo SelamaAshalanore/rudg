@@ -3,17 +3,23 @@ use {
     super::{UMLClass},
     super::{UMLRelation, UMLRelationKind},
 };
+use std::collections::BTreeMap;
 
 #[derive(PartialEq, Debug)]
 pub struct UMLGraph {
     pub structs: Vec<(String, UMLClass)>,
     pub fns: Vec<UMLFn>,
-    pub relations: Vec<UMLRelation>
+    pub relations: Vec<UMLRelation>,
+    pub modules: BTreeMap<String, UMLGraph>
 }
 
 impl UMLGraph {
     pub fn new() -> UMLGraph {
-        UMLGraph { structs: vec![], fns: vec![], relations: vec![]}
+        UMLGraph { structs: vec![], fns: vec![], relations: vec![], modules: BTreeMap::new()}
+    }
+
+    pub fn add_module(&mut self, module: UMLGraph, name: &str) -> () {
+        self.modules.insert(String::from(name), module);
     }
 
     pub fn add_relation(&mut self, rel: UMLRelation) -> () {

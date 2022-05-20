@@ -192,4 +192,36 @@ r#"digraph ast {
     );
     }
 
+    #[test]
+    fn test_parse_simple_crate() {
+        assert_eq!(
+            rudg::rs2dot("tests/simple_crate"),
+r#"digraph ast {
+    subgraph main {
+        label="main";
+        main[label="main"];
+    }
+}
+"#
+    );
+    }
+
+    #[test]
+    fn test_parse_multi_files_crate() {
+        assert_eq!(
+            rudg::rs2dot("tests/multiple_files_crate"),
+r#"digraph ast {
+    subgraph hello {
+        label="hello";
+        hello[label="hello"];
+    }
+    subgraph main {
+        label="main";
+        main[label="main"];
+    }
+}
+"#
+    );
+    }
+
 }
