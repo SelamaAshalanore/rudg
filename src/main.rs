@@ -29,7 +29,7 @@ fn main() {
             target_name.push(path.parent().unwrap().join(path.file_stem().unwrap()));
         }
 
-        target_name.set_extension(".dot");
+        target_name.set_extension("dot");
         match fs::write(&target_name, results) {
             Ok(_) => (),
             Err(e) => {
