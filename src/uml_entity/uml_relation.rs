@@ -24,12 +24,4 @@ impl UMLRelation {
     pub fn change_relation_kind(&mut self, new_relation_kind: UMLRelationKind) -> () {
         self.kind = new_relation_kind
     }
-
-    pub fn same_objects(&self, other: &UMLRelation) -> bool {
-        self.from == other.from && self.to == other.to
-    }
-
-    pub fn opposite_objects(&self, other: &UMLRelation) -> bool {
-        self.from == other.to && self.to == other.from
-    }
 }
