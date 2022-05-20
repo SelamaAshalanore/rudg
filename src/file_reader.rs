@@ -37,7 +37,7 @@ mod tests {
         assert_eq!(
             results,
             [
-                Path::new("tests/simple_crate\\src\\main.rs").to_path_buf(),
+                Path::new("tests/simple_crate/src/main.rs").to_path_buf(),
             ]
         )
     }
