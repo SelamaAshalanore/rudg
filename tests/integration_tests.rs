@@ -219,6 +219,7 @@ r#"digraph ast {
         label="main";
         main[label="main"];
     }
+    main -> hello[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
     );
