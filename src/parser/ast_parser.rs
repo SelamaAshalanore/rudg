@@ -476,4 +476,24 @@ mod tests {
         assert_eq!(parsed_graph, target_graph);
     }
 
+    #[test]
+    fn test_outer_structs() {
+        let code: &str = r#"
+        use hello::{Hello, hello};
+
+        fn mock() -> () {
+            Hello::new();
+            hello();
+        }
+        "#;
+        let parsed_graph = AstParser::parse_string(code);
+        let mut target_graph: UMLGraph = UMLGraph::new();
+
+        target_graph.add_fn(UMLFn::new("mock", "mock() -> ()"));
+        target_graph.add_outer_class("Hello", UMLClassKind::UMLClass, "hello");
+        target_graph.add_outer_fn("hello", "hello");
+        
+        assert_eq!(parsed_graph, target_graph);
+    }
+
 }

@@ -5,17 +5,21 @@ use {
 };
 use std::collections::BTreeMap;
 
+use super::UMLClassKind;
+
 #[derive(PartialEq, Debug)]
 pub struct UMLGraph {
     pub structs: Vec<UMLClass>,
     pub fns: Vec<UMLFn>,
     pub relations: Vec<UMLRelation>,
     pub modules: BTreeMap<String, UMLGraph>,
+    outer_structs: Vec<(UMLClass, String)>,
+    outer_fns: Vec<(UMLFn, String)>,
 }
 
 impl UMLGraph {
     pub fn new() -> UMLGraph {
-        UMLGraph { structs: vec![], fns: vec![], relations: vec![], modules: BTreeMap::new()}
+        UMLGraph { structs: vec![], fns: vec![], relations: vec![], modules: BTreeMap::new(), outer_fns: vec![], outer_structs: vec![]}
     }
 
     pub fn add_module(&mut self, module: UMLGraph, name: &str) -> () {
@@ -62,21 +66,20 @@ impl UMLGraph {
         if self.get_struct_names().contains(&cls.name) {
             self.get_mut_struct(&cls.name).unwrap().merge_from(&mut cls.clone());
         } else {
-            let st_name = cls.name.clone();
             self.structs.push(cls);
         }
     }
 
-    pub fn add_outer_struct(&mut self, cls: UMLClass) -> () {
-
+    pub fn add_outer_class(&mut self, cls_name: &str, kind: UMLClassKind, mod_name: &str) -> () {
+        self.outer_structs.push((UMLClass::new(cls_name, vec![], vec![], kind), String::from(mod_name)));
     }
 
     pub fn add_fn(&mut self, f: UMLFn) -> () {
         self.fns.push(f);
     }
 
-    pub fn add_outer_fn(&mut self, f: UMLFn) -> () {
-
+    pub fn add_outer_fn(&mut self, f_name: &str, mod_name: &str) -> () {
+        self.outer_fns.push((UMLFn::new(f_name, ""), String::from(mod_name)));
     }
 
     fn get_mut_struct(&mut self, struct_name: &str) -> Option<&mut UMLClass> {
