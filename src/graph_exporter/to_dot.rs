@@ -76,7 +76,7 @@ impl HasDotEntity for UMLGraph {
         let mut dot_entities = vec![];
         self.structs
             .iter()
-            .for_each(|(_, st)| dot_entities.append(&mut st.get_dot_entities()));
+            .for_each(|st| dot_entities.append(&mut st.get_dot_entities()));
         self.fns
             .iter()
             .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));

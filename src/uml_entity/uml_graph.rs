@@ -7,10 +7,10 @@ use std::collections::BTreeMap;
 
 #[derive(PartialEq, Debug)]
 pub struct UMLGraph {
-    pub structs: Vec<(String, UMLClass)>,
+    pub structs: Vec<UMLClass>,
     pub fns: Vec<UMLFn>,
     pub relations: Vec<UMLRelation>,
-    pub modules: BTreeMap<String, UMLGraph>
+    pub modules: BTreeMap<String, UMLGraph>,
 }
 
 impl UMLGraph {
@@ -63,25 +63,30 @@ impl UMLGraph {
             self.get_mut_struct(&cls.name).unwrap().merge_from(&mut cls.clone());
         } else {
             let st_name = cls.name.clone();
-            self.structs.push((st_name.clone(), cls));
+            self.structs.push(cls);
         }
+    }
+
+    pub fn add_outer_struct(&mut self, cls: UMLClass) -> () {
+
     }
 
     pub fn add_fn(&mut self, f: UMLFn) -> () {
         self.fns.push(f);
     }
 
+    pub fn add_outer_fn(&mut self, f: UMLFn) -> () {
+
+    }
+
     fn get_mut_struct(&mut self, struct_name: &str) -> Option<&mut UMLClass> {
-        match self.structs.iter_mut().find(|(st_name, _)| st_name == struct_name) {
-            Some((_, c)) => Some(c),
-            None => None
-        }
+        self.structs.iter_mut().find(|st| st.name == struct_name)
     }
 
     fn get_struct_names(&self) -> Vec<String> {
         self.structs
             .iter()
-            .map(|(st_name, _)| st_name.clone())
+            .map(|st| st.name.clone())
             .collect()
     }
 
