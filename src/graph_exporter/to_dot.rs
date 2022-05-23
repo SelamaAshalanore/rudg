@@ -80,7 +80,7 @@ impl HasDotEntity for UMLGraph {
         self.fns
             .iter()
             .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));
-        self.relations
+        self.relations()
             .iter()
             .for_each(|r| dot_entities.append(&mut r.get_dot_entities()));
         dot_entities
@@ -99,6 +99,8 @@ impl GraphExporter for UMLGraph {
         for edge in edge_list {
             graph.add_edge(edge)
         }
+
+        // generate digraph from modules
         for (name, m) in &self.modules {
             let (node_list, edge_list) = get_node_and_edge_list(m.get_dot_entities());
             let mut subgraph = Subgraph::new(name).label(name);

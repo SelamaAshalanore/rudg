@@ -11,7 +11,7 @@ use super::UMLClassKind;
 pub struct UMLGraph {
     pub structs: Vec<UMLClass>,
     pub fns: Vec<UMLFn>,
-    pub relations: Vec<UMLRelation>,
+    relations: Vec<UMLRelation>,
     pub modules: BTreeMap<String, UMLGraph>,
     outer_structs: Vec<(UMLClass, String)>,
     outer_fns: Vec<(UMLFn, String)>,
@@ -57,7 +57,7 @@ impl UMLGraph {
                     }                    
                 }
         else {
-            dbg!("warning: this graph cannot add Relation now", rel);
+            dbg!("warning: this graph cannot add Relation now", &rel);
         }
         
     }
@@ -80,6 +80,10 @@ impl UMLGraph {
 
     pub fn add_outer_fn(&mut self, f_name: &str, mod_name: &str) -> () {
         self.outer_fns.push((UMLFn::new(f_name, ""), String::from(mod_name)));
+    }
+
+    pub fn relations(&self) -> &Vec<UMLRelation> {
+        &self.relations
     }
 
     fn get_mut_struct(&mut self, struct_name: &str) -> Option<&mut UMLClass> {
