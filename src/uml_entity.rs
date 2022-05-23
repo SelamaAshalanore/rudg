@@ -29,7 +29,6 @@ mod tests {
 
         // relations can be added if both sides on the scope
         uml_graph.add_fn(UMLFn::new("main", "main()"));
-        uml_graph.add_relation(UMLRelation::new("main", "Mock", UMLRelationKind::UMLDependency));
         assert_eq!(uml_graph.relations().len(), 1);
     }
 }
