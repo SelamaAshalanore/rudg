@@ -28,9 +28,7 @@ impl UMLGraph {
 
     pub fn add_relation(&mut self, rel: UMLRelation) -> () {
         // if relation's from or to not in graph already, it cannot be added
-        if (self.get_fn_names().contains(&rel.from) || self.get_struct_names().contains(&rel.from)) &&
-                (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to)) &&
-                (&rel.from != &rel.to) {
+        if &rel.from != &rel.to {
                     // if new relation's kind is associationUni, then search for associationUni relation with opposite direction and replace it with associationBi
                     if &rel.kind == &UMLRelationKind::UMLAssociationUni {
                         match self.get_relation(&rel.to, &rel.from) {
@@ -82,8 +80,14 @@ impl UMLGraph {
         self.outer_fns.push((UMLFn::new(f_name, ""), String::from(mod_name)));
     }
 
-    pub fn relations(&self) -> &Vec<UMLRelation> {
-        &self.relations
+    pub fn relations(&self) -> Vec<&UMLRelation> {
+        self.relations
+            .iter()
+            .filter(|rel| {
+                (self.get_fn_names().contains(&rel.from) || self.get_struct_names().contains(&rel.from)) &&
+                (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to))
+            })
+            .collect()
     }
 
     fn get_mut_struct(&mut self, struct_name: &str) -> Option<&mut UMLClass> {
