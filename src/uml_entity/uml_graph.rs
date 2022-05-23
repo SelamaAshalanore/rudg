@@ -95,17 +95,38 @@ impl UMLGraph {
     }
 
     fn get_struct_names(&self) -> Vec<String> {
-        self.structs
-            .iter()
-            .map(|st| st.name.clone())
-            .collect()
+        let mut results = vec![];
+        results.append(
+            &mut self.structs
+                    .iter()
+                    .map(|st| st.name.clone())
+                    .collect()
+        );
+        results.append(
+            &mut self.outer_structs
+                    .iter()
+                    .map(|(st, _)| st.name.clone())
+                    .collect()
+        );
+        results
+        
     }
 
     fn get_fn_names(&self) -> Vec<String> {
-        self.fns
-            .iter()
-            .map(|f| f.name.clone())
-            .collect()
+        let mut results = vec![];
+        results.append(
+            &mut self.fns
+                    .iter()
+                    .map(|f| f.name.clone())
+                    .collect()
+        );
+        results.append(
+            &mut self.outer_fns
+                    .iter()
+                    .map(|(f, _)| f.name.clone())
+                    .collect()
+        );
+        results
     }
 
     fn get_relation(&mut self, from: &str, to: &str) -> Option<&mut UMLRelation> {

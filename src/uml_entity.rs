@@ -24,11 +24,17 @@ mod tests {
         let mut uml_graph = UMLGraph::new();
         uml_graph.add_struct(UMLClass::new("Mock", vec![], vec![], UMLClassKind::UMLClass));
         uml_graph.add_relation(UMLRelation::new("main", "Mock", UMLRelationKind::UMLDependency));
+        uml_graph.add_relation(UMLRelation::new("outer_main", "Mock", UMLRelationKind::UMLDependency));
         // add relation when at least one side of the relation is not in the scope
         assert_eq!(uml_graph.relations().len(), 0);
 
         // relations can be added if both sides on the scope
         uml_graph.add_fn(UMLFn::new("main", "main()"));
         assert_eq!(uml_graph.relations().len(), 1);
+        assert_eq!(uml_graph.relations().get(0).unwrap().from, "main");
+
+        // relations with outer_fn
+        uml_graph.add_outer_fn("outer_main", "outer_main()");
+        assert_eq!(uml_graph.relations().len(), 2);
     }
 }
