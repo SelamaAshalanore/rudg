@@ -227,7 +227,7 @@ impl StringParser for AstParser {
     fn parse_string(input: &str) -> UMLGraph {
         let parse: Parse<SourceFile> = SourceFile::parse(input);
         let file: SourceFile = parse.tree();
-        let mut uml_graph = UMLGraph::new();
+        let mut uml_graph = UMLGraph::new("");
         let mut uml_entities: Vec<UMLEntity> = vec![];
 
         // visit all items in SourceFile and extract dot entities from every type of them
@@ -281,7 +281,7 @@ mod tests {
         }
         "#;
         let parsed_graph = AstParser::parse_string(code);
-        let mut target_graph: UMLGraph = UMLGraph::new();
+        let mut target_graph: UMLGraph = UMLGraph::new("");
         target_graph.add_fn(UMLFn::new("main", "main()"));
         assert_eq!(parsed_graph, target_graph);
     }
@@ -295,7 +295,7 @@ mod tests {
             }
         "#;
         let parsed_graph = AstParser::parse_string(code);
-        let mut target_graph: UMLGraph = UMLGraph::new();
+        let mut target_graph: UMLGraph = UMLGraph::new("");
         target_graph.add_struct(UMLClass::new("Mock", vec![], vec![String::from("mock_fn()")], UMLClassKind::UMLClass));
         assert_eq!(parsed_graph, target_graph);
     }
@@ -309,7 +309,7 @@ mod tests {
             fn hello() {}
         "#;
         let parsed_graph = AstParser::parse_string(code);
-        let mut target_graph: UMLGraph = UMLGraph::new();
+        let mut target_graph: UMLGraph = UMLGraph::new("");
 
         target_graph.add_fn(UMLFn::new("main", "main()"));
         target_graph.add_fn(UMLFn::new("hello", "hello()"));
@@ -329,7 +329,7 @@ mod tests {
         fn f2() -> usize { 0 }
         "#;
         let parsed_graph = AstParser::parse_string(code);
-        let mut target_graph: UMLGraph = UMLGraph::new();
+        let mut target_graph: UMLGraph = UMLGraph::new("");
 
         target_graph.add_struct(UMLClass::new("Mock", vec![], vec![String::from("mock_fn()")], UMLClassKind::UMLClass));
         target_graph.add_fn(UMLFn::new("f1", "f1(i: usize)"));
@@ -355,7 +355,7 @@ mod tests {
         }
         "#;
         let parsed_graph = AstParser::parse_string(code);
-        let mut target_graph: UMLGraph = UMLGraph::new();
+        let mut target_graph: UMLGraph = UMLGraph::new("");
 
         target_graph.add_struct(UMLClass::new("Amut", vec![String::from(r"b: *mut B")], vec![], UMLClassKind::UMLClass));
         target_graph.add_struct(UMLClass::new("Aconst", vec![String::from(r"b: *const B")], vec![], UMLClassKind::UMLClass));
@@ -377,7 +377,7 @@ mod tests {
         }
         "#;
         let parsed_graph = AstParser::parse_string(code);
-        let mut target_graph: UMLGraph = UMLGraph::new();
+        let mut target_graph: UMLGraph = UMLGraph::new("");
 
         target_graph.add_struct(UMLClass::new("A", vec![String::from(r"b: B")], vec![], UMLClassKind::UMLClass));
         target_graph.add_struct(UMLClass::new("B", vec![], vec![], UMLClassKind::UMLClass));
@@ -422,7 +422,7 @@ mod tests {
         }
         "#;
         let parsed_graph = AstParser::parse_string(code);
-        let mut target_graph: UMLGraph = UMLGraph::new();
+        let mut target_graph: UMLGraph = UMLGraph::new("");
 
         target_graph.add_struct(UMLClass::new("A", vec![String::from(r"a: T")], vec![String::from(r"a(a: T) -> Self")], UMLClassKind::UMLClass));
         target_graph.add_struct(UMLClass::new("B", vec![], vec![String::from(r"a(&self) -> Option<T>")], UMLClassKind::UMLTrait));
@@ -468,7 +468,7 @@ mod tests {
         }
         "#;
         let parsed_graph = AstParser::parse_string(code);
-        let mut target_graph: UMLGraph = UMLGraph::new();
+        let mut target_graph: UMLGraph = UMLGraph::new("");
 
         target_graph.add_struct(UMLClass::new("A", vec![], vec![String::from(r"b() -> B")], UMLClassKind::UMLClass));
         target_graph.add_struct(UMLClass::new("Ab", vec![], vec![String::from(r"b() -> B")], UMLClassKind::UMLClass));
@@ -490,7 +490,7 @@ mod tests {
     //     }
     //     "#;
     //     let parsed_graph = AstParser::parse_string(code);
-    //     let mut target_graph: UMLGraph = UMLGraph::new();
+    //     let mut target_graph: UMLGraph = UMLGraph::new("");
 
     //     target_graph.add_fn(UMLFn::new("mock", "mock() -> ()"));
     //     target_graph.add_outer_class("Hello", UMLClassKind::UMLClass, "hello");

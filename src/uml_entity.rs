@@ -21,7 +21,7 @@ mod tests {
 
     #[test]
     fn test_add_relations() {
-        let mut uml_graph = UMLGraph::new();
+        let mut uml_graph = UMLGraph::new("");
         uml_graph.add_struct(UMLClass::new("Mock", vec![], vec![], UMLClassKind::UMLClass));
         uml_graph.add_relation(UMLRelation::new("main", "Mock", UMLRelationKind::UMLDependency));
         uml_graph.add_relation(UMLRelation::new("outer_main", "Mock", UMLRelationKind::UMLDependency));
@@ -36,7 +36,7 @@ mod tests {
 
     #[test]
     fn test_add_outer_relations() {
-        let mut uml_graph = UMLGraph::new();
+        let mut uml_graph = UMLGraph::new("");
         uml_graph.add_struct(UMLClass::new("Main", vec![], vec![], UMLClassKind::UMLClass));
         uml_graph.add_relation(UMLRelation::new("Main", "mock.outer_mock", UMLRelationKind::UMLDependency));
         // add relation when at least one side of the relation is not in the scope
