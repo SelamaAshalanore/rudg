@@ -199,7 +199,7 @@ r#"digraph ast {
 r#"digraph ast {
     subgraph cluster_main {
         label="main";
-        "main"[label="main"];
+        "main.main"[label="main"];
     }
 }
 "#
