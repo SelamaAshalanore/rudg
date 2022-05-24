@@ -9,11 +9,11 @@ enum DotEntity {
 }
 
 trait HasDotEntity {
-    fn get_dot_entities(&self) -> Vec<DotEntity>;
+    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity>;
 }
 
 impl HasDotEntity for UMLFn {
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
+    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
         dot_entities.push(DotEntity::Node(Node::new(&self.name)));
         dot_entities
@@ -22,7 +22,7 @@ impl HasDotEntity for UMLFn {
 
 
 impl HasDotEntity for UMLClass {
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
+    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
         match self.kind {
             UMLClassKind::UMLClass => {
@@ -72,24 +72,24 @@ impl HasDotEntity for UMLClass {
 
 
 impl HasDotEntity for UMLGraph {
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
+    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
         self.structs
             .iter()
-            .for_each(|st| dot_entities.append(&mut st.get_dot_entities()));
+            .for_each(|st| dot_entities.append(&mut st.get_dot_entities(name_prefix)));
         self.fns
             .iter()
-            .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));
+            .for_each(|f| dot_entities.append(&mut f.get_dot_entities(name_prefix)));
         self.relations()
             .iter()
-            .for_each(|r| dot_entities.append(&mut r.get_dot_entities()));
+            .for_each(|r| dot_entities.append(&mut r.get_dot_entities(name_prefix)));
         dot_entities
     }
 }
 
 impl GraphExporter for UMLGraph {
     fn to_string(&self) -> String {
-        let (node_list, edge_list) = get_node_and_edge_list(self.get_dot_entities());
+        let (node_list, edge_list) = get_node_and_edge_list(self.get_dot_entities(""));
 
         // generate digraph from nodes and edges
         let mut graph = Graph::new("ast", dot_graph::Kind::Digraph);
@@ -102,7 +102,7 @@ impl GraphExporter for UMLGraph {
 
         // generate digraph from modules
         for (name, m) in &self.modules {
-            let (node_list, edge_list) = get_node_and_edge_list(m.get_dot_entities());
+            let (node_list, edge_list) = get_node_and_edge_list(m.get_dot_entities(&m.name));
             let mut subgraph = Subgraph::new(&format!("cluster_{}", name)).label(name);
             subgraph.add_nodes(node_list);
             edge_list.iter().for_each(|e| subgraph.add_edge(e.clone()));
@@ -132,7 +132,7 @@ fn get_node_and_edge_list(dot_entities: Vec<DotEntity>) -> (Vec<Node>, Vec<Edge>
 }
 
 impl HasDotEntity for UMLRelation {
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
+    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
         match self.kind {
             UMLRelationKind::UMLAggregation => {
                 vec![DotEntity::Edge(Edge::new(
