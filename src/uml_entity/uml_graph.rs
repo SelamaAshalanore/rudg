@@ -83,7 +83,19 @@ impl UMLGraph {
             .iter()
             .filter(|rel| {
                 (self.get_fn_names().contains(&rel.from) || self.get_struct_names().contains(&rel.from)) &&
-                (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to))
+                (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to)) &&
+                (!rel.to.contains(r".") && !rel.from.contains(r"."))
+            })
+            .collect()
+    }
+
+    pub fn outer_relations(&self) -> Vec<&UMLRelation> {
+        self.relations
+            .iter()
+            .filter(|rel| {
+                (self.get_fn_names().contains(&rel.from) || self.get_struct_names().contains(&rel.from)) &&
+                (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to)) &&
+                (rel.to.contains(r".") || rel.from.contains(r"."))
             })
             .collect()
     }
