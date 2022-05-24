@@ -197,7 +197,7 @@ r#"digraph ast {
         assert_eq!(
             rudg::rs2dot("tests/simple_crate"),
 r#"digraph ast {
-    subgraph main {
+    subgraph cluster_main {
         label="main";
         main[label="main"];
     }

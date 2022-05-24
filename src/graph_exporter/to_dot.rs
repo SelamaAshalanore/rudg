@@ -103,7 +103,7 @@ impl GraphExporter for UMLGraph {
         // generate digraph from modules
         for (name, m) in &self.modules {
             let (node_list, edge_list) = get_node_and_edge_list(m.get_dot_entities());
-            let mut subgraph = Subgraph::new(name).label(name);
+            let mut subgraph = Subgraph::new(&format!("cluster_{}", name)).label(name);
             subgraph.add_nodes(node_list);
             edge_list.iter().for_each(|e| subgraph.add_edge(e.clone()));
             graph.add_subgraph(subgraph);
@@ -201,9 +201,9 @@ mod tests {
 
         let dot_string = uml_graph.to_string();
         let target_string = r#"digraph ast {
-    Main[label="{Main|a: String\lb: String|main() -> ()\lmain1()}"][shape="record"];
-    MainTrait[label="{Interface\lMainTrait|main() -> ()}"][shape="record"];
-    test[label="test"];
+    "Main"[label="{Main|a: String\lb: String|main() -> ()\lmain1()}"][shape="record"];
+    "MainTrait"[label="{Interface\lMainTrait|main() -> ()}"][shape="record"];
+    "test"[label="test"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -218,9 +218,9 @@ mod tests {
 
         let dot_string = uml_graph.to_string();
         let target_string = r#"digraph ast {
-    main[label="main"];
-    test[label="test"];
-    main -> test[label=""][style="dashed"][arrowhead="vee"];
+    "main"[label="main"];
+    "test"[label="test"];
+    "main" -> "test"[label=""][style="dashed"][arrowhead="vee"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -238,11 +238,11 @@ mod tests {
         let dot_string = uml_graph.to_string();
         let target_string = 
 r#"digraph ast {
-    Mock[label="{Mock|mock_fn()}"][shape="record"];
-    f1[label="f1"];
-    f2[label="f2"];
-    f1 -> Mock[label=""][style="dashed"][arrowhead="vee"];
-    f2 -> Mock[label=""][style="dashed"][arrowhead="vee"];
+    "Mock"[label="{Mock|mock_fn()}"][shape="record"];
+    "f1"[label="f1"];
+    "f2"[label="f2"];
+    "f1" -> "Mock"[label=""][style="dashed"][arrowhead="vee"];
+    "f2" -> "Mock"[label=""][style="dashed"][arrowhead="vee"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -258,9 +258,9 @@ r#"digraph ast {
         let dot_string = uml_graph.to_string();
         let target_string = 
 r#"digraph ast {
-    Mock[label="{Mock|b: *mut B}"][shape="record"];
-    B[label="B"][shape="record"];
-    Mock -> B[label=""][arrowtail="odiamond"];
+    "Mock"[label="{Mock|b: *mut B}"][shape="record"];
+    "B"[label="B"][shape="record"];
+    "Mock" -> "B"[label=""][arrowtail="odiamond"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -276,9 +276,9 @@ r#"digraph ast {
         let dot_string = uml_graph.to_string();
         let target_string = 
 r#"digraph ast {
-    Mock[label="{Mock|c: C}"][shape="record"];
-    C[label="C"][shape="record"];
-    Mock -> C[label=""][arrowhead="diamond"];
+    "Mock"[label="{Mock|c: C}"][shape="record"];
+    "C"[label="C"][shape="record"];
+    "Mock" -> "C"[label=""][arrowhead="diamond"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -294,9 +294,9 @@ r#"digraph ast {
         let dot_string = uml_graph.to_string();
         let target_string = 
 r#"digraph ast {
-    Mock[label="Mock"][shape="record"];
-    D[label="{Interface\lD|a(&self) -> Option<T>}"][shape="record"];
-    Mock -> D[label=""][style="dashed"][arrowhead="onormal"];
+    "Mock"[label="Mock"][shape="record"];
+    "D"[label="{Interface\lD|a(&self) -> Option<T>}"][shape="record"];
+    "Mock" -> "D"[label=""][style="dashed"][arrowhead="onormal"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -314,11 +314,11 @@ r#"digraph ast {
         let dot_string = uml_graph.to_string();
         let target_string = 
 r#"digraph ast {
-    Mock[label="{Mock|e2() -> E2}"][shape="record"];
-    E1[label="{E1|b() -> Mock}"][shape="record"];
-    E2[label="{E2|a() -> Mock}"][shape="record"];
-    E1 -> Mock[label=""][arrowhead="vee"];
-    E2 -> Mock[label=""][arrowhead="none"];
+    "Mock"[label="{Mock|e2() -> E2}"][shape="record"];
+    "E1"[label="{E1|b() -> Mock}"][shape="record"];
+    "E2"[label="{E2|a() -> Mock}"][shape="record"];
+    "E1" -> "Mock"[label=""][arrowhead="vee"];
+    "E2" -> "Mock"[label=""][arrowhead="none"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -338,50 +338,50 @@ r#"digraph ast {
         let dot_string = uml_graph.to_string();
         let target_string = 
 r#"digraph ast {
-    subgraph mock_mod {
+    subgraph cluster_mock_mod {
         label="mock_mod";
-        Mock[label="{Mock|e2() -> E2}"][shape="record"];
-        E1[label="{E1|b() -> Mock}"][shape="record"];
-        E2[label="{E2|a() -> Mock}"][shape="record"];
-        E1 -> Mock[label=""][arrowhead="vee"];
-        E2 -> Mock[label=""][arrowhead="none"];
+        "Mock"[label="{Mock|e2() -> E2}"][shape="record"];
+        "E1"[label="{E1|b() -> Mock}"][shape="record"];
+        "E2"[label="{E2|a() -> Mock}"][shape="record"];
+        "E1" -> "Mock"[label=""][arrowhead="vee"];
+        "E2" -> "Mock"[label=""][arrowhead="none"];
     }
 }
 "#;
         assert_eq!(dot_string, target_string);
     }
 
-//     #[test]
-//     fn test_cross_mods_dependency() {
-//         let mut uml_graph = UMLGraph::new();
-//         let mut uml_mod1 = UMLGraph::new();
-//         let mut uml_mod2 = UMLGraph::new();
-//         uml_mod1.add_struct(UMLClass::new("Hello", vec![], vec![], UMLClassKind::UMLClass));
-//         uml_mod1.add_fn(UMLFn::new("hello", "hello() -> ()"));
-//         uml_mod2.add_fn(UMLFn::new("mock", "mock() -> ()"));
-//         uml_mod2.add_outer_class("Hello", UMLClassKind::UMLClass, "hello_mod");
-//         uml_mod2.add_outer_fn("hello", "hello_mod");
-//         uml_mod2.add_relation(UMLRelation::new("mock", "Hello", UMLRelationKind::UMLDependency));
-//         uml_mod2.add_relation(UMLRelation::new("mock", "hello", UMLRelationKind::UMLDependency));
-//         uml_graph.add_module(uml_mod1, "hello_mod");
-//         uml_graph.add_module(uml_mod2, "mock_mod");
+    #[test]
+    fn test_cross_mods_dependency() {
+        let mut uml_graph = UMLGraph::new();
+        let mut uml_mod1 = UMLGraph::new();
+        let mut uml_mod2 = UMLGraph::new();
+        uml_mod1.add_struct(UMLClass::new("Hello", vec![], vec![], UMLClassKind::UMLClass));
+        uml_mod1.add_fn(UMLFn::new("hello", "hello() -> ()"));
+        uml_mod2.add_fn(UMLFn::new("mock", "mock() -> ()"));
+        uml_mod2.add_outer_class("Hello", UMLClassKind::UMLClass, "hello_mod");
+        uml_mod2.add_outer_fn("hello", "hello_mod");
+        uml_mod2.add_relation(UMLRelation::new("mock", "Hello", UMLRelationKind::UMLDependency));
+        uml_mod2.add_relation(UMLRelation::new("mock", "hello", UMLRelationKind::UMLDependency));
+        uml_graph.add_module(uml_mod1, "hello_mod");
+        uml_graph.add_module(uml_mod2, "mock_mod");
 
-//         let dot_string = uml_graph.to_string();
-//         let target_string = 
-// r#"digraph ast {
-//     subgraph hello_mod {
-//         label="hello_mod";
-//         hello_mod.Hello[label="Hello"][shape="record"];
-//         hello_mod.hello[label="hello"];
-//     }
-//     subgraph mock_mod {
-//         label="mock_mod";
-//         mock_mod.mock[label="mock"];
-//     }
-//     mock_mod.mock -> hello_mod.Hello[label=""][style="dashed"][arrowhead="vee"];
-//     mock_mod.mock -> hello_mod.hello[label=""][style="dashed"][arrowhead="vee"];
-// }
-// "#;
-//         assert_eq!(dot_string, target_string);
-//     }
+        let dot_string = uml_graph.to_string();
+        let target_string = 
+r#"digraph ast {
+    subgraph cluster_hello_mod {
+        label="hello_mod";
+        "hello_mod.Hello"[label="Hello"][shape="record"];
+        "hello_mod.hello"[label="hello"];
+    }
+    subgraph cluster_mock_mod {
+        label="mock_mod";
+        "mock_mod.mock"[label="mock"];
+    }
+    "mock_mod.mock" -> "hello_mod.Hello"[label=""][style="dashed"][arrowhead="vee"];
+    "mock_mod.mock" -> "hello_mod.hello"[label=""][style="dashed"][arrowhead="vee"];
+}
+"#;
+        assert_eq!(dot_string, target_string);
+    }
 }

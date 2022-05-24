@@ -11,5 +11,5 @@ repository = "https://github.com/SelamaAshalanore/rudg"
 
 [dependencies]
 ra_ap_syntax = "0.0.104"
-dot_graph = "0.2.1"
+dot_graph = "0.2.3"
 clap = { version = "3.1.18", features = ["derive", "cargo"] }
