@@ -111,6 +111,16 @@ impl GraphExporter for UMLGraph {
             subgraph.add_nodes(node_list);
             edge_list.iter().for_each(|e| subgraph.add_edge(e.clone()));
             graph.add_subgraph(subgraph);
+
+            // add outer_relations
+            for r in m.outer_relations() {
+                for ent in r.get_dot_entities(&name_prefix) {
+                    match ent {
+                        DotEntity::Edge(e) => graph.add_edge(e),
+                        DotEntity::Node(n) => graph.add_node(n)
+                    }
+                }
+            }
         }
 
         return graph.to_dot_string().unwrap();
@@ -137,8 +147,21 @@ fn get_node_and_edge_list(dot_entities: Vec<DotEntity>) -> (Vec<Node>, Vec<Edge>
 
 impl HasDotEntity for UMLRelation {
     fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
-        let from = vec![name_prefix, &self.from].concat();
-        let to = vec![name_prefix, &self.to].concat();
+        let from: String;
+        let to: String;
+
+        // ugly impletation, should be removed once refactoring done
+        // TODO
+        if !self.from.contains(".") {
+            from = vec![name_prefix, &self.from].concat();
+        } else {
+            from = self.from.clone();
+        }
+        if !self.to.contains(".") {
+            to = vec![name_prefix, &self.to].concat();
+        } else {
+            to = self.to.clone();
+        }
         match self.kind {
             UMLRelationKind::UMLAggregation => {
                 vec![DotEntity::Edge(Edge::new(
@@ -367,8 +390,8 @@ r#"digraph ast {
         uml_mod2.add_fn(UMLFn::new("mock", "mock() -> ()"));
         uml_mod2.add_outer_class("Hello", UMLClassKind::UMLClass, "hello_mod");
         uml_mod2.add_outer_fn("hello", "hello_mod");
-        uml_mod2.add_relation(UMLRelation::new("mock", "Hello", UMLRelationKind::UMLDependency));
-        uml_mod2.add_relation(UMLRelation::new("mock", "hello", UMLRelationKind::UMLDependency));
+        uml_mod2.add_relation(UMLRelation::new("mock", "hello_mod.Hello", UMLRelationKind::UMLDependency));
+        uml_mod2.add_relation(UMLRelation::new("mock", "hello_mod.hello", UMLRelationKind::UMLDependency));
         uml_graph.add_module(uml_mod1);
         uml_graph.add_module(uml_mod2);
 
