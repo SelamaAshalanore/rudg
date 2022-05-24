@@ -33,4 +33,19 @@ mod tests {
         assert_eq!(uml_graph.relations().len(), 1);
         assert_eq!(uml_graph.relations().get(0).unwrap().from, "main");
     }
+
+    #[test]
+    fn test_add_outer_relations() {
+        let mut uml_graph = UMLGraph::new();
+        uml_graph.add_struct(UMLClass::new("Main", vec![], vec![], UMLClassKind::UMLClass));
+        uml_graph.add_relation(UMLRelation::new("Main", "mock.outer_mock", UMLRelationKind::UMLDependency));
+        // add relation when at least one side of the relation is not in the scope
+        assert_eq!(uml_graph.relations().len(), 0);
+
+        // outer relations use notation as "mod"."struct/fn name"
+        uml_graph.add_outer_fn("outer_mock", "mock");
+        assert_eq!(uml_graph.relations().len(), 1);
+        assert_eq!(uml_graph.relations().get(0).unwrap().from, "Main");
+        assert_eq!(uml_graph.relations().get(0).unwrap().to, "mock.outer_mock");
+    }
 }
