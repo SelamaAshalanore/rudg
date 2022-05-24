@@ -340,11 +340,11 @@ r#"digraph ast {
 r#"digraph ast {
     subgraph cluster_mock_mod {
         label="mock_mod";
-        "Mock"[label="{Mock|e2() -> E2}"][shape="record"];
-        "E1"[label="{E1|b() -> Mock}"][shape="record"];
-        "E2"[label="{E2|a() -> Mock}"][shape="record"];
-        "E1" -> "Mock"[label=""][arrowhead="vee"];
-        "E2" -> "Mock"[label=""][arrowhead="none"];
+        "mock_mod.Mock"[label="{Mock|e2() -> E2}"][shape="record"];
+        "mock_mod.E1"[label="{E1|b() -> Mock}"][shape="record"];
+        "mock_mod.E2"[label="{E2|a() -> Mock}"][shape="record"];
+        "mock_mod.E1" -> "mock_mod.Mock"[label=""][arrowhead="vee"];
+        "mock_mod.E2" -> "mock_mod.Mock"[label=""][arrowhead="none"];
     }
 }
 "#;
