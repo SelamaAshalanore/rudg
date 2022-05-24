@@ -10,8 +10,8 @@ use super::UMLClassKind;
 #[derive(PartialEq, Debug)]
 pub struct UMLGraph {
     pub name: String,
-    pub structs: Vec<UMLClass>,
-    pub fns: Vec<UMLFn>,
+    structs: Vec<UMLClass>,
+    fns: Vec<UMLFn>,
     relations: Vec<UMLRelation>,
     pub modules: BTreeMap<String, UMLGraph>,
 }
@@ -23,6 +23,20 @@ impl UMLGraph {
 
     pub fn add_module(&mut self, module: UMLGraph) -> () {
         self.modules.insert(String::from(&module.name), module);
+    }
+
+    pub fn fns(&self) -> Vec<&UMLFn> {
+        self.fns
+            .iter()
+            .filter(|f| !f.name.contains("."))
+            .collect()
+    }
+
+    pub fn structs(&self) -> Vec<&UMLClass> {
+        self.structs
+            .iter()
+            .filter(|cls| !cls.name.contains("."))
+            .collect()
     }
 
     pub fn add_relation(&mut self, rel: UMLRelation) -> () {

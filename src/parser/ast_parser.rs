@@ -429,8 +429,8 @@ mod tests {
         target_graph.add_relation(UMLRelation::new("A", "B", UMLRelationKind::UMLRealization));
         
         // relations with invalid end(s) are stored inside the class but cannnot be reached
-        assert_eq!(parsed_graph.structs, target_graph.structs);
-        assert_eq!(parsed_graph.fns, target_graph.fns);
+        assert_eq!(parsed_graph.structs(), target_graph.structs());
+        assert_eq!(parsed_graph.fns(), target_graph.fns());
         assert_eq!(parsed_graph.relations(), target_graph.relations());
     }
 
