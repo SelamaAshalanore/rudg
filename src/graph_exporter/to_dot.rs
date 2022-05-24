@@ -371,15 +371,15 @@ r#"digraph ast {
 // r#"digraph ast {
 //     subgraph hello_mod {
 //         label="hello_mod";
-//         Hello[label="Hello"][shape="record"];
-//         hello[label="hello"];
+//         hello_mod.Hello[label="Hello"][shape="record"];
+//         hello_mod.hello[label="hello"];
 //     }
 //     subgraph mock_mod {
 //         label="mock_mod";
-//         mock[label="mock"];
+//         mock_mod.mock[label="mock"];
 //     }
-//     mock -> Hello[label=""][style="dashed"][arrowhead="vee"];
-//     mock -> hello[label=""][style="dashed"][arrowhead="vee"];
+//     mock_mod.mock -> hello_mod.Hello[label=""][style="dashed"][arrowhead="vee"];
+//     mock_mod.mock -> hello_mod.hello[label=""][style="dashed"][arrowhead="vee"];
 // }
 // "#;
 //         assert_eq!(dot_string, target_string);

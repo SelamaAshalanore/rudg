@@ -31,7 +31,7 @@ impl UMLGraph {
         if &rel.from != &rel.to {
                     // if new relation's kind is associationUni, then search for associationUni relation with opposite direction and replace it with associationBi
                     if &rel.kind == &UMLRelationKind::UMLAssociationUni {
-                        match self.get_relation(&rel.to, &rel.from) {
+                        match self.relation_mut(&rel.to, &rel.from) {
                             Some(e_rel) => {
                                 if &e_rel.kind == &rel.kind {
                                     e_rel.change_relation_kind(UMLRelationKind::UMLAssociationBi);
@@ -42,7 +42,7 @@ impl UMLGraph {
                         }
                     }
                     
-                    match self.get_relation(&rel.from, &rel.to) {
+                    match self.relation_mut(&rel.from, &rel.to) {
                         Some(e_rel) => {
                             // if existing relation's kind has less priority than new relation's, change the relation kind
                             if e_rel.kind < rel.kind {
@@ -90,46 +90,52 @@ impl UMLGraph {
             .collect()
     }
 
+    // pub fn outer_relations(&self) -> Vec<&UMLRelation> {
+    //     self.relations
+    //         .iter()
+    //         .filter(|rel| {
+    //             (
+    //                 self.get_fn_names().contains(&rel.from) || self.get_struct_names().contains(&rel.from)
+    //                     || self.get_outer_fn_names().contains(&rel.from) || self.get_outer_struct_names().contains(&rel.from
+    //              )) &&
+    //             (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to))
+    //         })
+    //         .collect()
+    // }
+
     fn get_mut_struct(&mut self, struct_name: &str) -> Option<&mut UMLClass> {
         self.structs.iter_mut().find(|st| st.name == struct_name)
     }
 
     fn get_struct_names(&self) -> Vec<String> {
-        let mut results = vec![];
-        results.append(
-            &mut self.structs
-                    .iter()
-                    .map(|st| st.name.clone())
-                    .collect()
-        );
-        results.append(
-            &mut self.outer_structs
-                    .iter()
-                    .map(|(st, _)| st.name.clone())
-                    .collect()
-        );
-        results
-        
+        self.structs
+            .iter()
+            .map(|st| st.name.clone())
+            .collect()
+    }
+
+    fn get_outer_struct_names(&self) -> Vec<(String, String)> {
+        self.outer_structs
+            .iter()
+            .map(|(st, mod_name)| (st.name.clone(), mod_name.clone()))
+            .collect()
     }
 
     fn get_fn_names(&self) -> Vec<String> {
-        let mut results = vec![];
-        results.append(
-            &mut self.fns
-                    .iter()
-                    .map(|f| f.name.clone())
-                    .collect()
-        );
-        results.append(
-            &mut self.outer_fns
-                    .iter()
-                    .map(|(f, _)| f.name.clone())
-                    .collect()
-        );
-        results
+        self.fns
+            .iter()
+            .map(|f| f.name.clone())
+            .collect()
     }
 
-    fn get_relation(&mut self, from: &str, to: &str) -> Option<&mut UMLRelation> {
+    fn get_outer_fn_names(&self) -> Vec<(String, String)> {
+        self.outer_fns
+            .iter()
+            .map(|(st, mod_name)| (st.name.clone(), mod_name.clone()))
+            .collect()
+    }
+
+    fn relation_mut(&mut self, from: &str, to: &str) -> Option<&mut UMLRelation> {
         for rel in &mut self.relations {
             if rel.from == from && rel.to == to {
                 return Some(rel)

@@ -32,9 +32,5 @@ mod tests {
         uml_graph.add_fn(UMLFn::new("main", "main()"));
         assert_eq!(uml_graph.relations().len(), 1);
         assert_eq!(uml_graph.relations().get(0).unwrap().from, "main");
-
-        // relations with outer_fn
-        uml_graph.add_outer_fn("outer_main", "outer_main()");
-        assert_eq!(uml_graph.relations().len(), 2);
     }
 }
