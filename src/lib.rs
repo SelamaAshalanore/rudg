@@ -30,8 +30,9 @@ pub fn rs2dot<'a, P: AsRef<Path>>(path: P) -> String {
         // parse every file as individual module inside the whole Graph
         for file_p in get_rs_file_paths(p) {
             let file_string = read_to_string(&file_p).unwrap();
-            let uml_module = AstParser::parse_string(&file_string);
-            uml_graph.add_module(uml_module, file_p.file_stem().unwrap().to_str().unwrap());
+            let mut uml_module = AstParser::parse_string(&file_string);
+            uml_module.name = file_p.file_stem().unwrap().to_str().unwrap().to_string();
+            uml_graph.add_module(uml_module);
         }
         uml_graph.to_string()
     } else {

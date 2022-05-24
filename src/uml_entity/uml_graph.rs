@@ -9,7 +9,7 @@ use super::UMLClassKind;
 
 #[derive(PartialEq, Debug)]
 pub struct UMLGraph {
-    name: String,
+    pub name: String,
     pub structs: Vec<UMLClass>,
     pub fns: Vec<UMLFn>,
     relations: Vec<UMLRelation>,
@@ -21,8 +21,8 @@ impl UMLGraph {
         UMLGraph { name: String::from(name), structs: vec![], fns: vec![], relations: vec![], modules: BTreeMap::new()}
     }
 
-    pub fn add_module(&mut self, module: UMLGraph, name: &str) -> () {
-        self.modules.insert(String::from(name), module);
+    pub fn add_module(&mut self, module: UMLGraph) -> () {
+        self.modules.insert(String::from(&module.name), module);
     }
 
     pub fn add_relation(&mut self, rel: UMLRelation) -> () {
