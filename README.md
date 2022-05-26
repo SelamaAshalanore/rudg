@@ -7,6 +7,25 @@ Tools that parsing Rust code into UML diagram (in dot format currently).
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+## Example
+Please notice on version v0.1.1 the file name is "aggregation..dot", which will be fixed in the next release
+```
+$ rudg.exe tests\examples\aggregation.rs
+$ cat tests\examples\aggregation.dot
+digraph ast {
+    "Amut"[label="{Amut|b: *mut B}"][shape="record"];
+    "Aconst"[label="{Aconst|b: *const B}"][shape="record"];
+    "B"[label="B"][shape="record"];
+    "Amut" -> "B"[label=""][arrowtail="odiamond"];
+    "Aconst" -> "B"[label=""][arrowtail="odiamond"];
+}
+```
+And if you use [Graphviz Online](https://dreampuf.github.io/GraphvizOnline/) or other tools like [Graphviz add-on for VSCode](https://marketplace.visualstudio.com/items?itemName=joaompinto.vscode-graphviz), then the dot file could be rendered as below:
+
+![aggregation_example](https://raw.githubusercontent.com/SelamaAshalanore/rudg/add_example_in_readme/aggregation_example.svg)
+
+Currently, this tool could only parse single .rs file, and support for parsing whole crate will be released on v0.2.0, which is under development.
+
 ## Usage
 ```
 $ rudg.exe --help
