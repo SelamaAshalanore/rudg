@@ -206,23 +206,23 @@ r#"digraph ast {
     );
     }
 
-//     #[test]
-//     fn test_parse_multi_files_crate() {
-//         assert_eq!(
-//             rudg::rs2dot("tests/multiple_files_crate"),
-// r#"digraph ast {
-//     subgraph hello {
-//         label="hello";
-//         hello[label="hello"];
-//     }
-//     subgraph main {
-//         label="main";
-//         main[label="main"];
-//     }
-//     main -> hello[label=""][style="dashed"][arrowhead="vee"];
-// }
-// "#
-//     );
-//     }
+    #[test]
+    fn test_parse_multi_files_crate() {
+        assert_eq!(
+            rudg::rs2dot("tests/multiple_files_crate"),
+r#"digraph ast {
+    subgraph cluster_hello {
+        label="hello";
+        "hello.hello"[label="hello"];
+    }
+    subgraph cluster_main {
+        label="main";
+        "main.main"[label="main"];
+    }
+    "main.main" -> "hello.hello"[label=""][style="dashed"][arrowhead="vee"];
+}
+"#
+    );
+    }
 
 }
