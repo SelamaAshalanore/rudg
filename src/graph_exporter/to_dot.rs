@@ -9,20 +9,21 @@ enum DotEntity {
 }
 
 trait HasDotEntity {
-    fn get_dot_entities(&self) -> Vec<DotEntity>;
+    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity>;
 }
 
 impl HasDotEntity for UMLFn {
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
+    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
-        dot_entities.push(DotEntity::Node(Node::new(&self.name)));
+        let name = vec![name_prefix, &self.name];
+        dot_entities.push(DotEntity::Node(Node::new(&name.concat()).label(&self.name)));
         dot_entities
     }
 }
 
 
 impl HasDotEntity for UMLClass {
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
+    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
         match self.kind {
             UMLClassKind::UMLClass => {
@@ -46,7 +47,8 @@ impl HasDotEntity for UMLClass {
                 }
                 let label: String = label_text.into_iter().collect();
                 
-                dot_entities.push(DotEntity::Node(Node::new(&self.name).label(&label).shape(Some("record"))));
+                let name = vec![name_prefix, &self.name];
+                dot_entities.push(DotEntity::Node(Node::new(&name.concat()).label(&label).shape(Some("record"))));
                 
             },
             UMLClassKind::UMLTrait => {
@@ -62,7 +64,8 @@ impl HasDotEntity for UMLClass {
                 }
                 let label: String = label_text.into_iter().collect();
                 
-                dot_entities.push(DotEntity::Node(Node::new(&self.name).label(&label).shape(Some("record"))));
+                let name = vec![name_prefix, &self.name];
+                dot_entities.push(DotEntity::Node(Node::new(&name.concat()).label(&label).shape(Some("record"))));
             },
         }
 
@@ -72,24 +75,24 @@ impl HasDotEntity for UMLClass {
 
 
 impl HasDotEntity for UMLGraph {
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
+    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
         let mut dot_entities = vec![];
-        self.structs
+        self.structs()
             .iter()
-            .for_each(|(_, st)| dot_entities.append(&mut st.get_dot_entities()));
-        self.fns
+            .for_each(|st| dot_entities.append(&mut st.get_dot_entities(name_prefix)));
+        self.fns()
             .iter()
-            .for_each(|f| dot_entities.append(&mut f.get_dot_entities()));
-        self.relations
+            .for_each(|f| dot_entities.append(&mut f.get_dot_entities(name_prefix)));
+        self.relations()
             .iter()
-            .for_each(|r| dot_entities.append(&mut r.get_dot_entities()));
+            .for_each(|r| dot_entities.append(&mut r.get_dot_entities(name_prefix)));
         dot_entities
     }
 }
 
 impl GraphExporter for UMLGraph {
     fn to_string(&self) -> String {
-        let (node_list, edge_list) = get_node_and_edge_list(self.get_dot_entities());
+        let (node_list, edge_list) = get_node_and_edge_list(self.get_dot_entities(""));
 
         // generate digraph from nodes and edges
         let mut graph = Graph::new("ast", dot_graph::Kind::Digraph);
@@ -99,12 +102,25 @@ impl GraphExporter for UMLGraph {
         for edge in edge_list {
             graph.add_edge(edge)
         }
+
+        // generate digraph from modules
         for (name, m) in &self.modules {
-            let (node_list, edge_list) = get_node_and_edge_list(m.get_dot_entities());
-            let mut subgraph = Subgraph::new(name).label(name);
+            let name_prefix = format!("{}.", &m.name);
+            let (node_list, edge_list) = get_node_and_edge_list(m.get_dot_entities(&name_prefix));
+            let mut subgraph = Subgraph::new(&format!("cluster_{}", name)).label(name);
             subgraph.add_nodes(node_list);
             edge_list.iter().for_each(|e| subgraph.add_edge(e.clone()));
             graph.add_subgraph(subgraph);
+
+            // add outer_relations
+            for r in m.outer_relations() {
+                for ent in r.get_dot_entities(&name_prefix) {
+                    match ent {
+                        DotEntity::Edge(e) => graph.add_edge(e),
+                        DotEntity::Node(n) => graph.add_node(n)
+                    }
+                }
+            }
         }
 
         return graph.to_dot_string().unwrap();
@@ -130,28 +146,43 @@ fn get_node_and_edge_list(dot_entities: Vec<DotEntity>) -> (Vec<Node>, Vec<Edge>
 }
 
 impl HasDotEntity for UMLRelation {
-    fn get_dot_entities(&self) -> Vec<DotEntity> {
+    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
+        let from: String;
+        let to: String;
+
+        // ugly impletation, should be removed once refactoring done
+        // TODO
+        if !self.from.contains(".") {
+            from = vec![name_prefix, &self.from].concat();
+        } else {
+            from = self.from.clone();
+        }
+        if !self.to.contains(".") {
+            to = vec![name_prefix, &self.to].concat();
+        } else {
+            to = self.to.clone();
+        }
         match self.kind {
             UMLRelationKind::UMLAggregation => {
                 vec![DotEntity::Edge(Edge::new(
-                    &self.from, 
-                    &self.to, 
+                    &from, 
+                    &to, 
                     "")
                     .start_arrow(Arrow::from_arrow(ArrowShape::Diamond(Fill::Open, Side::Both))),
                 )]
             },
             UMLRelationKind::UMLComposition => {
                 vec![DotEntity::Edge(Edge::new(
-                    &self.from, 
-                    &self.to, 
+                    &from, 
+                    &to, 
                     "")
                     .end_arrow(Arrow::from_arrow(ArrowShape::diamond()))
                 )]
             },
             UMLRelationKind::UMLDependency => {
                 vec![DotEntity::Edge(Edge::new(
-                    &self.from,
-                    &self.to, 
+                    &from,
+                    &to, 
                     "")
                     .style(Style::Dashed)
                     .end_arrow(Arrow::from_arrow(ArrowShape::vee()))
@@ -159,24 +190,24 @@ impl HasDotEntity for UMLRelation {
             },
             UMLRelationKind::UMLAssociationUni => {
                 vec![DotEntity::Edge(Edge::new(
-                    &self.from,
-                    &self.to,
+                    &from,
+                    &to,
                     "")
                     .end_arrow(Arrow::from_arrow(ArrowShape::vee()))
                 )]
             },
             UMLRelationKind::UMLAssociationBi => {
                 vec![DotEntity::Edge(Edge::new(
-                    &self.from, 
-                    &self.to, 
+                    &from, 
+                    &to, 
                     "")
                     .end_arrow(Arrow::none())
                 )]
             },
             UMLRelationKind::UMLRealization => {
                 vec![DotEntity::Edge(Edge::new(
-                    &self.from, 
-                    &self.to, 
+                    &from, 
+                    &to, 
                     "")
                     .end_arrow(Arrow::from_arrow(ArrowShape::Normal(Fill::Open, Side::Both)))
                     .style(Style::Dashed),
@@ -192,16 +223,16 @@ mod tests {
 
     #[test]
     fn test_uml_classes_fns_to_dot() {
-        let mut uml_graph = UMLGraph::new();
+        let mut uml_graph = UMLGraph::new("");
         uml_graph.add_struct(UMLClass::new("Main", vec![String::from("a: String"), String::from("b: String")], vec![String::from("main() -> ()"), String::from("main1()")], UMLClassKind::UMLClass));
         uml_graph.add_struct(UMLClass::new("MainTrait", vec![], vec![String::from("main() -> ()")], UMLClassKind::UMLTrait));
         uml_graph.add_fn(UMLFn::new("test", "test()"));
 
         let dot_string = uml_graph.to_string();
         let target_string = r#"digraph ast {
-    Main[label="{Main|a: String\lb: String|main() -> ()\lmain1()}"][shape="record"];
-    MainTrait[label="{Interface\lMainTrait|main() -> ()}"][shape="record"];
-    test[label="test"];
+    "Main"[label="{Main|a: String\lb: String|main() -> ()\lmain1()}"][shape="record"];
+    "MainTrait"[label="{Interface\lMainTrait|main() -> ()}"][shape="record"];
+    "test"[label="test"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -209,16 +240,16 @@ mod tests {
 
     #[test]
     fn test_uml_fn_relations() {
-        let mut uml_graph = UMLGraph::new();
+        let mut uml_graph = UMLGraph::new("");
         uml_graph.add_fn(UMLFn::new("main", "main()"));
         uml_graph.add_fn(UMLFn::new("test", "test()"));
         uml_graph.add_relation(UMLRelation::new("main", "test", UMLRelationKind::UMLDependency));
 
         let dot_string = uml_graph.to_string();
         let target_string = r#"digraph ast {
-    main[label="main"];
-    test[label="test"];
-    main -> test[label=""][style="dashed"][arrowhead="vee"];
+    "main"[label="main"];
+    "test"[label="test"];
+    "main" -> "test"[label=""][style="dashed"][arrowhead="vee"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -226,7 +257,7 @@ mod tests {
 
     #[test]
     fn test_uml_class_dependency() {
-        let mut uml_graph = UMLGraph::new();
+        let mut uml_graph = UMLGraph::new("");
         uml_graph.add_struct(UMLClass::new("Mock", vec![], vec![String::from("mock_fn()")], UMLClassKind::UMLClass));
         uml_graph.add_fn(UMLFn::new("f1", "f1(i: usize)"));
         uml_graph.add_fn(UMLFn::new("f2", "f2() -> usize"));
@@ -236,11 +267,11 @@ mod tests {
         let dot_string = uml_graph.to_string();
         let target_string = 
 r#"digraph ast {
-    Mock[label="{Mock|mock_fn()}"][shape="record"];
-    f1[label="f1"];
-    f2[label="f2"];
-    f1 -> Mock[label=""][style="dashed"][arrowhead="vee"];
-    f2 -> Mock[label=""][style="dashed"][arrowhead="vee"];
+    "Mock"[label="{Mock|mock_fn()}"][shape="record"];
+    "f1"[label="f1"];
+    "f2"[label="f2"];
+    "f1" -> "Mock"[label=""][style="dashed"][arrowhead="vee"];
+    "f2" -> "Mock"[label=""][style="dashed"][arrowhead="vee"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -248,7 +279,7 @@ r#"digraph ast {
 
     #[test]
     fn test_uml_class_aggregation() {
-        let mut uml_graph = UMLGraph::new();
+        let mut uml_graph = UMLGraph::new("");
         uml_graph.add_struct(UMLClass::new("Mock", vec![String::from(r"b: *mut B")], vec![], UMLClassKind::UMLClass));
         uml_graph.add_struct(UMLClass::new("B", vec![], vec![], UMLClassKind::UMLClass));
         uml_graph.add_relation(UMLRelation::new("Mock", "B", UMLRelationKind::UMLAggregation));
@@ -256,9 +287,9 @@ r#"digraph ast {
         let dot_string = uml_graph.to_string();
         let target_string = 
 r#"digraph ast {
-    Mock[label="{Mock|b: *mut B}"][shape="record"];
-    B[label="B"][shape="record"];
-    Mock -> B[label=""][arrowtail="odiamond"];
+    "Mock"[label="{Mock|b: *mut B}"][shape="record"];
+    "B"[label="B"][shape="record"];
+    "Mock" -> "B"[label=""][arrowtail="odiamond"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -266,7 +297,7 @@ r#"digraph ast {
 
     #[test]
     fn test_uml_class_composition() {
-        let mut uml_graph = UMLGraph::new();
+        let mut uml_graph = UMLGraph::new("");
         uml_graph.add_struct(UMLClass::new("Mock", vec![String::from(r"c: C")], vec![], UMLClassKind::UMLClass));
         uml_graph.add_struct(UMLClass::new("C", vec![], vec![], UMLClassKind::UMLClass));
         uml_graph.add_relation(UMLRelation::new("Mock", "C", UMLRelationKind::UMLComposition));
@@ -274,9 +305,9 @@ r#"digraph ast {
         let dot_string = uml_graph.to_string();
         let target_string = 
 r#"digraph ast {
-    Mock[label="{Mock|c: C}"][shape="record"];
-    C[label="C"][shape="record"];
-    Mock -> C[label=""][arrowhead="diamond"];
+    "Mock"[label="{Mock|c: C}"][shape="record"];
+    "C"[label="C"][shape="record"];
+    "Mock" -> "C"[label=""][arrowhead="diamond"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -284,7 +315,7 @@ r#"digraph ast {
 
     #[test]
     fn test_uml_class_realization() {
-        let mut uml_graph = UMLGraph::new();
+        let mut uml_graph = UMLGraph::new("");
         uml_graph.add_struct(UMLClass::new("Mock", vec![], vec![], UMLClassKind::UMLClass));
         uml_graph.add_struct(UMLClass::new("D", vec![], vec![String::from(r"a(&self) -> Option<T>")], UMLClassKind::UMLTrait));
         uml_graph.add_relation(UMLRelation::new("Mock", "D", UMLRelationKind::UMLRealization));
@@ -292,9 +323,9 @@ r#"digraph ast {
         let dot_string = uml_graph.to_string();
         let target_string = 
 r#"digraph ast {
-    Mock[label="Mock"][shape="record"];
-    D[label="{Interface\lD|a(&self) -> Option<T>}"][shape="record"];
-    Mock -> D[label=""][style="dashed"][arrowhead="onormal"];
+    "Mock"[label="Mock"][shape="record"];
+    "D"[label="{Interface\lD|a(&self) -> Option<T>}"][shape="record"];
+    "Mock" -> "D"[label=""][style="dashed"][arrowhead="onormal"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -302,7 +333,7 @@ r#"digraph ast {
 
     #[test]
     fn test_uml_class_association() {
-        let mut uml_graph = UMLGraph::new();
+        let mut uml_graph = UMLGraph::new("");
         uml_graph.add_struct(UMLClass::new("Mock", vec![], vec![String::from("e2() -> E2")], UMLClassKind::UMLClass));
         uml_graph.add_struct(UMLClass::new("E1", vec![], vec![String::from(r"b() -> Mock")], UMLClassKind::UMLClass));
         uml_graph.add_struct(UMLClass::new("E2", vec![], vec![String::from(r"a() -> Mock")], UMLClassKind::UMLClass));
@@ -312,11 +343,11 @@ r#"digraph ast {
         let dot_string = uml_graph.to_string();
         let target_string = 
 r#"digraph ast {
-    Mock[label="{Mock|e2() -> E2}"][shape="record"];
-    E1[label="{E1|b() -> Mock}"][shape="record"];
-    E2[label="{E2|a() -> Mock}"][shape="record"];
-    E1 -> Mock[label=""][arrowhead="vee"];
-    E2 -> Mock[label=""][arrowhead="none"];
+    "Mock"[label="{Mock|e2() -> E2}"][shape="record"];
+    "E1"[label="{E1|b() -> Mock}"][shape="record"];
+    "E2"[label="{E2|a() -> Mock}"][shape="record"];
+    "E1" -> "Mock"[label=""][arrowhead="vee"];
+    "E2" -> "Mock"[label=""][arrowhead="none"];
 }
 "#;
         assert_eq!(dot_string, target_string);
@@ -324,26 +355,60 @@ r#"digraph ast {
 
     #[test]
     fn test_mods() {
-        let mut uml_graph = UMLGraph::new();
-        let mut uml_mod = UMLGraph::new();
+        let mut uml_graph = UMLGraph::new("");
+        let mut uml_mod = UMLGraph::new("mock_mod");
         uml_mod.add_struct(UMLClass::new("Mock", vec![], vec![String::from("e2() -> E2")], UMLClassKind::UMLClass));
         uml_mod.add_struct(UMLClass::new("E1", vec![], vec![String::from(r"b() -> Mock")], UMLClassKind::UMLClass));
         uml_mod.add_struct(UMLClass::new("E2", vec![], vec![String::from(r"a() -> Mock")], UMLClassKind::UMLClass));
         uml_mod.add_relation(UMLRelation::new("E1", "Mock", UMLRelationKind::UMLAssociationUni));
         uml_mod.add_relation(UMLRelation::new("E2", "Mock", UMLRelationKind::UMLAssociationBi));
-        uml_graph.add_module(uml_mod, "mock_mod");
+        uml_graph.add_module(uml_mod);
 
         let dot_string = uml_graph.to_string();
         let target_string = 
 r#"digraph ast {
-    subgraph mock_mod {
+    subgraph cluster_mock_mod {
         label="mock_mod";
-        Mock[label="{Mock|e2() -> E2}"][shape="record"];
-        E1[label="{E1|b() -> Mock}"][shape="record"];
-        E2[label="{E2|a() -> Mock}"][shape="record"];
-        E1 -> Mock[label=""][arrowhead="vee"];
-        E2 -> Mock[label=""][arrowhead="none"];
+        "mock_mod.Mock"[label="{Mock|e2() -> E2}"][shape="record"];
+        "mock_mod.E1"[label="{E1|b() -> Mock}"][shape="record"];
+        "mock_mod.E2"[label="{E2|a() -> Mock}"][shape="record"];
+        "mock_mod.E1" -> "mock_mod.Mock"[label=""][arrowhead="vee"];
+        "mock_mod.E2" -> "mock_mod.Mock"[label=""][arrowhead="none"];
     }
+}
+"#;
+        assert_eq!(dot_string, target_string);
+    }
+
+    #[test]
+    fn test_cross_mods_dependency() {
+        let mut uml_graph = UMLGraph::new("");
+        let mut uml_mod1 = UMLGraph::new("hello_mod");
+        let mut uml_mod2 = UMLGraph::new("mock_mod");
+        uml_mod1.add_struct(UMLClass::new("Hello", vec![], vec![], UMLClassKind::UMLClass));
+        uml_mod1.add_fn(UMLFn::new("hello", "hello() -> ()"));
+        uml_mod2.add_fn(UMLFn::new("mock", "mock() -> ()"));
+        uml_mod2.add_outer_class("Hello", UMLClassKind::UMLClass, "hello_mod");
+        uml_mod2.add_outer_fn("hello", "hello_mod");
+        uml_mod2.add_relation(UMLRelation::new("mock", "hello_mod.Hello", UMLRelationKind::UMLDependency));
+        uml_mod2.add_relation(UMLRelation::new("mock", "hello_mod.hello", UMLRelationKind::UMLDependency));
+        uml_graph.add_module(uml_mod1);
+        uml_graph.add_module(uml_mod2);
+
+        let dot_string = uml_graph.to_string();
+        let target_string = 
+r#"digraph ast {
+    subgraph cluster_hello_mod {
+        label="hello_mod";
+        "hello_mod.Hello"[label="Hello"][shape="record"];
+        "hello_mod.hello"[label="hello"];
+    }
+    subgraph cluster_mock_mod {
+        label="mock_mod";
+        "mock_mod.mock"[label="mock"];
+    }
+    "mock_mod.mock" -> "hello_mod.Hello"[label=""][style="dashed"][arrowhead="vee"];
+    "mock_mod.mock" -> "hello_mod.hello"[label=""][style="dashed"][arrowhead="vee"];
 }
 "#;
         assert_eq!(dot_string, target_string);
