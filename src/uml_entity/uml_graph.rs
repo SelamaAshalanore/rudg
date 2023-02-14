@@ -18,14 +18,7 @@ pub struct UMLGraph {
 }
 
 impl UMLGraph {
-    pub fn new(name: &str) -> UMLGraph {
-        UMLGraph { name: String::from(name), structs: vec![], fns: vec![], relations: vec![], modules: BTreeMap::new()}
-    }
-
-    pub fn add_module(&mut self, module: UMLGraph) -> () {
-        self.modules.insert(String::from(&module.name), module);
-    }
-
+    // Getters
     pub fn fns(&self) -> Vec<&UMLFn> {
         // functions getter
         self.fns
@@ -40,6 +33,75 @@ impl UMLGraph {
             .iter()
             .filter(|cls| !cls.name.contains("."))
             .collect()
+    }
+
+    pub fn relations(&self) -> Vec<&UMLRelation> {
+        // relations getter
+        self.relations
+            .iter()
+            .filter(|rel| {
+                (self.get_fn_names().contains(&rel.from) || self.get_struct_names().contains(&rel.from)) &&
+                (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to)) &&
+                (!rel.to.contains(r".") && !rel.from.contains(r"."))
+            })
+            .collect()
+    }
+
+    pub fn outer_relations(&self) -> Vec<&UMLRelation> {
+        // outer relations getter
+        self.relations
+            .iter()
+            .filter(|rel| {
+                (self.get_fn_names().contains(&rel.from) || self.get_struct_names().contains(&rel.from)) &&
+                (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to)) &&
+                (rel.to.contains(r".") || rel.from.contains(r"."))
+            })
+            .collect()
+    }
+
+    fn get_struct_names(&self) -> Vec<String> {
+        // struct names getter
+        self.structs
+            .iter()
+            .map(|st| st.name.clone())
+            .collect()
+    }
+
+    fn get_fn_names(&self) -> Vec<String> {
+        // function names getter
+        self.fns
+            .iter()
+            .map(|f| f.name.clone())
+            .collect()
+    }
+}
+
+impl UMLGraph {
+    // Finders
+    fn get_mut_struct(&mut self, struct_name: &str) -> Option<&mut UMLClass> {
+        // mut structs getter
+        self.structs.iter_mut().find(|st| st.name == struct_name)
+    }
+
+    fn relation_mut(&mut self, from: &str, to: &str) -> Option<&mut UMLRelation> {
+        // relation mut getter
+        for rel in &mut self.relations {
+            if rel.from == from && rel.to == to {
+                return Some(rel)
+            }
+        }
+        None
+    }
+}
+
+impl UMLGraph {
+    // Setters & Adders
+    pub fn new(name: &str) -> UMLGraph {
+        UMLGraph { name: String::from(name), structs: vec![], fns: vec![], relations: vec![], modules: BTreeMap::new()}
+    }
+
+    pub fn add_module(&mut self, module: UMLGraph) -> () {
+        self.modules.insert(String::from(&module.name), module);
     }
 
     pub fn add_relation(&mut self, rel: UMLRelation) -> () {
@@ -95,60 +157,5 @@ impl UMLGraph {
 
     pub fn add_outer_fn(&mut self, f_name: &str, mod_name: &str) -> () {
         self.fns.push(UMLFn::new(&format!("{}.{}", mod_name, f_name), &format!("{}.{}", mod_name, f_name)));
-    }
-
-    pub fn relations(&self) -> Vec<&UMLRelation> {
-        // relations getter
-        self.relations
-            .iter()
-            .filter(|rel| {
-                (self.get_fn_names().contains(&rel.from) || self.get_struct_names().contains(&rel.from)) &&
-                (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to)) &&
-                (!rel.to.contains(r".") && !rel.from.contains(r"."))
-            })
-            .collect()
-    }
-
-    pub fn outer_relations(&self) -> Vec<&UMLRelation> {
-        // outer relations getter
-        self.relations
-            .iter()
-            .filter(|rel| {
-                (self.get_fn_names().contains(&rel.from) || self.get_struct_names().contains(&rel.from)) &&
-                (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to)) &&
-                (rel.to.contains(r".") || rel.from.contains(r"."))
-            })
-            .collect()
-    }
-
-    fn get_mut_struct(&mut self, struct_name: &str) -> Option<&mut UMLClass> {
-        // mut structs getter
-        self.structs.iter_mut().find(|st| st.name == struct_name)
-    }
-
-    fn get_struct_names(&self) -> Vec<String> {
-        // struct names getter
-        self.structs
-            .iter()
-            .map(|st| st.name.clone())
-            .collect()
-    }
-
-    fn get_fn_names(&self) -> Vec<String> {
-        // function names getter
-        self.fns
-            .iter()
-            .map(|f| f.name.clone())
-            .collect()
-    }
-
-    fn relation_mut(&mut self, from: &str, to: &str) -> Option<&mut UMLRelation> {
-        // relation mut getter
-        for rel in &mut self.relations {
-            if rel.from == from && rel.to == to {
-                return Some(rel)
-            }
-        }
-        None
     }
 }
