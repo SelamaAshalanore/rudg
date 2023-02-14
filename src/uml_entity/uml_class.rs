@@ -1,6 +1,7 @@
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum UMLClassKind {
+    // In Rust, the UML class could be further be categorized as class or trait
     UMLClass,
     UMLTrait,
 }
@@ -19,7 +20,8 @@ impl UMLClass {
         UMLClass { name: String::from(name), fields: fields, method_names: method_names, kind: kind}
     }
 
-    pub fn merge_from(&mut self, from: &mut UMLClass) -> () {
+    pub fn merge_method_names_from(&mut self, from: &mut UMLClass) -> () {
+        // merge methods from another UML Class
         if self.name != from.name {()}
         self.method_names.append(&mut from.method_names);
     }

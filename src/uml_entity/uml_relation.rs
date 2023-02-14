@@ -1,6 +1,7 @@
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
 pub enum UMLRelationKind {
+    // UML relation types
     UMLDependency=0,
     UMLAssociationUni=1,
     UMLAssociationBi=2,

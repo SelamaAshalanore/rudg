@@ -9,6 +9,7 @@ use super::UMLClassKind;
 
 #[derive(PartialEq, Debug)]
 pub struct UMLGraph {
+    // The Graph struct, one for each graph, contains all the information on it
     pub name: String,
     structs: Vec<UMLClass>,
     fns: Vec<UMLFn>,
@@ -26,6 +27,7 @@ impl UMLGraph {
     }
 
     pub fn fns(&self) -> Vec<&UMLFn> {
+        // functions getter
         self.fns
             .iter()
             .filter(|f| !f.name.contains("."))
@@ -33,6 +35,7 @@ impl UMLGraph {
     }
 
     pub fn structs(&self) -> Vec<&UMLClass> {
+        // structs getter
         self.structs
             .iter()
             .filter(|cls| !cls.name.contains("."))
@@ -74,8 +77,9 @@ impl UMLGraph {
     }
 
     pub fn add_struct(&mut self, cls: UMLClass) -> () {
+        // add struct, if exists, extend its methods
         if self.get_struct_names().contains(&cls.name) {
-            self.get_mut_struct(&cls.name).unwrap().merge_from(&mut cls.clone());
+            self.get_mut_struct(&cls.name).unwrap().merge_method_names_from(&mut cls.clone());
         } else {
             self.structs.push(cls);
         }
@@ -94,6 +98,7 @@ impl UMLGraph {
     }
 
     pub fn relations(&self) -> Vec<&UMLRelation> {
+        // relations getter
         self.relations
             .iter()
             .filter(|rel| {
@@ -105,6 +110,7 @@ impl UMLGraph {
     }
 
     pub fn outer_relations(&self) -> Vec<&UMLRelation> {
+        // outer relations getter
         self.relations
             .iter()
             .filter(|rel| {
@@ -116,10 +122,12 @@ impl UMLGraph {
     }
 
     fn get_mut_struct(&mut self, struct_name: &str) -> Option<&mut UMLClass> {
+        // mut structs getter
         self.structs.iter_mut().find(|st| st.name == struct_name)
     }
 
     fn get_struct_names(&self) -> Vec<String> {
+        // struct names getter
         self.structs
             .iter()
             .map(|st| st.name.clone())
@@ -127,6 +135,7 @@ impl UMLGraph {
     }
 
     fn get_fn_names(&self) -> Vec<String> {
+        // function names getter
         self.fns
             .iter()
             .map(|f| f.name.clone())
@@ -134,6 +143,7 @@ impl UMLGraph {
     }
 
     fn relation_mut(&mut self, from: &str, to: &str) -> Option<&mut UMLRelation> {
+        // relation mut getter
         for rel in &mut self.relations {
             if rel.from == from && rel.to == to {
                 return Some(rel)

@@ -1,10 +1,11 @@
+// The basic idea is, extend crates ra_ap_syntax, especially ast, to support UML entity methods.
 use ra_ap_syntax::{ast::{self, AstNode, HasName, HasModuleItem}, match_ast, SourceFile, Parse};
 
 use crate::uml_entity::*;
 use super::StringParser;
 
 trait HasUMLEntity {
-    fn get_uml_entities(&self) -> Vec<UMLEntity>;
+    fn get_uml_entities(&self) -> Vec<UMLEntity>; // get uml entities from all types of ast entities
 }
 
 impl HasUMLEntity for ast::Struct {
@@ -148,6 +149,7 @@ fn strip_trait_bound(s: &str) -> String {
 }
 
 fn get_paths_str_from_ast_node(node: impl ast::AstNode) -> Vec<String> {
+    // get raw relation string
     let mut results = vec![];
     for node in node.syntax().descendants() {
         match_ast! {
@@ -191,6 +193,7 @@ impl HasUMLEntity for ast::Fn {
 }
 
 fn get_fn_full_name(f: &ast::Fn) -> String {
+    // include param list, return type
     let f_name = f.name().unwrap().text().to_string();
     let mut full_name: String = f_name.clone();
 
@@ -225,6 +228,7 @@ pub struct AstParser;
 
 impl StringParser for AstParser {
     fn parse_string(input: &str) -> UMLGraph {
+        // parse code string into UML Graph
         let parse: Parse<SourceFile> = SourceFile::parse(input);
         let file: SourceFile = parse.tree();
         let mut uml_graph = UMLGraph::new("");
