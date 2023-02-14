@@ -1,4 +1,5 @@
 pub mod ast_parser;
+mod to_uml_entities;
 
 use crate::UMLGraph;
 
