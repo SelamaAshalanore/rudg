@@ -59,8 +59,9 @@ impl UMLGraph {
     }
 
     pub fn add_struct(&mut self, cls: UMLClass) -> () {
+        // add struct, if exists, extend its methods
         if self.get_struct_names().contains(&cls.name) {
-            self.get_mut_struct(&cls.name).unwrap().merge_from(&mut cls.clone());
+            self.get_mut_struct(&cls.name).unwrap().merge_method_names_from(&mut cls.clone());
         } else {
             let st_name = cls.name.clone();
             self.structs.push((st_name.clone(), cls));
@@ -79,6 +80,7 @@ impl UMLGraph {
     }
 
     fn get_struct_names(&self) -> Vec<String> {
+        // struct names getter
         self.structs
             .iter()
             .map(|(st_name, _)| st_name.clone())
@@ -86,6 +88,7 @@ impl UMLGraph {
     }
 
     fn get_fn_names(&self) -> Vec<String> {
+        // function names getter
         self.fns
             .iter()
             .map(|f| f.name.clone())
