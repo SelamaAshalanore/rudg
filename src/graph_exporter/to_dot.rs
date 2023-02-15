@@ -1,5 +1,9 @@
+mod uml_fn;
+mod uml_class;
+mod uml_relation;
+mod uml_graph;
 
-use dot_graph::{Edge, Style, Node, Arrow, ArrowShape, Fill, Side, Graph, Subgraph};
+use dot_graph::{Edge, Node, Graph, Subgraph};
 use crate::uml_entity::*;
 
 use super::GraphExporter;
@@ -10,84 +14,6 @@ enum DotEntity {
 
 trait HasDotEntity {
     fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity>;
-}
-
-impl HasDotEntity for UMLFn {
-    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
-        let mut dot_entities = vec![];
-        let name = vec![name_prefix, &self.name];
-        dot_entities.push(DotEntity::Node(Node::new(&name.concat()).label(&self.name)));
-        dot_entities
-    }
-}
-
-
-impl HasDotEntity for UMLClass {
-    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
-        let mut dot_entities = vec![];
-        match self.kind {
-            UMLClassKind::UMLClass => {
-                let mut label_text: Vec<&str> = vec![&self.name];
-                let method_names = self.get_method_names();
-                let field_names = self.get_field_names();
-
-                let method_names_str = method_names.join(r"\l");
-                let field_names_str = field_names.join(r"\l");
-                if method_names.len() + field_names.len() > 0 {
-                    label_text.insert(0, "{");
-                    if field_names.len() > 0 {
-                        label_text.push("|");
-                        label_text.push(&field_names_str);
-                    } 
-                    if method_names.len() > 0 {
-                        label_text.push("|");
-                        label_text.push(&method_names_str);    
-                    }
-                    label_text.push("}");
-                }
-                let label: String = label_text.into_iter().collect();
-                
-                let name = vec![name_prefix, &self.name];
-                dot_entities.push(DotEntity::Node(Node::new(&name.concat()).label(&label).shape(Some("record"))));
-                
-            },
-            UMLClassKind::UMLTrait => {
-                let mut label_text: Vec<&str> = vec![r"Interface\l", &self.name];
-                let method_names = self.get_method_names();
-
-                let method_names_str = method_names.join(r"\l");
-                if method_names.len() > 0 {
-                    label_text.insert(0, "{");
-                    label_text.push("|");
-                    label_text.push(&method_names_str);
-                    label_text.push("}");
-                }
-                let label: String = label_text.into_iter().collect();
-                
-                let name = vec![name_prefix, &self.name];
-                dot_entities.push(DotEntity::Node(Node::new(&name.concat()).label(&label).shape(Some("record"))));
-            },
-        }
-
-        dot_entities
-    }
-}
-
-
-impl HasDotEntity for UMLGraph {
-    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
-        let mut dot_entities = vec![];
-        self.structs()
-            .iter()
-            .for_each(|st| dot_entities.append(&mut st.get_dot_entities(name_prefix)));
-        self.fns()
-            .iter()
-            .for_each(|f| dot_entities.append(&mut f.get_dot_entities(name_prefix)));
-        self.relations()
-            .iter()
-            .for_each(|r| dot_entities.append(&mut r.get_dot_entities(name_prefix)));
-        dot_entities
-    }
 }
 
 impl GraphExporter for UMLGraph {
@@ -143,78 +69,6 @@ fn get_node_and_edge_list(dot_entities: Vec<DotEntity>) -> (Vec<Node>, Vec<Edge>
         }
     }
     (node_list, edge_list)
-}
-
-impl HasDotEntity for UMLRelation {
-    fn get_dot_entities(&self, name_prefix: &str) -> Vec<DotEntity> {
-        let from: String;
-        let to: String;
-
-        // ugly impletation, should be removed once refactoring done
-        // TODO
-        if !self.from.contains(".") {
-            from = vec![name_prefix, &self.from].concat();
-        } else {
-            from = self.from.clone();
-        }
-        if !self.to.contains(".") {
-            to = vec![name_prefix, &self.to].concat();
-        } else {
-            to = self.to.clone();
-        }
-        match self.kind {
-            UMLRelationKind::UMLAggregation => {
-                vec![DotEntity::Edge(Edge::new(
-                    &from, 
-                    &to, 
-                    "")
-                    .start_arrow(Arrow::from_arrow(ArrowShape::Diamond(Fill::Open, Side::Both))),
-                )]
-            },
-            UMLRelationKind::UMLComposition => {
-                vec![DotEntity::Edge(Edge::new(
-                    &from, 
-                    &to, 
-                    "")
-                    .end_arrow(Arrow::from_arrow(ArrowShape::diamond()))
-                )]
-            },
-            UMLRelationKind::UMLDependency => {
-                vec![DotEntity::Edge(Edge::new(
-                    &from,
-                    &to, 
-                    "")
-                    .style(Style::Dashed)
-                    .end_arrow(Arrow::from_arrow(ArrowShape::vee()))
-                )]
-            },
-            UMLRelationKind::UMLAssociationUni => {
-                vec![DotEntity::Edge(Edge::new(
-                    &from,
-                    &to,
-                    "")
-                    .end_arrow(Arrow::from_arrow(ArrowShape::vee()))
-                )]
-            },
-            UMLRelationKind::UMLAssociationBi => {
-                vec![DotEntity::Edge(Edge::new(
-                    &from, 
-                    &to, 
-                    "")
-                    .end_arrow(Arrow::none())
-                )]
-            },
-            UMLRelationKind::UMLRealization => {
-                vec![DotEntity::Edge(Edge::new(
-                    &from, 
-                    &to, 
-                    "")
-                    .end_arrow(Arrow::from_arrow(ArrowShape::Normal(Fill::Open, Side::Both)))
-                    .style(Style::Dashed),
-                )]
-            },
-        }
-    }
 }
 
 #[cfg(test)]
