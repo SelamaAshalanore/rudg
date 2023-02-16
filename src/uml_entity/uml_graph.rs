@@ -5,7 +5,7 @@ use {
 };
 use std::collections::BTreeMap;
 
-use super::UMLClassKind;
+use super::{UMLClassKind, UMLOuterEntity};
 
 #[derive(PartialEq, Debug)]
 pub struct UMLGraph {
@@ -15,6 +15,7 @@ pub struct UMLGraph {
     fns: Vec<UMLFn>,
     relations: Vec<UMLRelation>,
     pub modules: BTreeMap<String, UMLGraph>,
+    outer_entities: Vec<UMLOuterEntity>,
 }
 
 impl UMLGraph {
@@ -59,6 +60,13 @@ impl UMLGraph {
             .collect()
     }
 
+    pub fn outer_entities(&self) -> Vec<&UMLOuterEntity> {
+        // outer entites getter
+        self.outer_entities
+            .iter()
+            .collect()
+    }
+
     fn get_struct_names(&self) -> Vec<String> {
         // struct names getter
         self.structs
@@ -97,7 +105,7 @@ impl UMLGraph {
 impl UMLGraph {
     // Setters & Adders
     pub fn new(name: &str) -> UMLGraph {
-        UMLGraph { name: String::from(name), structs: vec![], fns: vec![], relations: vec![], modules: BTreeMap::new()}
+        UMLGraph { name: String::from(name), structs: vec![], fns: vec![], relations: vec![], modules: BTreeMap::new(), outer_entities: vec![]}
     }
 
     pub fn add_module(&mut self, module: UMLGraph) -> () {
@@ -157,5 +165,9 @@ impl UMLGraph {
 
     pub fn add_outer_fn(&mut self, f_name: &str, mod_name: &str) -> () {
         self.fns.push(UMLFn::new(&format!("{}.{}", mod_name, f_name), &format!("{}.{}", mod_name, f_name)));
+    }
+
+    pub fn add_outer_entity(&mut self, e_name: &str, mod_name: &str) -> () {
+        self.outer_entities.push(UMLOuterEntity::new(e_name, mod_name))
     }
 }
