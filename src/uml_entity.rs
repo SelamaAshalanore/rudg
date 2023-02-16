@@ -3,6 +3,7 @@ mod uml_fn;
 mod uml_class;
 mod uml_relation;
 mod uml_graph;
+mod uml_outer_entity;
 mod base;
 
 pub use {
@@ -10,6 +11,7 @@ pub use {
     uml_class::{UMLClass, UMLClassKind},
     uml_relation::{UMLRelation, UMLRelationKind},
     uml_graph::UMLGraph,
+    uml_outer_entity::UMLOuterEntity,
     base::UMLEntity
 };
 

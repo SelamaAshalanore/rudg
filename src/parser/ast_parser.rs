@@ -44,6 +44,7 @@ impl StringParser for AstParser {
                     // uml_graph.add_relation(r);
                     relations.push(r);
                 },
+                UMLEntity::UMLOuterEntity(oe) => ()
             }
         }
         for rel in relations {
