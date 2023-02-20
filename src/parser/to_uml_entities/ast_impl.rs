@@ -43,7 +43,7 @@ impl HasUMLEntity for ast::Impl {
         dep_set.sort();
         dep_set.dedup();
         results.extend(
-            dep_set.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&p, &struct_name, UMLRelationKind::UMLDependency)))
+            dep_set.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&struct_name, &p, UMLRelationKind::UMLDependency)))
         );
 
 
