@@ -15,7 +15,7 @@ impl HasUMLEntity for ast::Use {
 
 fn walk_use_tree(ut: ast::UseTree, outer_entities: &mut Vec<UMLOuterEntity>, path_name: Option<&str>) -> () {
     // recursivelly add sub use tree's entities
-    println!("use tree: {}", ut.to_string());
+    // println!("use tree: {}", ut.to_string());
     let ut_path = ut.path().unwrap().to_string();
 
     let current_path_name = match path_name {

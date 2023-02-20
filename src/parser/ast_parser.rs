@@ -285,8 +285,31 @@ mod tests {
         target_graph.add_outer_entity("Hello", "hello");
         target_graph.add_outer_entity("hello", "hello");
 
-        target_graph.add_relation(UMLRelation::new("mock", "hello.Hello", UMLRelationKind::UMLDependency));
-        target_graph.add_relation(UMLRelation::new("mock", "hello.hello", UMLRelationKind::UMLDependency));
+        target_graph.add_relation(UMLRelation::new("mock", "Hello.new", UMLRelationKind::UMLDependency));
+        target_graph.add_relation(UMLRelation::new("mock", "hello", UMLRelationKind::UMLDependency));
+        
+        assert_eq!(parsed_graph, target_graph);
+    }
+
+    #[test]
+    fn test_dependent_struct_methods() {
+        let code: &str = r#"
+        struct Hello;
+
+        impl Hello {
+            pub fn new() {}
+        }
+
+        fn mock() -> () {
+            Hello::new();
+        }
+        "#;
+        let parsed_graph = AstParser::parse_string(code);
+        let mut target_graph: UMLGraph = UMLGraph::new("");
+
+        target_graph.add_fn(UMLFn::new("mock", "mock() -> ()"));
+        target_graph.add_struct(UMLClass::new("Hello", vec![], vec![String::from("new()")], UMLClassKind::UMLClass));
+        target_graph.add_relation(UMLRelation::new("mock", "Hello.new", UMLRelationKind::UMLDependency));
         
         assert_eq!(parsed_graph, target_graph);
     }

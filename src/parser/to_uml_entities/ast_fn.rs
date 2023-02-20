@@ -1,7 +1,7 @@
 use ra_ap_syntax::{ast::{self, AstNode, HasName}, match_ast};
 use super::HasUMLEntity;
 use crate::uml_entity::*;
-use super::utils::{get_fn_full_name, get_call_expr_fn_names};
+use super::utils::{get_fn_full_name, get_call_expr_fn_names, replace_coloncolon_path};
 
 impl HasUMLEntity for ast::Fn {
     fn get_uml_entities(&self) -> Vec<UMLEntity> {
@@ -15,7 +15,7 @@ impl HasUMLEntity for ast::Fn {
                 match node {
                     ast::CallExpr(it) => {
                         let call_name = get_call_expr_fn_names(it);
-                        results.push(UMLEntity::UMLRelation(UMLRelation::new(&f_name, &call_name, UMLRelationKind::UMLDependency)))
+                        results.push(UMLEntity::UMLRelation(UMLRelation::new(&f_name, &replace_coloncolon_path(&call_name), UMLRelationKind::UMLDependency)))
                     },
                     _ => {
                         // println!("{:?}", node);
