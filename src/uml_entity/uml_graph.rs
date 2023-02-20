@@ -47,6 +47,22 @@ impl UMLGraph {
             })
             .collect()
     }
+    pub fn outer_relations_new(&self) -> Vec<UMLRelation> {
+        // outer relations getter
+        self.relations
+            .iter()
+            .filter(|rel| {
+                self.is_outer_entity(&rel.from) || self.is_outer_entity(&rel.to)
+            })
+            .map(|rel| {
+                let mut rel_results = rel.clone();
+                let from_name = self.get_outer_entity_full_name(&rel.from);
+                let to_name = self.get_outer_entity_full_name(&rel.to);
+                rel_results.update_relation_names(&from_name, &to_name);
+                rel_results
+            })
+            .collect()
+    }
 
     pub fn outer_relations(&self) -> Vec<&UMLRelation> {
         // outer relations getter
@@ -64,6 +80,14 @@ impl UMLGraph {
         // outer entites getter
         self.outer_entities
             .iter()
+            .collect()
+    }
+
+    pub fn outer_entity_names(&self) -> Vec<(String, String)> {
+        // get all names of the outer entities, (entity_name, mod_name)
+        self.outer_entities
+            .iter()
+            .map(|oe| (oe.name.clone(), oe.mod_name.clone()))
             .collect()
     }
 
@@ -99,6 +123,27 @@ impl UMLGraph {
             }
         }
         None
+    }
+
+    fn is_outer_entity(&self, name: &str) -> bool {
+        self.outer_entities
+            .iter()
+            .map(|oe| oe.name.clone())
+            .collect::<String>()
+            .contains(name)
+    }
+
+    fn get_outer_entity_full_name(&self, name: &str) -> String {
+        match self.is_outer_entity(name) {
+            false => String::from(name),
+            true => {
+                let oe = self.outer_entities
+                    .iter()
+                    .find(|oe| oe.name == name)
+                    .unwrap();
+                vec![oe.mod_name.as_str(), ".", name].concat()
+            }
+        }
     }
 }
 

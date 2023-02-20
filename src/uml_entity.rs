@@ -61,4 +61,15 @@ mod tests {
         assert_eq!(uml_graph.outer_entities().len(), 1);
         assert_eq!(uml_graph.outer_entities()[0], &UMLOuterEntity::new("Outer Entity", "Mod1"));
     }
+
+    #[test]
+    fn test_add_and_get_outer_relations() {
+        let mut uml_graph = UMLGraph::new("");
+        uml_graph.add_outer_entity(UMLOuterEntity::new("outer_entity", "Mod1"));
+        uml_graph.add_fn(UMLFn::new("mock", "mock() -> ()"));
+        uml_graph.add_relation(UMLRelation::new("mock", "outer_entity", UMLRelationKind::UMLDependency));
+
+        assert_eq!(uml_graph.outer_relations_new().len(), 1);
+        assert_eq!(uml_graph.outer_relations_new()[0], UMLRelation::new("mock", "Mod1.outer_entity", UMLRelationKind::UMLDependency));
+    }
 }
