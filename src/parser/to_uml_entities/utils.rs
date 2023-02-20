@@ -54,3 +54,17 @@ pub fn get_call_expr_fn_names(call_exp: ast::CallExpr) -> String {
     let call_names: Vec<&str> = call_expr.split("(").collect();
     String::from(call_names[0])
 }
+
+pub fn replace_coloncolon_path(cc_path: &str) -> String {
+    String::from(cc_path.replace("::", "."))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_replace_coloncolon_path() {
+        assert_eq!(replace_coloncolon_path("Mock::new"), String::from("Mock.new"));
+    }
+}
