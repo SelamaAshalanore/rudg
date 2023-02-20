@@ -52,8 +52,8 @@ r#"digraph ast {
     "Mock"[label="{Mock|mock_fn()}"][shape="record"];
     "f1"[label="f1"];
     "f2"[label="f2"];
-    "f1" -> "Mock"[label=""][style="dashed"][arrowhead="vee"];
-    "f2" -> "Mock"[label=""][style="dashed"][arrowhead="vee"];
+    "Mock" -> "f1"[label=""][style="dashed"][arrowhead="vee"];
+    "Mock" -> "f2"[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
         )
@@ -173,7 +173,7 @@ r#"digraph ast {
 r#"digraph ast {
     "A"[label="{A|b(b: &B)}"][shape="record"];
     "B"[label="B"][shape="record"];
-    "B" -> "A"[label=""][style="dashed"][arrowhead="vee"];
+    "A" -> "B"[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
     );

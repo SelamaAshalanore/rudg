@@ -121,7 +121,7 @@ impl HasUMLEntity for ast::Impl {
         dep_set.sort();
         dep_set.dedup();
         results.extend(
-            dep_set.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&p, &struct_name, UMLRelationKind::UMLDependency)))
+            dep_set.iter().map(|p| UMLEntity::UMLRelation(UMLRelation::new(&struct_name, &p, UMLRelationKind::UMLDependency)))
         );
 
 
@@ -338,8 +338,8 @@ mod tests {
         target_graph.add_struct(UMLClass::new("Mock", vec![], vec![String::from("mock_fn()")], UMLClassKind::UMLClass));
         target_graph.add_fn(UMLFn::new("f1", "f1(i: usize)"));
         target_graph.add_fn(UMLFn::new("f2", "f2() -> usize"));
-        target_graph.add_relation(UMLRelation::new("f1", "Mock", UMLRelationKind::UMLDependency));
-        target_graph.add_relation(UMLRelation::new("f2", "Mock", UMLRelationKind::UMLDependency));
+        target_graph.add_relation(UMLRelation::new("Mock", "f1", UMLRelationKind::UMLDependency));
+        target_graph.add_relation(UMLRelation::new("Mock", "f2", UMLRelationKind::UMLDependency));
         
         assert_eq!(parsed_graph, target_graph);
     }
