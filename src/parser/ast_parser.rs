@@ -30,6 +30,9 @@ impl StringParser for AstParser {
                 ast::Item::Trait(tt) => {
                     uml_entities.append(&mut tt.get_uml_entities());
                 },
+                ast::Item::Use(u) => {
+                    uml_entities.append(&mut u.get_uml_entities());
+                }
                 _ => (),
             }
         }
@@ -44,7 +47,7 @@ impl StringParser for AstParser {
                     // uml_graph.add_relation(r);
                     relations.push(r);
                 },
-                UMLEntity::UMLOuterEntity(oe) => ()
+                UMLEntity::UMLOuterEntity(oe) => uml_graph.add_outer_entity_new(oe),
             }
         }
         for rel in relations {
@@ -265,24 +268,27 @@ mod tests {
         assert_eq!(parsed_graph, target_graph);
     }
 
-    // #[test]
-    // fn test_outer_structs() {
-    //     let code: &str = r#"
-    //     use hello::{Hello, hello};
+    #[test]
+    fn test_outer_structs() {
+        let code: &str = r#"
+        use hello::{Hello, hello};
 
-    //     fn mock() -> () {
-    //         Hello::new();
-    //         hello();
-    //     }
-    //     "#;
-    //     let parsed_graph = AstParser::parse_string(code);
-    //     let mut target_graph: UMLGraph = UMLGraph::new("");
+        fn mock() -> () {
+            Hello::new();
+            hello();
+        }
+        "#;
+        let parsed_graph = AstParser::parse_string(code);
+        let mut target_graph: UMLGraph = UMLGraph::new("");
 
-    //     target_graph.add_fn(UMLFn::new("mock", "mock() -> ()"));
-    //     target_graph.add_outer_class("Hello", UMLClassKind::UMLClass, "hello");
-    //     target_graph.add_outer_fn("hello", "hello");
+        target_graph.add_fn(UMLFn::new("mock", "mock() -> ()"));
+        target_graph.add_outer_entity("Hello", "hello");
+        target_graph.add_outer_entity("hello", "hello");
+
+        target_graph.add_relation(UMLRelation::new("mock", "hello.Hello", UMLRelationKind::UMLDependency));
+        target_graph.add_relation(UMLRelation::new("mock", "hello.hello", UMLRelationKind::UMLDependency));
         
-    //     assert_eq!(parsed_graph, target_graph);
-    // }
+        assert_eq!(parsed_graph, target_graph);
+    }
 
 }
