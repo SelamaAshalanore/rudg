@@ -167,11 +167,7 @@ impl UMLGraph {
         self.fns.push(UMLFn::new(&format!("{}.{}", mod_name, f_name), &format!("{}.{}", mod_name, f_name)));
     }
 
-    pub fn add_outer_entity(&mut self, e_name: &str, mod_name: &str) -> () {
-        self.outer_entities.push(UMLOuterEntity::new(e_name, mod_name))
-    }
-
-    pub fn add_outer_entity_new(&mut self, outer_entity: UMLOuterEntity) -> () {
+    pub fn add_outer_entity(&mut self, outer_entity: UMLOuterEntity) -> () {
         self.outer_entities.push(outer_entity);
     }
 }

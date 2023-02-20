@@ -56,7 +56,7 @@ mod tests {
     #[test]
     fn test_add_outer_entities() {
         let mut uml_graph = UMLGraph::new("");
-        uml_graph.add_outer_entity("Outer Entity", "Mod1");
+        uml_graph.add_outer_entity(UMLOuterEntity::new("Outer Entity", "Mod1"));
 
         assert_eq!(uml_graph.outer_entities().len(), 1);
         assert_eq!(uml_graph.outer_entities()[0], &UMLOuterEntity::new("Outer Entity", "Mod1"));

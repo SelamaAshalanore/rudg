@@ -47,7 +47,7 @@ impl StringParser for AstParser {
                     // uml_graph.add_relation(r);
                     relations.push(r);
                 },
-                UMLEntity::UMLOuterEntity(oe) => uml_graph.add_outer_entity_new(oe),
+                UMLEntity::UMLOuterEntity(oe) => uml_graph.add_outer_entity(oe),
             }
         }
         for rel in relations {
@@ -282,8 +282,8 @@ mod tests {
         let mut target_graph: UMLGraph = UMLGraph::new("");
 
         target_graph.add_fn(UMLFn::new("mock", "mock() -> ()"));
-        target_graph.add_outer_entity("Hello", "hello");
-        target_graph.add_outer_entity("hello", "hello");
+        target_graph.add_outer_entity(UMLOuterEntity::new("Hello", "hello"));
+        target_graph.add_outer_entity(UMLOuterEntity::new("hello", "hello"));
 
         target_graph.add_relation(UMLRelation::new("mock", "Hello.new", UMLRelationKind::UMLDependency));
         target_graph.add_relation(UMLRelation::new("mock", "hello", UMLRelationKind::UMLDependency));
