@@ -25,4 +25,9 @@ impl UMLRelation {
     pub fn change_relation_kind(&mut self, new_relation_kind: UMLRelationKind) -> () {
         self.kind = new_relation_kind
     }
+
+    pub fn update_relation_names(&mut self, from: &str, to: &str) -> () {
+        self.from = String::from(from);
+        self.to = String::from(to);
+    }
 }
