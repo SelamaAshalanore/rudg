@@ -40,17 +40,17 @@ mod tests {
     fn test_add_outer_relations() {
         let mut uml_graph = UMLGraph::new("");
         uml_graph.add_struct(UMLClass::new("Main", vec![], vec![], UMLClassKind::UMLClass));
-        uml_graph.add_relation(UMLRelation::new("Main", "mock.outer_mock", UMLRelationKind::UMLDependency));
+        uml_graph.add_relation(UMLRelation::new("Main", "outer_mock", UMLRelationKind::UMLDependency));
         // add relation when at least one side of the relation is not in the scope
         assert_eq!(uml_graph.relations().len(), 0);
         assert_eq!(uml_graph.outer_relations().len(), 0);
 
         // outer relations use notation as "mod"."struct/fn name"
-        uml_graph.add_outer_fn("outer_mock", "mock");
-        assert_eq!(uml_graph.outer_relations().len(), 1);
+        uml_graph.add_outer_entity(UMLOuterEntity::new("outer_mock", "mock"));
+        assert_eq!(uml_graph.outer_relations_new().len(), 1);
         assert_eq!(uml_graph.relations().len(), 0);
-        assert_eq!(uml_graph.outer_relations().get(0).unwrap().from, "Main");
-        assert_eq!(uml_graph.outer_relations().get(0).unwrap().to, "mock.outer_mock");
+        assert_eq!(uml_graph.outer_relations_new().get(0).unwrap().from, "Main");
+        assert_eq!(uml_graph.outer_relations_new().get(0).unwrap().to, "mock.outer_mock");
     }
 
     #[test]
