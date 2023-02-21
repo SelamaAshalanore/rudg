@@ -5,7 +5,7 @@ use {
 };
 use std::collections::BTreeMap;
 
-use super::{UMLClassKind, UMLOuterEntity};
+use super::{UMLOuterEntity};
 
 #[derive(PartialEq, Debug)]
 pub struct UMLGraph {
@@ -60,18 +60,6 @@ impl UMLGraph {
                 let to_name = self.get_outer_entity_full_name(&rel.to);
                 rel_results.update_relation_names(&from_name, &to_name);
                 rel_results
-            })
-            .collect()
-    }
-
-    pub fn outer_relations(&self) -> Vec<&UMLRelation> {
-        // outer relations getter
-        self.relations
-            .iter()
-            .filter(|rel| {
-                (self.get_fn_names().contains(&rel.from) || self.get_struct_names().contains(&rel.from)) &&
-                (self.get_fn_names().contains(&rel.to) || self.get_struct_names().contains(&rel.to)) &&
-                (rel.to.contains(r".") || rel.from.contains(r"."))
             })
             .collect()
     }

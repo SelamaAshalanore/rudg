@@ -37,16 +37,6 @@ impl GraphExporter for UMLGraph {
             subgraph.add_nodes(node_list);
             edge_list.iter().for_each(|e| subgraph.add_edge(e.clone()));
             graph.add_subgraph(subgraph);
-
-            // add outer_relations
-            for r in m.outer_relations() {
-                for ent in r.get_dot_entities(&name_prefix) {
-                    match ent {
-                        DotEntity::Edge(e) => graph.add_edge(e),
-                        DotEntity::Node(n) => graph.add_node(n)
-                    }
-                }
-            }
         }
 
         return graph.to_dot_string().unwrap();
@@ -250,6 +240,7 @@ r#"digraph ast {
         uml_graph.add_module(uml_mod2);
 
         let dot_string = uml_graph.to_string();
+        println!("{}", dot_string);
         let target_string = 
 r#"digraph ast {
     subgraph cluster_hello_mod {

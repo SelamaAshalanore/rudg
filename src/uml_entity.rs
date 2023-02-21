@@ -43,7 +43,7 @@ mod tests {
         uml_graph.add_relation(UMLRelation::new("Main", "outer_mock", UMLRelationKind::UMLDependency));
         // add relation when at least one side of the relation is not in the scope
         assert_eq!(uml_graph.relations().len(), 0);
-        assert_eq!(uml_graph.outer_relations().len(), 0);
+        assert_eq!(uml_graph.outer_relations_new().len(), 0);
 
         // outer relations use notation as "mod"."struct/fn name"
         uml_graph.add_outer_entity(UMLOuterEntity::new("outer_mock", "mock"));
