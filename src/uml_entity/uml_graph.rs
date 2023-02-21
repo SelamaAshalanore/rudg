@@ -186,10 +186,6 @@ impl UMLGraph {
         }
     }
 
-    pub fn add_outer_class(&mut self, cls_name: &str, kind: UMLClassKind, mod_name: &str) -> () {
-        self.structs.push(UMLClass::new(&format!("{}.{}", mod_name, cls_name), vec![], vec![], kind));
-    }
-
     pub fn add_fn(&mut self, f: UMLFn) -> () {
         self.fns.push(f);
     }

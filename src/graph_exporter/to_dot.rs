@@ -242,10 +242,10 @@ r#"digraph ast {
         uml_mod1.add_struct(UMLClass::new("Hello", vec![], vec![], UMLClassKind::UMLClass));
         uml_mod1.add_fn(UMLFn::new("hello", "hello() -> ()"));
         uml_mod2.add_fn(UMLFn::new("mock", "mock() -> ()"));
-        uml_mod2.add_outer_class("Hello", UMLClassKind::UMLClass, "hello_mod");
-        uml_mod2.add_outer_fn("hello", "hello_mod");
-        uml_mod2.add_relation(UMLRelation::new("mock", "hello_mod.Hello", UMLRelationKind::UMLDependency));
-        uml_mod2.add_relation(UMLRelation::new("mock", "hello_mod.hello", UMLRelationKind::UMLDependency));
+        uml_mod2.add_outer_entity(UMLOuterEntity::new("Hello", "hello_mod"));
+        uml_mod2.add_outer_entity(UMLOuterEntity::new("hello", "hello_mod"));
+        uml_mod2.add_relation(UMLRelation::new("mock", "Hello", UMLRelationKind::UMLDependency));
+        uml_mod2.add_relation(UMLRelation::new("mock", "hello", UMLRelationKind::UMLDependency));
         uml_graph.add_module(uml_mod1);
         uml_graph.add_module(uml_mod2);
 
@@ -260,9 +260,9 @@ r#"digraph ast {
     subgraph cluster_mock_mod {
         label="mock_mod";
         "mock_mod.mock"[label="mock"];
+        "mock_mod.mock" -> "hello_mod.Hello"[label=""][style="dashed"][arrowhead="vee"];
+        "mock_mod.mock" -> "hello_mod.hello"[label=""][style="dashed"][arrowhead="vee"];
     }
-    "mock_mod.mock" -> "hello_mod.Hello"[label=""][style="dashed"][arrowhead="vee"];
-    "mock_mod.mock" -> "hello_mod.hello"[label=""][style="dashed"][arrowhead="vee"];
 }
 "#;
         assert_eq!(dot_string, target_string);
