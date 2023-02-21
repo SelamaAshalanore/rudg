@@ -137,11 +137,12 @@ impl UMLGraph {
         match self.is_outer_entity(name) {
             false => String::from(name),
             true => {
-                let oe = self.outer_entities
+                match self.outer_entities 
                     .iter()
-                    .find(|oe| oe.name == name)
-                    .unwrap();
-                vec![oe.mod_name.as_str(), ".", name].concat()
+                    .find(|oe| oe.name == name) {
+                        Some(soe) => vec![soe.mod_name.as_str(), ".", name].concat(),
+                        None => String::from(name)
+                    }
             }
         }
     }

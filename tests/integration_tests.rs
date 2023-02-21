@@ -218,8 +218,8 @@ r#"digraph ast {
     subgraph cluster_main {
         label="main";
         "main.main"[label="main"];
+        "main.main" -> "hello.hello"[label=""][style="dashed"][arrowhead="vee"];
     }
-    "main.main" -> "hello.hello"[label=""][style="dashed"][arrowhead="vee"];
 }
 "#
     );

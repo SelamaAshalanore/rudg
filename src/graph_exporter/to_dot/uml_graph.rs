@@ -13,6 +13,11 @@ impl HasDotEntity for UMLGraph {
         self.relations()
             .iter()
             .for_each(|r| dot_entities.append(&mut r.get_dot_entities(name_prefix)));
+        self.outer_relations_new()
+            .iter()
+            .for_each(|r| {
+                dot_entities.append(&mut r.get_dot_entities(name_prefix))
+            });
         dot_entities
     }
 }
