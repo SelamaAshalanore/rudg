@@ -271,7 +271,8 @@ mod tests {
     #[test]
     fn test_outer_structs() {
         let code: &str = r#"
-        use hello::{Hello, hello};
+        use hello::{Hello};
+        use hello::hello;
 
         fn mock() -> () {
             Hello::new();
