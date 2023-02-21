@@ -76,13 +76,6 @@ impl UMLGraph {
             .collect()
     }
 
-    pub fn outer_entities(&self) -> Vec<&UMLOuterEntity> {
-        // outer entites getter
-        self.outer_entities
-            .iter()
-            .collect()
-    }
-
     fn get_struct_names(&self) -> Vec<String> {
         // struct names getter
         self.structs
