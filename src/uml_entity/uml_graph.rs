@@ -83,14 +83,6 @@ impl UMLGraph {
             .collect()
     }
 
-    pub fn outer_entity_names(&self) -> Vec<(String, String)> {
-        // get all names of the outer entities, (entity_name, mod_name)
-        self.outer_entities
-            .iter()
-            .map(|oe| (oe.name.clone(), oe.mod_name.clone()))
-            .collect()
-    }
-
     fn get_struct_names(&self) -> Vec<String> {
         // struct names getter
         self.structs
