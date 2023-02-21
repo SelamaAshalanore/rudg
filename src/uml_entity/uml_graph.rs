@@ -47,7 +47,7 @@ impl UMLGraph {
             })
             .collect()
     }
-    pub fn outer_relations_new(&self) -> Vec<UMLRelation> {
+    pub fn outer_relations(&self) -> Vec<UMLRelation> {
         // outer relations getter
         self.relations
             .iter()
